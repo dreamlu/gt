@@ -35,7 +35,7 @@ func GetUpoadFile(u *gin.Context) (filename string) {
 		//防止文件名中多个“.”,获得文件后缀
 		filename = fname + filename
 	}
-	path := deercoder.GetDevModeConfig("filepath") + filename //文件目录
+	path := der.GetDevModeConfig("filepath") + filename //文件目录
 	_ = u.SaveUploadedFile(file, path)
 	switch ftype {
 	case "jpeg","jpg","png":
