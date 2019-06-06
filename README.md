@@ -50,6 +50,8 @@ deercoder-gin
     - [JSON请求](#json-request)
     - [GetDevModeConfig](#getdevmodeconfig)
     - [缓存使用](#cachemanager)
+    - [加解密](#aesende)
+    - [标准日期](#time)
     
 
 ### API Examples  
@@ -248,4 +250,18 @@ type CacheManager interface {
 	// flush the time
 	Check(key interface{}) error
 }
+```
+
+### aesEnDe  
+```go
+log.Println("[加密测试]:", AesEn("123456"))
+log.Println("[解密测试]:", AesDe("lIEbR7cEp2U10gtM0j8dCg=="))
+```
+
+### time
+```go
+// 时间格式化2006-01-02 15:04:05
+type JsonTime time.Time
+// 时间格式化2006-01-02
+type JsonDate time.Time
 ```
