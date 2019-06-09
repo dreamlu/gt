@@ -1,147 +1,442 @@
-// @author  dreamlu
+//  @author  dreamlu
 package validator
 
 import (
 	"errors"
 	"fmt"
 	"github.com/dreamlu/go-tool/util/lib"
+	myReflect "github.com/dreamlu/go-tool/util/reflect"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
 type Validator struct {
-	data map[string][]string //要校验的数据字典
-	rule map[string]*vRule //规则列表，key为字段名
+	// 校验的数据对象
+	data interface{}
+	// 校检模型
+	model interface{}
+	// 规则列表,key为字段名
+	rule map[string]*vRule
 }
 
+// 校检规则
 type vRule struct {
-	vr       ValidateRuler
-	//required bool
+	vr ValidateRuler
+	// required bool
 }
 
-//校验规则接口，支持自定义规则
+// 校验规则接口
+// 支持自定义规则
 type ValidateRuler interface {
-	Check(data string) error
+	// 验证字段
+	Check(data interface{}) error
 }
 
-//内置规则结构，实现ValidateRuler接口
-type normalRule struct {
-	key    string
-	trans  string //翻译后的字段名
-	rule   string
-	params string
+// 内置规则结构
+// 实现ValidateRuler接口
+type DefaultRule struct {
+	// 验证的字段名
+	key string
+	// 翻译后的字段名
+	// 默认 = key
+	trans string
+	// 规则
+	valid string
 }
 
-//创建校验器对象
-func NewValidator(data map[string][]string) *Validator {
-	v := &Validator{data: data}
+// 创建校验器对象
+// 针对form表单/json数据两种
+func Valid(data, model interface{}) lib.MapData {
+
+	v := &Validator{
+		data:  data,
+		model: model,
+	}
 	v.rule = make(map[string]*vRule)
-	return v
-}
+	// 根据模型添加验证规则
+	typ := reflect.TypeOf(model)
+	for i := 0; i < typ.NumField(); i++ {
+		// 新建一个规则
+		rule := &DefaultRule{}
+		// 字段名
+		// 使用Name替代json Tag
+		rule.key = typ.Field(i).Tag.Get("json")
+		// 规则
+		rule.valid = typ.Field(i).Tag.Get("valid")
+		// 去除不存在验证字段
+		if rule.valid == "" {
+			continue
+		}
+		// 字段翻译
+		rule.trans = typ.Field(i).Tag.Get("trans")
 
-//添加内置的校验规则(同一个key只能有一条规则，重复添加会覆盖)
-func (this *Validator) AddRule(key string, trans, rule string, params string) {
-	nr := &normalRule{key, trans, rule, params}
-	this.rule[key] = &vRule{nr}//, true} //默认required = true
-}
-
-//框架不可能包括所有的规则，为了满足不同应用的需要，除了内置规则外，需同时支持自定义规则的添加。
-//go不支持重载，所以定义一个新方法来添加自定义规则（使用ValidateRuler interface参数）
-func (this *Validator) AddExtRule(key string, rule ValidateRuler, required ...bool) {
-	this.rule[key] = &vRule{rule} //, true}
-	//if len(required) > 0 {
-	//	this.rule[key].required = required[0]
-	//}
+		// 绑定添加规则
+		v.rule[rule.key] = &vRule{rule}
+	}
+	// 进行校检
+	return v.CheckInfo()
 }
 
 // 执行检查后返回信息
 // trans 翻译后的字段名
-func (this *Validator) CheckInfo() interface{} {
-	if err := this.Check(); err != nil {
-		//检查不通过，处理错误
-		//fmt.Println(err)
-		//return err
-		for k, _ := range this.rule {
-			if err[k] != nil{
-				return lib.GetMapData(lib.CodeValidator,err[k].Error())
+func (v *Validator) CheckInfo() lib.MapData {
+	if err := v.Check(); err != nil {
+		// 检查不通过，处理错误
+		// fmt.Println(err)
+		// return err
+		for k := range v.rule {
+			if err[k] != nil {
+				return lib.GetMapData(lib.CodeValidator, err[k].Error())
 			}
 		}
 	}
-	return nil
+	return lib.MapValSuccess
 }
 
-//执行检查
-func (this *Validator) Check() (errs map[string]error) {
+// 执行检查
+func (v *Validator) Check() (errs map[string]error) {
 
 	errs = make(map[string]error)
-	for k, v := range this.rule {
-		data, _ := this.data[k]
-		if err := v.vr.Check(data[0]); err != nil { //调用ValidateRuler接口的Check方法来检查
-			errs[k] = err
+	// 类型判断
+	// d is value
+	switch d := v.data.(type) {
+	case map[string][]string:
+		for k, r := range v.rule {
+			// 数据
+			data, _ := d[k]
+			if data == nil {
+				data = []string{""}
+			}
+			if err := r.vr.Check(data[0]); err != nil { // 调用ValidateRuler接口的Check方法来检查
+				errs[k] = err
+			}
+		}
+	default:
+		for k, r := range v.rule {
+			// 验证的字段值
+			var val interface{}
+			//val, err := myReflect.GetDataByFieldName(d, k)
+			typ := reflect.TypeOf(d)
+			for i := 0; i < typ.NumField(); i++ {
+				if typ.Field(i).Tag.Get("json") == k {
+					//log.Println(reflect.ValueOf(d).Field(i).String())
+					val, _ = myReflect.GetDataByFieldName(d, typ.Field(i).Name)
+					break
+				}
+			}
+
+			//log.Println(string(val))
+			if err := r.vr.Check(val); err != nil { // 调用ValidateRuler接口的Check方法来检查
+				errs[k] = err
+			}
 		}
 	}
+
 	return errs
 }
 
-// common rule
-// for string, params must number-number
-//
-func (this *normalRule) Check(data string) (Err error) {
-	//if this.params == "" {
-	//	return errors.New("rule error: params wrong of rule")
-	//}
-	// split rule
-	// 先后规则顺序
-	rules := strings.Split(this.rule,",")
-	for _,v := range rules{
-		switch v {
-		case "len":
-			//字符串，根椐params判断长度的最大值和最小值
-			lg := len([]rune(data))	//fix 中英文字符数量不统一
-			args := strings.Split(this.params, "-")
-			min, _ := strconv.Atoi(args[0])
-			max, _ := strconv.Atoi(args[1])
-			switch {
-			case lg < min || lg > max:
-				return errors.New(fmt.Sprintln(this.trans, "长度在", min, "与", max, "之间"))
-			default:
-				return nil
-			}
+//  common rule
+// 字段值转换成string进行验证
+func (n *DefaultRule) Check(data interface{}) (Err error) {
+	// required 判断
+	if !strings.Contains(n.valid, "required") && data == "" {
+		return
+	}
+
+	//  split rule
+	//  先后规则顺序
+	rules := strings.Split(n.valid, ",")
+	if n.trans == "" {
+		n.trans = n.key
+	}
+	for _, v := range rules {
+		// 规则
+		param := strings.Split(v, "=")
+
+		switch param[0] {
+
 		case "required":
-			if data == "" {
-				return errors.New(fmt.Sprintln(this.trans, "为必填项"))
+			if err := nonzero(data); err != nil {
+				return errors.New(fmt.Sprintln(n.trans, "为必填项"))
+			}
+		case "len":
+			min := 0
+			max := 0
+			lg := length(data)
+			// fix 中英文字符数量不统一
+			// 范围判断
+			if strings.Contains(param[1], "-") {
+				args := strings.Split(param[1], "-")
+				min, _ = strconv.Atoi(args[0])
+				max, _ = strconv.Atoi(args[1])
+
+			} else {
+				max, _ = strconv.Atoi(param[1])
+			}
+
+			if lg < min || lg > max{
+				return errors.New(fmt.Sprintln(n.trans, "长度在", min, "与", max, "之间"))
+			}
+		case "max":
+
+			if err := max(data, param[1]); err != nil {
+				return errors.New(fmt.Sprintln(n.trans, "最大值为", param[1]))
+			}
+		case "min":
+
+			if err := min(data, param[1]); err != nil {
+				return errors.New(fmt.Sprintln(n.trans, "最小值为", param[1]))
+			}
+		case "regex":
+			if err := regex(data, param[1]); err != nil {
+				return errors.New(fmt.Sprintln(n.trans, "正则规则为", param[1]))
 			}
 		case "phone":
-			if b, _ := regexp.MatchString(`^1[2-9]\d{9}$`, data); !b {
+
+			if b, _ := regexp.MatchString(`^1[2-9]\d{9}$`, data.(string)); !b {
 				return errors.New(fmt.Sprintln("手机号格式非法"))
 			}
 		case "email":
-			if b, _ := regexp.MatchString(`^([\w\.\_]{2,10})@(\w{1,}).([a-z]{2,4})$`, data); !b {
+
+			if b, _ := regexp.MatchString(`^([\w\.\_]{2,10})@(\w{1,}).([a-z]{2,4})$`, data.(string)); !b {
 				return errors.New(fmt.Sprintln("邮箱格式非法"))
 			}
-		case "number":
-			//判断是否整数数字
-			//判断最大值和最小值是否在params指定的范围
-		case "list":
-			//判断值是否在params指定的列表
-		case "regular":
-			//是否符合正则表达式
 		default:
-			return errors.New(fmt.Sprintf("rule error: not support of rule=%s", this.rule))
+			return errors.New(fmt.Sprintf("rule error: not support of rule=%s", n.valid))
 		}
 	}
 	return nil
 }
 
-type myRuler struct {
+func nonzero(v interface{}) error {
+	st := reflect.ValueOf(v)
+	valid := true
+	switch st.Kind() {
+	case reflect.String:
+		valid = len(st.String()) != 0
+	case reflect.Ptr, reflect.Interface:
+		valid = !st.IsNil()
+	case reflect.Slice, reflect.Map, reflect.Array:
+		valid = st.Len() != 0
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		valid = st.Int() != 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		valid = st.Uint() != 0
+	case reflect.Float32, reflect.Float64:
+		valid = st.Float() != 0
+	case reflect.Bool:
+		valid = st.Bool()
+	case reflect.Invalid:
+		valid = false // always invalid
+	case reflect.Struct:
+		valid = true // always valid since only nil pointers are empty
+	default:
+		return errors.New(lib.MsgValError)
+	}
+
+	if !valid {
+		return errors.New(lib.MsgValError)
+	}
+	return nil
 }
 
-//添加Check方法，实现ValidateRuler 接口
-func (this *myRuler) Check(data string) (Err error) {
-	//判断data是否符合规则
-	return
+// string 类型, 切片数组判断长度
+// 数值型应使用min和max判断大小
+func length(v interface{}) int {
+	st := reflect.ValueOf(v)
+	if st.Kind() == reflect.Ptr {
+		if st.IsNil() {
+			return 0
+		}
+		st = st.Elem()
+	}
+	switch st.Kind() {
+	case reflect.String:
+		return len([]rune(st.String()))
+	case reflect.Slice, reflect.Map, reflect.Array:
+		return st.Len()
+	//case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+	//	log.Println(st)
+	//	return len(st)
+	//case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+	//	return st.Len()
+	//case reflect.Float32, reflect.Float64:
+	//	st.Len()
+	default:
+		return 0
+	}
+	//return 0
 }
 
-//添加规则
-//validator.AddExtRule("name", &myRuler{})
+// 最小值
+func min(v interface{}, param string) error {
+	st := reflect.ValueOf(v)
+	invalid := false
+	if st.Kind() == reflect.Ptr {
+		if st.IsNil() {
+			return nil
+		}
+		st = st.Elem()
+	}
+	switch st.Kind() {
+	case reflect.String:
+		p, err := asInt(param)
+		if err != nil {
+			return errors.New(lib.MsgValError)
+		}
+		invalid = int64(len(st.String())) < p
+	case reflect.Slice, reflect.Map, reflect.Array:
+		p, err := asInt(param)
+		if err != nil {
+			return errors.New(lib.MsgValError)
+		}
+		invalid = int64(st.Len()) < p
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		p, err := asInt(param)
+		if err != nil {
+			return errors.New(lib.MsgValError)
+		}
+		invalid = st.Int() < p
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		p, err := asUint(param)
+		if err != nil {
+			return errors.New(lib.MsgValError)
+		}
+		invalid = st.Uint() < p
+	case reflect.Float32, reflect.Float64:
+		p, err := asFloat(param)
+		if err != nil {
+			return errors.New(lib.MsgValError)
+		}
+		invalid = st.Float() < p
+	default:
+		return errors.New(lib.MsgValError)
+	}
+	if invalid {
+		return errors.New(lib.MsgValError)
+	}
+	return nil
+}
+
+// 最大值
+func max(v interface{}, param string) error {
+	st := reflect.ValueOf(v)
+	var invalid bool
+	if st.Kind() == reflect.Ptr {
+		if st.IsNil() {
+			return nil
+		}
+		st = st.Elem()
+	}
+	switch st.Kind() {
+	case reflect.String:
+		p, err := asInt(param)
+		if err != nil {
+			return errors.New(lib.MsgValError)
+		}
+		invalid = int64(len(st.String())) > p
+	case reflect.Slice, reflect.Map, reflect.Array:
+		p, err := asInt(param)
+		if err != nil {
+			return errors.New(lib.MsgValError)
+		}
+		invalid = int64(st.Len()) > p
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		p, err := asInt(param)
+		if err != nil {
+			return errors.New(lib.MsgValError)
+		}
+		invalid = st.Int() > p
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		p, err := asUint(param)
+		if err != nil {
+			return errors.New(lib.MsgValError)
+		}
+		invalid = st.Uint() > p
+	case reflect.Float32, reflect.Float64:
+		p, err := asFloat(param)
+		if err != nil {
+			return errors.New(lib.MsgValError)
+		}
+		invalid = st.Float() > p
+	default:
+		return errors.New(lib.MsgValError)
+	}
+	if invalid {
+		return errors.New(lib.MsgValError)
+	}
+	return nil
+}
+
+// 正则
+func regex(v interface{}, param string) error {
+	s, ok := v.(string)
+	if !ok {
+		sptr, ok := v.(*string)
+		if !ok {
+			return errors.New(lib.MsgValError)
+		}
+		if sptr == nil {
+			return nil
+		}
+		s = *sptr
+	}
+
+	re, err := regexp.Compile(param)
+	if err != nil {
+		return errors.New(lib.MsgValError)
+	}
+
+	if !re.MatchString(s) {
+		return errors.New(lib.MsgValError)
+	}
+	return nil
+}
+
+// asInt retuns the parameter as a int64
+// or panics if it can't convert
+func asInt(param string) (int64, error) {
+	i, err := strconv.ParseInt(param, 0, 64)
+	if err != nil {
+		return 0, err
+	}
+	return i, nil
+}
+
+// asUint retuns the parameter as a uint64
+// or panics if it can't convert
+func asUint(param string) (uint64, error) {
+	i, err := strconv.ParseUint(param, 0, 64)
+	if err != nil {
+		return 0, err
+	}
+	return i, nil
+}
+
+// asFloat retuns the parameter as a float64
+// or panics if it can't convert
+func asFloat(param string) (float64, error) {
+	i, err := strconv.ParseFloat(param, 64)
+	if err != nil {
+		return 0.0, err
+	}
+	return i, nil
+}
+
+//type myRuler struct {
+//	// 验证的字段名
+//	key string
+//	// 翻译后的字段名
+//	// 默认 = key
+//	trans string
+//	// 规则
+//	rule string
+//}
+//
+//// 添加Check方法，实现ValidateRuler 接口
+//func (m *myRuler) Check(data string) (Err error) {
+//	// 判断data是否符合规则
+//	return
+//}

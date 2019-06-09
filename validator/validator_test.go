@@ -2,25 +2,30 @@
 package validator
 
 import (
-	"fmt"
+	"log"
 	"testing"
 )
 
 // test validator
+// 规则之外, 请额外处理
 func TestValidator(t *testing.T) {
-	var maps = make(map[string][]string)
-	maps["name"] = append(maps["name"], "梦")
-	val := NewValidator(maps) //将要检查的数据字典传入，生成Validator对象
-	val.AddRule("name", "用户名","required,len","2-5") //对字段name添加规则： 2-5个字符长度，必填
-	//val.AddRule("sport","list","football,swim",false) //对字段sport添加规则： 值需在列表中（football，swim),非必填
 
-	info := val.CheckInfo()
-	switch info {
-	case nil:
-		fmt.Println("pass")
-	default:
-		fmt.Println(info)
+	type Test struct {
+		ID   int64  `json:"id" valid:"required,min=0,max=5"`
+		Name string `json:"name" valid:"required,len=2-5" trans:"用户名"`
 	}
 
-}
+	// form data
+	var maps = make(map[string][]string)
+	maps["name"] = append(maps["name"], "梦1")
+	info := Valid(maps, Test{})
+	log.Println(info)
 
+	// json data
+	var test = Test{
+		ID:   6,
+		Name: "梦1",
+	}
+	log.Println(Valid(test, Test{}))
+
+}

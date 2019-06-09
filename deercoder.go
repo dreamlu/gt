@@ -3,7 +3,7 @@ package der
 
 import "github.com/dreamlu/go-tool/util/lib"
 
-const Version = "1.3.0"
+const Version = "1.0.x"
 
 // db database
 type DataBase interface {

@@ -9,7 +9,7 @@ go-tool 是一个通用的api快速开发工具库
 ##### 原理：
 
 1.封装  
-2.golang 反射  
+2.反射  
 
 ##### demo(待完善)  
 deercoder-gin  
@@ -31,6 +31,7 @@ deercoder-gin
 | conf/app.conf 多开发模式支持 |
 | 请求方式json/form data |
 | [cache](./cache.go) 缓存实现 |
+| [参数验证](./validator/validator_test.go) |  
 
 ##### 使用  
 - [安装使用](#安装使用)
@@ -52,6 +53,7 @@ deercoder-gin
     - [缓存使用](#cachemanager)
     - [加解密](#aesende)
     - [标准日期](#time)
+    - [字段验证](#validator)  
     
 
 ### API Examples  
@@ -263,5 +265,35 @@ log.Println("[解密测试]:", AesDe("lIEbR7cEp2U10gtM0j8dCg=="))
 // 时间格式化2006-01-02 15:04:05
 type JsonTime time.Time
 // 时间格式化2006-01-02
-type JsonDate time.Time
+type JsonDate time.Time 
+```  
+
+### validator  
+```go
+func TestValidator(t *testing.T) {
+
+	type Test struct {
+		ID   int64  `json:"id" valid:"required,min=0,max=5"`
+		Name string `json:"name" valid:"required,len=2-5" trans:"用户名"`
+	}
+
+	// form data
+	var maps = make(map[string][]string)
+	maps["name"] = append(maps["name"], "梦1")
+	info := Valid(maps, Test{})
+	log.Println(info)
+
+	// json data
+	var test = Test{
+		ID:   6,
+		Name: "梦1",
+	}
+	log.Println(Valid(test, Test{}))
+
+}
 ```
+
+
+- 约定  
+1.模型结构体json 内容与表字段保持一致  
+n....  
