@@ -7,6 +7,13 @@ import (
 	"time"
 )
 
+// time for cache unit
+const (
+	Minute = 60
+	Hour   = 60 * Minute
+	Day    = 24 * Hour
+)
+
 // 时间格式化2006-01-02 15:04:05
 type JsonTime time.Time
 

@@ -17,7 +17,7 @@ type RedisManager struct {
 
 // new cache by redis
 // other cacher maybe have this too
-func (r *RedisManager) NewCache() error {
+func (r *RedisManager) NewCache(args ...interface{}) error {
 	var (
 		Host        = GetDevModeConfig("redis.host")
 		Password    = GetDevModeConfig("redis.password")
@@ -64,7 +64,7 @@ func (r *RedisManager) Set(key interface{}, value CacheModel) error {
 		return err
 	}
 	if value.Time != 0 {
-		err = r.Rc.ExpireKey(keyS, value.Time*60).Err()
+		err = r.Rc.ExpireKey(keyS, value.Time).Err()
 		if err != nil {
 			return err
 		}

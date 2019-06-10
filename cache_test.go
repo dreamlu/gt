@@ -3,6 +3,8 @@ package der
 
 import (
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -10,11 +12,12 @@ var r = RedisManager{}
 // cache test
 var cache CacheManager = new(RedisManager)
 
-func init()  {
+func init() {
 	// init redis
 	_ = r.NewCache()
 	// init cache
 	_ = cache.NewCache()
+
 }
 
 // redis method set test
@@ -22,8 +25,8 @@ func TestRedis(t *testing.T) {
 	err := r.Rc.Set("test", "testValue").Err()
 	log.Println("set err:", err)
 	value := r.Rc.Get("test")
-	reqRes,_ := value.Result()
-	log.Println("value",reqRes)
+	reqRes, _ := value.Result()
+	log.Println("value", reqRes)
 }
 
 // user model
@@ -34,10 +37,10 @@ var user = User{
 }
 
 // set and get interface value
-func TestCache(t *testing.T) {
+func TestCacheRedis(t *testing.T) {
 	// data
 	data := CacheModel{
-		Time: 50,
+		Time: 50 * Minute,
 		Data: user,
 	}
 
@@ -48,13 +51,13 @@ func TestCache(t *testing.T) {
 	log.Println("set err: ", err)
 
 	// get
-	reply,_ := cache.Get(user)
+	reply, _ := cache.Get(user)
 	log.Println("user data :", reply.Data)
 
 }
 
 // check or delete cache
-func  TestCacheCheckDel(t *testing.T)  {
+func TestCacheCheckDelRedis(t *testing.T) {
 	// check
 	//err := cache.Check(user.ID)
 	//log.Println("check: ", err)
@@ -71,4 +74,22 @@ func  TestCacheCheckDel(t *testing.T)  {
 	// del more
 	err := cache.DeleteMore(user)
 	log.Println("delete: ", err)
+}
+
+
+// cookie test
+func TestCookie(t *testing.T) {
+
+	recorder := httptest.NewRecorder()
+
+	// Drop a cookie on the recorder.
+	http.SetCookie(recorder, &http.Cookie{Name: "test", Value: "test"})
+
+	// Copy the Cookie over to a new Request
+	request := &http.Request{Header: http.Header{"Cookie": recorder.HeaderMap["Set-Cookie"]}}
+
+	// Extract the dropped cookie from the request.
+	cookie, _ := request.Cookie("test")
+	log.Println(cookie)
+
 }

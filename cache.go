@@ -3,7 +3,7 @@ package der
 
 // data model
 type CacheModel struct {
-	// minute
+	// seconds
 	Time int64 `json:"time"`
 	// data
 	Data interface{} `json:"data"`
@@ -12,7 +12,7 @@ type CacheModel struct {
 // cache manager
 type CacheManager interface {
 	// init cache
-	NewCache() error
+	NewCache(args ...interface{}) error
 	// operate method
 	// set value
 	// if time != 0 set it
