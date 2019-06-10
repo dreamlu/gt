@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/dreamlu/go-tool/util/lib"
 	myReflect "github.com/dreamlu/go-tool/util/reflect"
+	"net/url"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -102,6 +103,20 @@ func (v *Validator) Check() (errs map[string]error) {
 	// 类型判断
 	// d is value
 	switch d := v.data.(type) {
+	// request form
+	// there is some duplicated: url.Values
+	// maybe there is some ways to solve it!
+	case url.Values:
+		for k, r := range v.rule {
+			// 数据
+			data, _ := d[k]
+			if data == nil {
+				data = []string{""}
+			}
+			if err := r.vr.Check(data[0]); err != nil { // 调用ValidateRuler接口的Check方法来检查
+				errs[k] = err
+			}
+		}
 	case map[string][]string:
 		for k, r := range v.rule {
 			// 数据
