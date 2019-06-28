@@ -1,7 +1,9 @@
 // @author  dreamlu
 package der
 
-import "github.com/dreamlu/go-tool/util/lib"
+import (
+	"github.com/dreamlu/go-tool/util/result"
+)
 
 const Version = "1.0.x"
 
@@ -16,19 +18,19 @@ type Crud interface {
 
 	// get url params
 	// like form data
-	GetBySearch(args map[string][]string) lib.GetInfoPager     // search
-	GetByID(id string) lib.GetInfo                             // by id
-	GetMoreBySearch(args map[string][]string) lib.GetInfoPager // more search
+	GetBySearch(args map[string][]string) result.GetInfoPager     // search
+	GetByID(id string) result.GetInfo                             // by id
+	GetMoreBySearch(args map[string][]string) result.GetInfoPager // more search
 
 	// common sql data
 	// through sql, get the data
-	GetDataBySQL(sql string, args ...interface{}) lib.GetInfo // single data
+	GetDataBySQL(sql string, args ...interface{}) result.GetInfo // single data
 	// page limit ?,?
 	// args not include limit ?,?
-	GetDataBySearchSQL(sql, sqlnolimit string, args ...interface{}) lib.GetInfoPager // more data
-	DeleteBySQL(sql string, args ...interface{}) lib.MapData
-	UpdateBySQL(sql string, args ...interface{}) lib.MapData
-	CreateBySQL(sql string, args ...interface{}) lib.MapData
+	GetDataBySearchSQL(sql, sqlnolimit string, args ...interface{}) result.GetInfoPager // more data
+	DeleteBySQL(sql string, args ...interface{}) result.MapData
+	UpdateBySQL(sql string, args ...interface{}) result.MapData
+	CreateBySQL(sql string, args ...interface{}) result.MapData
 }
 
 // common crud
@@ -36,10 +38,10 @@ type Crud interface {
 // form data
 type DBCruder interface {
 	// crud and search id
-	Create(args map[string][]string) lib.MapData      // create
-	CreateResID(args map[string][]string) lib.GetInfo // create res insert id
-	Update(args map[string][]string) lib.MapData      // update
-	Delete(id string) lib.MapData                     // delete
+	Create(args map[string][]string) result.MapData      // create
+	CreateResID(args map[string][]string) result.GetInfo // create res insert id
+	Update(args map[string][]string) result.MapData      // update
+	Delete(id string) result.MapData                     // delete
 
 	// common sql data
 	Crud
@@ -49,10 +51,10 @@ type DBCruder interface {
 // json data
 type DBCrudJer interface {
 	// crud and search id
-	Create(data interface{}) lib.MapData      // create
-	CreateResID(data interface{}) lib.GetInfo // create res insert id
-	Update(data interface{}) lib.MapData      // update
-	Delete(id string) lib.MapData             // delete
+	Create(data interface{}) result.MapData      // create
+	CreateResID(data interface{}) result.GetInfo // create res insert id
+	Update(data interface{}) result.MapData      // update
+	Delete(id string) result.MapData             // delete
 
 	// common sql data
 	Crud

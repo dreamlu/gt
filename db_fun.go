@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/dreamlu/go-tool/util/lib"
 	rf "github.com/dreamlu/go-tool/util/reflect"
+	"github.com/dreamlu/go-tool/util/result"
 	"reflect"
 	"strconv"
 	"strings"
@@ -379,39 +380,39 @@ func GetInsertSQL(table string, params map[string][]string) (sql string, args []
 ////////////////
 
 // 获得数据,根据sql语句,无分页
-func GetDataBySQL(data interface{}, sql string, args ...interface{}) lib.GetInfo {
-	var info lib.GetInfo
+func GetDataBySQL(data interface{}, sql string, args ...interface{}) result.GetInfo {
+	var info result.GetInfo
 
 	dba := DB.Raw(sql, args[:]...).Scan(data)
 	num := dba.RowsAffected
 
 	//有数据是返回相应信息
 	if dba.Error != nil {
-		info = lib.GetInfoData(nil, lib.GetSqlError(dba.Error.Error()))
+		info = result.GetInfoData(nil, lib.GetSqlError(dba.Error.Error()))
 	} else if num == 0 && dba.Error == nil {
-		info = lib.GetInfoData(nil, lib.MapNoResult)
+		info = result.GetInfoData(nil, result.MapNoResult)
 	} else {
 		// get data
-		info = lib.GetMapDataSuccess(data)
+		info = result.GetMapDataSuccess(data)
 	}
 	return info
 }
 
 // 获得数据,根据name条件
-func GetDataByName(data interface{}, name, value string) lib.GetInfo {
-	var info lib.GetInfo
+func GetDataByName(data interface{}, name, value string) result.GetInfo {
+	var info result.GetInfo
 
 	dba := DB.Where(name+" = ?", value).Find(data) //只要一行数据时使用 LIMIT 1,增加查询性能
 	num := dba.RowsAffected
 
 	//有数据是返回相应信息
 	if dba.Error != nil {
-		info = lib.GetInfoData(nil, lib.GetSqlError(dba.Error.Error()))
+		info = result.GetInfoData(nil, lib.GetSqlError(dba.Error.Error()))
 	} else if num == 0 && dba.Error == nil {
-		info = lib.GetInfoData(nil, lib.MapNoResult)
+		info = result.GetInfoData(nil, result.MapNoResult)
 	} else {
 		// get data
-		info = lib.GetMapDataSuccess(data)
+		info = result.GetMapDataSuccess(data)
 	}
 	return info
 }
@@ -419,7 +420,7 @@ func GetDataByName(data interface{}, name, value string) lib.GetInfo {
 // inner join
 // 查询数据约定,表名_字段名(若有重复)
 // 获得数据,根据id,两张表连接尝试
-func GetDoubleTableDataByID(model, data interface{}, id, table1, table2 string) lib.GetInfo {
+func GetDoubleTableDataByID(model, data interface{}, id, table1, table2 string) result.GetInfo {
 	sql := fmt.Sprintf("select %s from `%s` inner join `%s` "+
 		"on `%s`.%s_id=`%s`.id where `%s`.id=? limit 1", GetDoubleTableColumnSQL(model, table1, table2), table1, table2, table1, table2, table2, table1)
 
@@ -429,7 +430,7 @@ func GetDoubleTableDataByID(model, data interface{}, id, table1, table2 string) 
 // left join
 // 查询数据约定,表名_字段名(若有重复)
 // 获得数据,根据id,两张表连接
-func GetLeftDoubleTableDataByID(model, data interface{}, id, table1, table2 string) lib.GetInfo {
+func GetLeftDoubleTableDataByID(model, data interface{}, id, table1, table2 string) result.GetInfo {
 
 	sql := fmt.Sprintf("select %s from `%s` left join `%s` on `%s`.%s_id=`%s`.id where `%s`.id=? limit 1", GetDoubleTableColumnSQL(model, table1, table2), table1, table2, table1, table2, table2, table1)
 
@@ -437,20 +438,20 @@ func GetLeftDoubleTableDataByID(model, data interface{}, id, table1, table2 stri
 }
 
 // 获得数据,根据id
-func GetDataByID(data interface{}, id string) lib.GetInfo {
-	var info lib.GetInfo
+func GetDataByID(data interface{}, id string) result.GetInfo {
+	var info result.GetInfo
 
 	dba := DB.First(data, id) //只要一行数据时使用 LIMIT 1,增加查询性能
 	num := dba.RowsAffected
 
 	//有数据是返回相应信息
 	if dba.Error != nil {
-		info = lib.GetInfoData(nil, lib.GetSqlError(dba.Error.Error()))
+		info = result.GetInfoData(nil, lib.GetSqlError(dba.Error.Error()))
 	} else if num == 0 && dba.Error == nil {
-		info = lib.GetInfoData(nil, lib.MapNoResult)
+		info = result.GetInfoData(nil, result.MapNoResult)
 	} else {
 		// get data
-		info = lib.GetMapDataSuccess(data)
+		info = result.GetMapDataSuccess(data)
 	}
 	return info
 }
@@ -460,7 +461,7 @@ func GetDataByID(data interface{}, id string) lib.GetInfo {
 // params: leftTables is left join tables
 // return: search info
 // table1 as main table, include other tables_id(foreign key)
-func GetMoreDataBySearch(model, data interface{}, params map[string][]string, innerTables []string, leftTables []string, args ...interface{}) lib.GetInfoPager {
+func GetMoreDataBySearch(model, data interface{}, params map[string][]string, innerTables []string, leftTables []string, args ...interface{}) result.GetInfoPager {
 	// more table search
 	sqlnolimit, sql, clientPage, everyPage := GetMoreSearchSQL(model, params, innerTables, leftTables)
 
@@ -469,7 +470,7 @@ func GetMoreDataBySearch(model, data interface{}, params map[string][]string, in
 
 // 获得数据,分页/查询,遵循一定查询规则,两张表,使用left join
 // 如table2中查询,字段用table2_+"字段名",table1字段查询不变
-func GetLeftDoubleTableDataBySearch(model, data interface{}, table1, table2 string, params map[string][]string) lib.GetInfoPager {
+func GetLeftDoubleTableDataBySearch(model, data interface{}, table1, table2 string, params map[string][]string) result.GetInfoPager {
 	//级联表的查询
 	sqlnolimit, sql, clientPage, everyPage := GetDoubleSearchSql(model, table1, table2, params)
 	sql = strings.Replace(sql, "inner join", "left join", 1)
@@ -480,7 +481,7 @@ func GetLeftDoubleTableDataBySearch(model, data interface{}, table1, table2 stri
 
 // 获得数据,分页/查询,遵循一定查询规则,两张表,默认inner join
 // 如table2中查询,字段用table2_+"字段名",table1字段查询不变
-func GetDoubleTableDataBySearch(model, data interface{}, table1, table2 string, params map[string][]string) lib.GetInfoPager {
+func GetDoubleTableDataBySearch(model, data interface{}, table1, table2 string, params map[string][]string) result.GetInfoPager {
 	//级联表的查询以及
 	sqlnolimit, sql, clientPage, everyPage := GetDoubleSearchSql(model, table1, table2, params)
 
@@ -490,8 +491,8 @@ func GetDoubleTableDataBySearch(model, data interface{}, table1, table2 string, 
 // 获得数据,根据sql语句,分页
 // args : sql参数'？'
 // sql, sqlnolimit args 相同, 共用args
-func GetDataBySQLSearch(data interface{}, sql, sqlnolimit string, clientPage, everyPage int64, args ...interface{}) lib.GetInfoPager {
-	var info lib.GetInfoPager
+func GetDataBySQLSearch(data interface{}, sql, sqlnolimit string, clientPage, everyPage int64, args ...interface{}) result.GetInfoPager {
+	var info result.GetInfoPager
 
 	//// 完善可变长参数赋值问题
 	//var value []interface{}
@@ -501,20 +502,20 @@ func GetDataBySQLSearch(data interface{}, sql, sqlnolimit string, clientPage, ev
 	num := info.Pager.SumPage
 	if dba.Error != nil {
 
-		info = lib.GetInfoPagerDataNil(nil, lib.GetSqlError(dba.Error.Error()))
+		info = result.GetInfoPagerDataNil(nil, lib.GetSqlError(dba.Error.Error()))
 	} else if num == 0 && dba.Error == nil {
 
-		info = lib.GetInfoPagerDataNil(nil, lib.MapNoResult)
+		info = result.GetInfoPagerDataNil(nil, result.MapNoResult)
 	} else {
 		// DB.Debug().Find(&dest)
 		dba = DB.Raw(sql, args[:]...).Scan(data)
 
 		if dba.Error != nil {
-			info = lib.GetInfoPagerDataNil(nil, lib.GetSqlError(dba.Error.Error()))
+			info = result.GetInfoPagerDataNil(nil, lib.GetSqlError(dba.Error.Error()))
 			return info
 		}
 		// get data
-		info = lib.GetMapDataPager(data, clientPage, everyPage, num)
+		info = result.GetMapDataPager(data, clientPage, everyPage, num)
 
 		// 去除pager
 		//switch {
@@ -528,7 +529,7 @@ func GetDataBySQLSearch(data interface{}, sql, sqlnolimit string, clientPage, ev
 }
 
 // 获得数据,分页/查询
-func GetDataBySearch(model, data interface{}, table string, params map[string][]string) lib.GetInfoPager {
+func GetDataBySearch(model, data interface{}, table string, params map[string][]string) result.GetInfoPager {
 
 	sqlnolimit, sql, clientPage, everyPage, args := GetSearchSQL(model, table, params)
 
@@ -539,7 +540,7 @@ func GetDataBySearch(model, data interface{}, table string, params map[string][]
 ///////////////////
 
 // delete by sql
-func DeleteDataBySQL(sql string, args ...interface{}) (info lib.MapData) {
+func DeleteDataBySQL(sql string, args ...interface{}) (info result.MapData) {
 	var num int64 //返回影响的行数
 
 	dba := DB.Exec(sql, args[:]...)
@@ -548,15 +549,15 @@ func DeleteDataBySQL(sql string, args ...interface{}) (info lib.MapData) {
 	case dba.Error != nil:
 		info = lib.GetSqlError(dba.Error.Error())
 	case num == 0 && dba.Error == nil:
-		info = lib.MapExistOrNo
+		info = result.MapExistOrNo
 	default:
-		info = lib.MapDelete
+		info = result.MapDelete
 	}
 	return info
 }
 
 // 删除通用,任意参数
-func DeleteDataByName(table string, key, value string) (info lib.MapData) {
+func DeleteDataByName(table string, key, value string) (info result.MapData) {
 	sql := fmt.Sprintf("delete from `%s` where %s=?", table, key)
 
 	return DeleteDataBySQL(sql, value)
@@ -566,7 +567,7 @@ func DeleteDataByName(table string, key, value string) (info lib.MapData) {
 ///////////////////
 
 // 修改数据,通用
-func UpdateDataBySQL(sql string, args ...interface{}) (info lib.MapData) {
+func UpdateDataBySQL(sql string, args ...interface{}) (info result.MapData) {
 	var num int64 //返回影响的行数
 
 	dba := DB.Exec(sql, args[:]...)
@@ -575,15 +576,15 @@ func UpdateDataBySQL(sql string, args ...interface{}) (info lib.MapData) {
 	case dba.Error != nil:
 		info = lib.GetSqlError(dba.Error.Error())
 	case num == 0 && dba.Error == nil:
-		info = lib.MapExistOrNo
+		info = result.MapExistOrNo
 	default:
-		info = lib.MapUpdate
+		info = result.MapUpdate
 	}
 	return info
 }
 
 // 修改数据,通用
-func UpdateData(table string, params map[string][]string) (info lib.MapData) {
+func UpdateData(table string, params map[string][]string) (info result.MapData) {
 
 	sql, args := GetUpdateSQL(table, params)
 
@@ -591,7 +592,7 @@ func UpdateData(table string, params map[string][]string) (info lib.MapData) {
 }
 
 // 结合struct修改
-func UpdateStructData(data interface{}) (info lib.MapData) {
+func UpdateStructData(data interface{}) (info result.MapData) {
 	var num int64 //返回影响的行数
 
 	dba := DB.Save(data)
@@ -600,9 +601,9 @@ func UpdateStructData(data interface{}) (info lib.MapData) {
 	case dba.Error != nil:
 		info = lib.GetSqlError(dba.Error.Error())
 	case num == 0 && dba.Error == nil:
-		info = lib.MapExistOrNo
+		info = result.MapExistOrNo
 	default:
-		info = lib.MapUpdate
+		info = result.MapUpdate
 	}
 	return info
 }
@@ -611,8 +612,8 @@ func UpdateStructData(data interface{}) (info lib.MapData) {
 ////////////////////
 
 // Create data by sql
-func CreateDataBySQL(sql string, args ...interface{}) lib.MapData {
-	var info lib.MapData
+func CreateDataBySQL(sql string, args ...interface{}) result.MapData {
+	var info result.MapData
 	var num int64 //返回影响的行数
 
 	dba := DB.Exec(sql, args[:]...)
@@ -621,15 +622,15 @@ func CreateDataBySQL(sql string, args ...interface{}) lib.MapData {
 	case dba.Error != nil:
 		info = lib.GetSqlError(dba.Error.Error())
 	case num == 0 && dba.Error == nil:
-		info = lib.MapError
+		info = result.MapError
 	default:
-		info = lib.MapCreate
+		info = result.MapCreate
 	}
 	return info
 }
 
 // 创建数据,通用
-func CreateData(table string, params map[string][]string) (info lib.MapData) {
+func CreateData(table string, params map[string][]string) (info result.MapData) {
 
 	sql, args := GetInsertSQL(table, params)
 
@@ -639,7 +640,7 @@ func CreateData(table string, params map[string][]string) (info lib.MapData) {
 // 创建数据,通用
 // 返回id,事务,慎用
 // 业务少可用
-func CreateDataResID(table string, params map[string][]string) (info lib.GetInfo) {
+func CreateDataResID(table string, params map[string][]string) (info result.GetInfo) {
 
 	//开启事务
 	tx := DB.Begin()
@@ -658,11 +659,11 @@ func CreateDataResID(table string, params map[string][]string) (info lib.GetInfo
 
 	switch {
 	case dba.Error != nil:
-		info = lib.GetInfoData(nil, lib.GetSqlError(dba.Error.Error()))
+		info = result.GetInfoData(nil, lib.GetSqlError(dba.Error.Error()))
 	case num == 0 && dba.Error == nil:
-		info = lib.GetInfoData(nil, lib.MapError)
+		info = result.GetInfoData(nil, result.MapError)
 	default:
-		info = lib.GetMapDataSuccess(data)
+		info = result.GetMapDataSuccess(data)
 	}
 
 	if tx.Error != nil {
@@ -674,7 +675,7 @@ func CreateDataResID(table string, params map[string][]string) (info lib.GetInfo
 }
 
 // select检查是否存在
-func ValidateSQL(sql string) (info lib.MapData) {
+func ValidateSQL(sql string) (info result.MapData) {
 	var num int64 //返回影响的行数
 
 	var ve Value
@@ -684,9 +685,9 @@ func ValidateSQL(sql string) (info lib.MapData) {
 	case dba.Error != nil:
 		info = lib.GetSqlError(dba.Error.Error())
 	case num == 0 && dba.Error == nil:
-		info = lib.MapValError
+		info = result.MapValError
 	default:
-		info = lib.MapValSuccess
+		info = result.MapValSuccess
 	}
 	return info
 }
@@ -696,7 +697,7 @@ func ValidateSQL(sql string) (info lib.MapData) {
 //==============================================================
 
 // create
-func CreateDataJ(data interface{}) (info lib.MapData) {
+func CreateDataJ(data interface{}) (info result.MapData) {
 	var num int64 //返回影响的行数
 
 	dba := DB.Create(data)
@@ -706,9 +707,9 @@ func CreateDataJ(data interface{}) (info lib.MapData) {
 	case dba.Error != nil:
 		info = lib.GetSqlError(dba.Error.Error())
 	case num == 0 && dba.Error == nil:
-		info = lib.MapError
+		info = result.MapError
 	default:
-		info = lib.MapCreate
+		info = result.MapCreate
 	}
 	return info
 }
@@ -721,7 +722,7 @@ func CreateMoreData(data interface{}) {
 
 // create
 // return insert id
-func CreateDataJResID(data interface{}) (info lib.GetInfo) {
+func CreateDataJResID(data interface{}) (info result.GetInfo) {
 	var num int64 //返回影响的行数
 
 	dba := DB.Create(data)
@@ -729,18 +730,18 @@ func CreateDataJResID(data interface{}) (info lib.GetInfo) {
 
 	switch {
 	case dba.Error != nil:
-		info = lib.GetInfoData(nil, lib.GetSqlError(dba.Error.Error()))
+		info = result.GetInfoData(nil, lib.GetSqlError(dba.Error.Error()))
 	case num == 0 && dba.Error == nil:
-		info = lib.GetInfoData(nil, lib.MapError)
+		info = result.GetInfoData(nil, result.MapError)
 	default:
 		id, _ := rf.GetDataByFieldName(data, "ID")
-		info = lib.GetInfoData(map[string]interface{}{"id": id}, lib.MapCreate)
+		info = result.GetInfoData(map[string]interface{}{"id": id}, result.MapCreate)
 	}
 	return info
 }
 
 // update
-func UpdateDataJ(data interface{}) (info lib.MapData) {
+func UpdateDataJ(data interface{}) (info result.MapData) {
 
 	dba := DB.Model(data).Update(data)
 
@@ -748,7 +749,7 @@ func UpdateDataJ(data interface{}) (info lib.MapData) {
 	case dba.Error != nil:
 		info = lib.GetSqlError(dba.Error.Error())
 	default:
-		info = lib.MapUpdate
+		info = result.MapUpdate
 	}
 	return info
 }

@@ -1,7 +1,9 @@
 // @author  dreamlu
 package der
 
-import "github.com/dreamlu/go-tool/util/lib"
+import (
+	"github.com/dreamlu/go-tool/util/result"
+)
 
 // implement DBCrud
 // form data
@@ -19,25 +21,25 @@ type DbCrud struct {
 }
 
 // create
-func (c *DbCrud) Create(params map[string][]string) lib.MapData {
+func (c *DbCrud) Create(params map[string][]string) result.MapData {
 
 	return CreateData(c.Table, params)
 }
 
 // create res insert id
-func (c *DbCrud) CreateResID(params map[string][]string) lib.GetInfo {
+func (c *DbCrud) CreateResID(params map[string][]string) result.GetInfo {
 
 	return CreateDataResID(c.Table, params)
 }
 
 // update
-func (c *DbCrud) Update(params map[string][]string) lib.MapData {
+func (c *DbCrud) Update(params map[string][]string) result.MapData {
 
 	return UpdateData(c.Table, params)
 }
 
 // delete
-func (c *DbCrud) Delete(id string) lib.MapData {
+func (c *DbCrud) Delete(id string) result.MapData {
 
 	return DeleteDataByName(c.Table, "id", id)
 }
@@ -46,13 +48,13 @@ func (c *DbCrud) Delete(id string) lib.MapData {
 // pager info
 // clientPage : default 1
 // everyPage : default 10
-func (c *DbCrud) GetBySearch(params map[string][]string) lib.GetInfoPager {
+func (c *DbCrud) GetBySearch(params map[string][]string) result.GetInfoPager {
 
 	return GetDataBySearch(c.Model, c.ModelData, c.Table, params)
 }
 
 // by id
-func (c *DbCrud) GetByID(id string) lib.GetInfo {
+func (c *DbCrud) GetByID(id string) result.GetInfo {
 
 	//DB.AutoMigrate(&c.Model)
 	return GetDataByID(c.ModelData, id)
@@ -60,14 +62,14 @@ func (c *DbCrud) GetByID(id string) lib.GetInfo {
 
 // the same as search
 // more tables
-func (c *DbCrud) GetMoreBySearch(params map[string][]string) lib.GetInfoPager {
+func (c *DbCrud) GetMoreBySearch(params map[string][]string) result.GetInfoPager {
 
 	return GetMoreDataBySearch(c.Model, c.ModelData, params, c.InnerTables, c.LeftTables)
 }
 
 // common sql
 // through sql get data
-func (c *DbCrud) GetDataBySQL(sql string, args ...interface{}) lib.GetInfo {
+func (c *DbCrud) GetDataBySQL(sql string, args ...interface{}) result.GetInfo {
 
 	return GetDataBySQL(c.ModelData, sql, args[:]...)
 }
@@ -76,25 +78,25 @@ func (c *DbCrud) GetDataBySQL(sql string, args ...interface{}) lib.GetInfo {
 // through sql get data
 // args not include limit ?, ?
 // args is sql and sqlnolimit common params
-func (c *DbCrud) GetDataBySearchSQL(sql, sqlnolimit string, args ...interface{}) lib.GetInfoPager {
+func (c *DbCrud) GetDataBySearchSQL(sql, sqlnolimit string, args ...interface{}) result.GetInfoPager {
 
 	return GetDataBySQLSearch(c.ModelData, sql, sqlnolimit, c.ClientPage, c.EveryPage, args)
 }
 
 // delete by sql
-func (c *DbCrud) DeleteBySQL(sql string, args ...interface{}) lib.MapData {
+func (c *DbCrud) DeleteBySQL(sql string, args ...interface{}) result.MapData {
 
 	return DeleteDataBySQL(sql, args[:]...)
 }
 
 // update by sql
-func (c *DbCrud) UpdateBySQL(sql string, args ...interface{}) lib.MapData {
+func (c *DbCrud) UpdateBySQL(sql string, args ...interface{}) result.MapData {
 
 	return UpdateDataBySQL(sql, args[:]...)
 }
 
 // create by sql
-func (c *DbCrud) CreateBySQL(sql string, args ...interface{}) lib.MapData {
+func (c *DbCrud) CreateBySQL(sql string, args ...interface{}) result.MapData {
 
 	return CreateDataBySQL(sql, args[:]...)
 }

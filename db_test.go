@@ -3,22 +3,24 @@ package der
 
 import (
 	"fmt"
+	"github.com/dreamlu/go-tool/util/type/json"
+	"github.com/dreamlu/go-tool/util/type/time"
 	"log"
 	"strconv"
 	"testing"
 )
 
 type User struct {
-	ID         int64    `json:"id"`
-	Name       string   `json:"name"`
-	Createtime JsonDate `json:"createtime"`
+	ID         int64      `json:"id"`
+	Name       string     `json:"name"`
+	Createtime time.CDate `json:"createtime"`
 }
 
 type UserInfo struct {
-	ID       int64  `json:"id"`
-	UserID   int64  `json:"user_id"`   //用户id
-	UserName string `json:"user_name"` //用户名
-	Userinfo string `json:"userinfo"`
+	ID       int64       `json:"id"`
+	UserID   int64       `json:"user_id"`   //用户id
+	UserName string      `json:"user_name"` //用户名
+	Userinfo json.CJSON `json:"userinfo"`
 }
 
 // order
@@ -31,15 +33,15 @@ type Order struct {
 
 // order detail
 type OrderD struct {
-	ID          int64    `json:"id"`
-	UserID      int64    `json:"user_id"`      // user id
-	UserName    string   `json:"user_name"`    // user table column name
-	ServiceID   int64    `json:"service_id"`   // service table id
-	ServiceName string   `json:"service_name"` // service table column `name`
-	Createtime  JsonTime `json:"createtime"`   // createtime
+	ID          int64      `json:"id"`
+	UserID      int64      `json:"user_id"`      // user id
+	UserName    string     `json:"user_name"`    // user table column name
+	ServiceID   int64      `json:"service_id"`   // service table id
+	ServiceName string     `json:"service_name"` // service table column `name`
+	Createtime  time.CTime `json:"createtime"`   // createtime
 }
 
-func init()  {
+func init() {
 	// init DB
 	NewDB()
 }
@@ -105,7 +107,7 @@ func TestSqlSearch(t *testing.T) {
 	sqlnolimit = string([]byte(sqlnolimit)[:len(sqlnolimit)-4])
 	sql += "order by a.id desc limit " + strconv.FormatInt((clientPage-1)*everyPage, 10) + "," + everyPageStr
 	log.Println(GetDataBySQLSearch(&ui, sql, sqlnolimit, clientPage, everyPage))
-	log.Println(ui)
+	log.Println(ui[0].Userinfo.ToString())
 }
 
 // 常用分页测试(两张表)

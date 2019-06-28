@@ -1,5 +1,5 @@
 // @author  dreamlu
-package lib
+package result
 
 // status and msg
 const (

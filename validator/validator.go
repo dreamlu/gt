@@ -4,8 +4,8 @@ package validator
 import (
 	"errors"
 	"fmt"
-	"github.com/dreamlu/go-tool/util/lib"
 	myReflect "github.com/dreamlu/go-tool/util/reflect"
+	"github.com/dreamlu/go-tool/util/result"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -49,7 +49,7 @@ type DefaultRule struct {
 
 // 创建校验器对象
 // 针对form表单/json数据两种
-func Valid(data, model interface{}) lib.MapData {
+func Valid(data, model interface{}) result.MapData {
 
 	v := &Validator{
 		data:  data,
@@ -82,18 +82,18 @@ func Valid(data, model interface{}) lib.MapData {
 
 // 执行检查后返回信息
 // trans 翻译后的字段名
-func (v *Validator) CheckInfo() lib.MapData {
+func (v *Validator) CheckInfo() result.MapData {
 	if err := v.Check(); err != nil {
 		// 检查不通过，处理错误
 		// fmt.Println(err)
 		// return err
 		for k := range v.rule {
 			if err[k] != nil {
-				return lib.GetMapData(lib.CodeValidator, err[k].Error())
+				return result.GetMapData(result.CodeValidator, err[k].Error())
 			}
 		}
 	}
-	return lib.MapValSuccess
+	return result.MapValSuccess
 }
 
 // 执行检查
@@ -248,11 +248,11 @@ func nonzero(v interface{}) error {
 	case reflect.Struct:
 		valid = true // always valid since only nil pointers are empty
 	default:
-		return errors.New(lib.MsgValError)
+		return errors.New(result.MsgValError)
 	}
 
 	if !valid {
-		return errors.New(lib.MsgValError)
+		return errors.New(result.MsgValError)
 	}
 	return nil
 }
@@ -299,38 +299,38 @@ func min(v interface{}, param string) error {
 	case reflect.String:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(lib.MsgValError)
+			return errors.New(result.MsgValError)
 		}
 		invalid = int64(len(st.String())) < p
 	case reflect.Slice, reflect.Map, reflect.Array:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(lib.MsgValError)
+			return errors.New(result.MsgValError)
 		}
 		invalid = int64(st.Len()) < p
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(lib.MsgValError)
+			return errors.New(result.MsgValError)
 		}
 		invalid = st.Int() < p
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		p, err := asUint(param)
 		if err != nil {
-			return errors.New(lib.MsgValError)
+			return errors.New(result.MsgValError)
 		}
 		invalid = st.Uint() < p
 	case reflect.Float32, reflect.Float64:
 		p, err := asFloat(param)
 		if err != nil {
-			return errors.New(lib.MsgValError)
+			return errors.New(result.MsgValError)
 		}
 		invalid = st.Float() < p
 	default:
-		return errors.New(lib.MsgValError)
+		return errors.New(result.MsgValError)
 	}
 	if invalid {
-		return errors.New(lib.MsgValError)
+		return errors.New(result.MsgValError)
 	}
 	return nil
 }
@@ -349,38 +349,38 @@ func max(v interface{}, param string) error {
 	case reflect.String:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(lib.MsgValError)
+			return errors.New(result.MsgValError)
 		}
 		invalid = int64(len(st.String())) > p
 	case reflect.Slice, reflect.Map, reflect.Array:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(lib.MsgValError)
+			return errors.New(result.MsgValError)
 		}
 		invalid = int64(st.Len()) > p
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(lib.MsgValError)
+			return errors.New(result.MsgValError)
 		}
 		invalid = st.Int() > p
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		p, err := asUint(param)
 		if err != nil {
-			return errors.New(lib.MsgValError)
+			return errors.New(result.MsgValError)
 		}
 		invalid = st.Uint() > p
 	case reflect.Float32, reflect.Float64:
 		p, err := asFloat(param)
 		if err != nil {
-			return errors.New(lib.MsgValError)
+			return errors.New(result.MsgValError)
 		}
 		invalid = st.Float() > p
 	default:
-		return errors.New(lib.MsgValError)
+		return errors.New(result.MsgValError)
 	}
 	if invalid {
-		return errors.New(lib.MsgValError)
+		return errors.New(result.MsgValError)
 	}
 	return nil
 }
@@ -391,7 +391,7 @@ func regex(v interface{}, param string) error {
 	if !ok {
 		sptr, ok := v.(*string)
 		if !ok {
-			return errors.New(lib.MsgValError)
+			return errors.New(result.MsgValError)
 		}
 		if sptr == nil {
 			return nil
@@ -401,11 +401,11 @@ func regex(v interface{}, param string) error {
 
 	re, err := regexp.Compile(param)
 	if err != nil {
-		return errors.New(lib.MsgValError)
+		return errors.New(result.MsgValError)
 	}
 
 	if !re.MatchString(s) {
-		return errors.New(lib.MsgValError)
+		return errors.New(result.MsgValError)
 	}
 	return nil
 }
