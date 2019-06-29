@@ -29,14 +29,14 @@ func GetDevModeConfig(key string) string {
 
 	// dev mode
 	devMode := GetConfigValue("devMode")
-	if devMode == ""{
+	if devMode == "" {
 		return GetConfigValue(key)
 	}
 
 	// mode config file
 	// get devMode value
 	value := Config(key, "conf/app-"+devMode+".conf")
-	if "" == value{
+	if "" == value {
 		// read the default config
 		value = GetConfigValue(key)
 	}

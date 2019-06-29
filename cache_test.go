@@ -2,7 +2,6 @@
 package der
 
 import (
-	"github.com/dreamlu/go-tool/util/type/time"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -41,7 +40,7 @@ var user = User{
 func TestCacheRedis(t *testing.T) {
 	// data
 	data := CacheModel{
-		Time: 50 * time.Minute,
+		Time: 50 * CacheMinute,
 		Data: user,
 	}
 

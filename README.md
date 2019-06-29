@@ -53,7 +53,9 @@ deercoder-gin
     - [缓存使用](#cachemanager)
     - [加解密](#aesende)
     - [标准日期](#time)
+    - [JSON类型](#jsontype)
     - [字段验证](#validator)  
+    - [日志支持](#customlog)
     
 
 ### API Examples  
@@ -254,21 +256,27 @@ type CacheManager interface {
 }
 ```
 
-### aesEnDe  
+### AesEnDe  
 ```go
 log.Println("[加密测试]:", AesEn("123456"))
 log.Println("[解密测试]:", AesDe("lIEbR7cEp2U10gtM0j8dCg=="))
 ```
 
-### time
+### Time
 ```go
 // 时间格式化2006-01-02 15:04:05
-type JsonTime time.Time
+type CTime time.Time
 // 时间格式化2006-01-02
-type JsonDate time.Time 
+type CDate time.Time 
 ```  
 
-### validator  
+### JSONType
+```go
+// 返回json类型
+type CJSON time.Time
+```  
+
+### Validator  
 ```go
 func TestValidator(t *testing.T) {
 
@@ -293,7 +301,20 @@ func TestValidator(t *testing.T) {
 }
 ```
 
+### CustomLog
+```go
+func TestNewFileLog(t *testing.T) {
+
+	myLog.Info("项目路径", projectPath)
+	for {
+		time.Sleep(1 * time.Second)
+		myLog.Error("测试")
+	}
+}
+```
+
 
 - 约定  
 1.模型结构体json 内容与表字段保持一致  
+2.返回格式参考[result](./util/result/result.go)    
 n....  

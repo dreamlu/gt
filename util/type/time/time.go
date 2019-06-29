@@ -7,11 +7,10 @@ import (
 	"time"
 )
 
-// time for cache unit
+// time.Duration expend
 const (
-	Minute = 60
-	Hour   = 60 * Minute
-	Day    = 24 * Hour
+	Day  = 24 * time.Minute
+	Week = 7 * Day
 )
 
 // china time/date

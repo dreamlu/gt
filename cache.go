@@ -28,3 +28,12 @@ type CacheManager interface {
 	// flush the time
 	Check(key interface{}) error
 }
+
+// time for cache unit
+// unit: second
+const (
+	CacheMinute = 60
+	CacheHour   = 60 * CacheMinute
+	CacheDay    = 24 * CacheHour
+	CacheWeek   = 7 * CacheDay
+)
