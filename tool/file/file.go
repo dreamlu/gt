@@ -14,6 +14,20 @@ import (
 	"time"
 )
 
+// example
+//单文件上传
+// use gin upload file
+//func UpoadFile(u *gin.Context) {
+//
+//	fname := u.PostForm("fname") //指定文件名
+//	file, err := u.FormFile("file")
+//	if err != nil {
+//		u.JSON(http.StatusOK, lib.MapData{Status: lib.CodeFile, Msg: err.Error()})
+//	}
+//	path := File{}.GetUploadFile(file, fname)
+//	u.JSON(http.StatusOK, map[string]interface{}{lib.Status: lib.CodeFile, lib.Msg: lib.MsgFile, "path": path})
+//}
+
 // file
 type File struct {
 }
@@ -43,19 +57,6 @@ func (f *File) GetUploadFile(file *multipart.FileHeader, fname string) (filename
 
 	return path
 }
-
-//单文件上传
-// use gin upload file
-//func UpoadFile(u *gin.Context) {
-//
-//	fname := u.PostForm("fname") //指定文件名
-//	file, err := u.FormFile("file")
-//	if err != nil {
-//		u.JSON(http.StatusOK, lib.MapData{Status: lib.CodeFile, Msg: err.Error()})
-//	}
-//	path := File{}.GetUploadFile(file, fname)
-//	u.JSON(http.StatusOK, map[string]interface{}{lib.Status: lib.CodeFile, lib.Msg: lib.MsgFile, "path": path})
-//}
 
 //图片压缩
 func (f *File) CompressImage(imagetype, path string) error {

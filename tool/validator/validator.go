@@ -4,8 +4,8 @@ package validator
 import (
 	"errors"
 	"fmt"
-	myReflect "github.com/dreamlu/go-tool/util/reflect"
-	"github.com/dreamlu/go-tool/util/result"
+	myReflect "github.com/dreamlu/go-tool/tool/reflect"
+	"github.com/dreamlu/go-tool/tool/result"
 	"net/url"
 	"reflect"
 	"regexp"

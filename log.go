@@ -2,7 +2,7 @@
 package der
 
 import (
-	time2 "github.com/dreamlu/go-tool/util/type/time"
+	time2 "github.com/dreamlu/go-tool/tool/type/time"
 	"github.com/lestrrat-go/file-rotatelogs"
 	"github.com/pkg/errors"
 	"github.com/rifflock/lfshook"

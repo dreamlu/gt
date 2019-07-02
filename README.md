@@ -19,7 +19,6 @@ deercoder-gin
 | ------ |
 | 单/多张表的增删改查以及分页 |   
 | 多张表连接操作 |  
-| 增加网站基本信息接口 |  
 | select `*`优化<br>反射替换*为具体字段名 |
 | 优化自定义gorm日志<br>存储错误sql以及相关error |  
 | 增加权限<br>用户-组(角色)-权限(菜单)(待优化) |
@@ -27,14 +26,15 @@ deercoder-gin
 | 增加mysql远程连接 |
 | 增加多表key模糊搜索 |
 | session(cookie/redis) |
-| 更多数据库支持(待完善) |
 | conf/app.conf 多开发模式支持 |
 | 请求方式json/form data |
 | [cache](./cache.go) 缓存实现 |
-| [参数验证](./validator/validator_test.go) |  
+| [参数验证](tool/validator/validator_test.go) |  
+| ...... |  
 
 ##### 使用  
-- [安装使用](#安装使用)
+go modules
+##### API
 - [API 使用](#api-examples)
     - [FORM请求](#form-request)
         - [Create](#create)
@@ -316,5 +316,6 @@ func TestNewFileLog(t *testing.T) {
 
 - 约定  
 1.模型结构体json 内容与表字段保持一致  
-2.返回格式参考[result](./util/result/result.go)    
+2.返回格式参考[result](tool/result/result.go)    
+3.多表关联命名, 模型中其他表字段命名: `他表名 + "_" + 他表字段名`  
 n....  

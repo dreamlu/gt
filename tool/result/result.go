@@ -82,16 +82,16 @@ type GetInfoPager struct {
 
 // pager info
 type Pager struct {
-	ClientPage int64 `json:"client_page"` //当前页码
-	SumPage    int64 `json:"sum_page"`    //数据总数量
-	EveryPage  int64 `json:"every_page"`  //每一页显示的数量
+	ClientPage int64 `json:"client_page"` // 当前页码
+	EveryPage  int64 `json:"every_page"`  // 每一页显示的数量
+	TotalNum   int64 `json:"total_num"`   // 数据总数量
 }
 
 // 无分页数据信息
 // 分页数据信息
 type GetInfo struct {
 	MapData
-	Data interface{} `json:"data"` //数据,通用接口
+	Data interface{} `json:"data"` // 数据存储
 }
 
 // 信息,通用
@@ -119,13 +119,13 @@ func GetMapDataSuccess(data interface{}) GetInfo {
 }
 
 // 信息分页通用(成功通用, 分页)
-func GetMapDataPager(data interface{}, clientPage, everyPage, sumPage int64) GetInfoPager {
+func GetMapDataPager(data interface{}, clientPage, everyPage, totalNum int64) GetInfoPager {
 	me := GetInfoPager{
 		GetInfo: GetMapDataSuccess(data),
 		Pager: Pager{
 			ClientPage: clientPage,
 			EveryPage:  everyPage,
-			SumPage:    sumPage,
+			TotalNum:   totalNum,
 		},
 	}
 	return me

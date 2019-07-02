@@ -3,6 +3,7 @@ package time
 import (
 	"database/sql/driver"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 )
@@ -53,6 +54,17 @@ func (t *CTime) Scan(v interface{}) error {
 	return fmt.Errorf("can not convert %v to JsonTime", v)
 }
 
+// must sure MarshalJSON is right
+// to string
+func (t CTime) String() string {
+	// must sure MarshalJSON is right
+	b, err := t.MarshalJSON()
+	if err != nil {
+		log.Println(err)
+	}
+	return string(b)
+}
+
 // 时间格式化2006-01-02
 type CDate time.Time
 
@@ -89,4 +101,15 @@ func (t *CDate) Scan(v interface{}) error {
 		return nil
 	}
 	return fmt.Errorf("can not convert %v to JsonDate", v)
+}
+
+// must sure MarshalJSON is right
+// to string
+func (t CDate) String() string {
+	// must sure MarshalJSON is right
+	b, err := t.MarshalJSON()
+	if err != nil {
+		log.Println(err)
+	}
+	return string(b)
 }

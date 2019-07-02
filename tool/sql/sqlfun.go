@@ -1,5 +1,5 @@
 // @author  dreamlu
-package lib
+package sql
 
 import (
 	"reflect"
@@ -19,7 +19,7 @@ func GetTags(model interface{}) (tags []string) {
 }
 
 // key search sql
-func GetKeySQL(sql, sqlnolimit string, key string, model interface{}, alias string) (sqlkey, sqlnolimitkey string) {
+func GetKeySQL(sql, sqlNt string, key string, model interface{}, alias string) (sqlKey, sqlNtKey string) {
 
 	tags := GetTags(model)
 	keys := strings.Split(key, " ") //空格隔开
@@ -28,30 +28,30 @@ func GetKeySQL(sql, sqlnolimit string, key string, model interface{}, alias stri
 			continue
 		}
 		sql += "("
-		sqlnolimit += "("
+		sqlNt += "("
 		for _, tag := range tags {
 			switch {
 			// 排除id结尾字段
 			// 排除date,time结尾字段
 			case !strings.HasSuffix(tag, "id") ://&& !strings.HasSuffix(tag, "date") && !strings.HasSuffix(tag, "time"):
 				sql += "`" + alias + "`.`" + tag + "` like binary '%" + key + "%' or "
-				sqlnolimit += "`" + alias + "`.`" + tag + "` like binary '%" + key + "%' or "
+				sqlNt += "`" + alias + "`.`" + tag + "` like binary '%" + key + "%' or "
 			}
 
 		}
 		sql = string([]byte(sql)[:len(sql)-4]) + ") and "
-		sqlnolimit = string([]byte(sqlnolimit)[:len(sqlnolimit)-4]) + ") and "
+		sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4]) + ") and "
 	}
 	//sql = string([]byte(sql)[:len(sql)-4])
-	//sqlnolimit = string([]byte(sqlnolimit)[:len(sqlnolimit)-4])
-	return sql, sqlnolimit
+	//sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
+	return sql, sqlNt
 }
 
 // 多张表, 第一个表为主表
 // key search sql
 // tables [table1:table1_alias]
 // searModel : 搜索字段模型
-func GetMoreKeySQL(sql, sqlnolimit string, key string, searModel interface{}, tables ...string) (sqlkey, sqlnolimitkey string) {
+func GetMoreKeySQL(sql, sqlNt string, key string, searModel interface{}, tables ...string) (sqlKey, sqlNtKey string) {
 
 	// 搜索字段
 	tags := GetTags(searModel)
@@ -62,7 +62,7 @@ func GetMoreKeySQL(sql, sqlnolimit string, key string, searModel interface{}, ta
 			continue
 		}
 		sql += "("
-		sqlnolimit += "("
+		sqlNt += "("
 		for _, tag := range tags {
 			switch {
 			// 排除id结尾字段
@@ -76,7 +76,7 @@ func GetMoreKeySQL(sql, sqlnolimit string, key string, searModel interface{}, ta
 					alias := ts[1]
 					if strings.Contains(tag, table+"_") && !strings.Contains(tag, table+"_id") {
 						sql += "`" + alias + "`.`" + string([]byte(tag)[len(table)+1:]) + "` like binary '%" + key + "%' or "
-						sqlnolimit += "`" + alias + "`.`" + string([]byte(tag)[len(table)+1:]) + "` like binary '%" + key + "%' or "
+						sqlNt += "`" + alias + "`.`" + string([]byte(tag)[len(table)+1:]) + "` like binary '%" + key + "%' or "
 						goto into
 					}
 				}
@@ -85,14 +85,14 @@ func GetMoreKeySQL(sql, sqlnolimit string, key string, searModel interface{}, ta
 				ts := strings.Split(tables[0], ":")
 				alias := ts[1]
 				sql += "`" + alias + "`.`" + tag + "` like binary '%" + key + "%' or "
-				sqlnolimit += "`" + alias + "`.`" + tag + "` like binary '%" + key + "%' or "
+				sqlNt += "`" + alias + "`.`" + tag + "` like binary '%" + key + "%' or "
 			}
 		into:
 		}
 		sql = string([]byte(sql)[:len(sql)-4]) + ") and "
-		sqlnolimit = string([]byte(sqlnolimit)[:len(sqlnolimit)-4]) + ") and "
+		sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4]) + ") and "
 	}
 	//sql = string([]byte(sql)[:len(sql)-4])
-	//sqlnolimit = string([]byte(sqlnolimit)[:len(sqlnolimit)-4])
-	return sql, sqlnolimit
+	//sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
+	return sql, sqlNt
 }
