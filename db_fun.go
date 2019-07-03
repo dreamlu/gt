@@ -535,7 +535,7 @@ func GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPa
 
 	limit := fmt.Sprintf("limit %d,%d", (clientPage-1)*everyPage, everyPage)
 	sql += limit
-	sqlNt += limit
+	// sqlNt += limit
 	dba := DB.Raw(sqlNt, args[:]...).Scan(&pager)
 	if dba.Error != nil {
 		err = sq.GetSQLError(dba.Error.Error())
