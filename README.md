@@ -20,7 +20,7 @@ deercoder-gin
 | 单/多张表的增删改查以及分页 |   
 | 多张表连接操作 |  
 | select `*`优化<br>反射替换*为具体字段名 |
-| 优化自定义gorm日志<br>存储错误sql以及相关error |  
+| 自定义gorm日志<br>存储错误sql以及相关error<br>支持mysql JSON类型 |  
 | 增加权限<br>用户-组(角色)-权限(菜单)(待优化) |
 | 增加参数验证 |
 | 增加mysql远程连接 |
@@ -49,7 +49,8 @@ go modules
         - [UpdateBySQL](#updatebysql)
         - [CreateBySQL](#createbysql)
     - [JSON请求](#json-request)
-    - [GetDevModeConfig](#getdevmodeconfig)
+    - [批量创建](#createmore)
+    - [配置文件模式](#getdevmodeconfig)
     - [缓存使用](#cachemanager)
     - [加解密](#aesende)
     - [标准日期](#time)
@@ -206,6 +207,21 @@ func (c *User) CreateJ(data *User) interface{} {
 	(*data).Createtime = deercoder.JsonTime(time.Now())
 
 	return db_json.Create(data)
+}
+
+```
+
+####CreateMore
+```go
+// 批量创建
+func TestCreateMoreDataJ(t *testing.T) {
+
+	var user = []User{
+		{Name: "测试1", Createtime:time.CTime(time2.Now())},
+		{Name: "测试2"},
+	}
+	err := CreateMoreDataJ("user", User{}, user)
+	log.Println(err)
 }
 
 ```

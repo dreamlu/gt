@@ -1,4 +1,3 @@
-// @author  dreamlu
 package result
 
 // status and msg
@@ -110,7 +109,7 @@ func GetMapData(status int64, msg interface{}) MapData {
 }
 
 // 信息成功通用(成功通用, 无分页)
-func GetMapDataSuccess(data interface{}) GetInfo {
+func GetSuccess(data interface{}) GetInfo {
 	me := GetInfo{
 		MapData: MapSuccess,
 		Data:    data,
@@ -119,20 +118,16 @@ func GetMapDataSuccess(data interface{}) GetInfo {
 }
 
 // 信息分页通用(成功通用, 分页)
-func GetMapDataPager(data interface{}, clientPage, everyPage, totalNum int64) GetInfoPager {
+func GetSuccessPager(data interface{}, pager Pager) GetInfoPager {
 	me := GetInfoPager{
-		GetInfo: GetMapDataSuccess(data),
-		Pager: Pager{
-			ClientPage: clientPage,
-			EveryPage:  everyPage,
-			TotalNum:   totalNum,
-		},
+		GetInfo: GetSuccess(data),
+		Pager:   pager,
 	}
 	return me
 }
 
 // 信息失败通用
-func GetMapDataError(data interface{}) GetInfo {
+func GetError(data interface{}) GetInfo {
 	me := GetInfo{
 		MapData: MapError,
 		Data:    data,
@@ -141,7 +136,7 @@ func GetMapDataError(data interface{}) GetInfo {
 }
 
 // 无分页通用
-func GetInfoData(data interface{}, mapData MapData) GetInfo {
+func GetData(data interface{}, mapData MapData) GetInfo {
 	me := GetInfo{
 		MapData: mapData,
 		Data:    data,
@@ -150,22 +145,10 @@ func GetInfoData(data interface{}, mapData MapData) GetInfo {
 }
 
 // 分页通用
-// 无分页数据
-// 统一返回GetInfoPager 分页格式用
-func GetInfoPagerData(data interface{}, mapData MapData, pager Pager) GetInfoPager {
+func GetDataPager(data interface{}, mapData MapData, pager Pager) GetInfoPager {
 	me := GetInfoPager{
-		GetInfo: GetInfoData(data, mapData),
+		GetInfo: GetData(data, mapData),
 		Pager:   pager,
-	}
-	return me
-}
-
-// 分页通用
-// 无分页数据
-// 统一返回GetInfoPager 分页格式用
-func GetInfoPagerDataNil(data interface{}, mapData MapData) GetInfoPager {
-	me := GetInfoPager{
-		GetInfo: GetInfoData(data, mapData),
 	}
 	return me
 }

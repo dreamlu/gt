@@ -1,9 +1,11 @@
-// @author  dreamlu
+// package der
+
 package der
 
 import (
 	"bytes"
 	"fmt"
+	reflect2 "github.com/dreamlu/go-tool/tool/reflect"
 	"github.com/dreamlu/go-tool/tool/result"
 	sq "github.com/dreamlu/go-tool/tool/sql"
 	"github.com/pkg/errors"
@@ -20,8 +22,9 @@ import (
 // tables : table name / table alias name
 // 主表放在tables中第一个，紧接着为主表关联的外键表名(无顺序)
 func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
-	typ := reflect.TypeOf(model)
+	var buf bytes.Buffer
 
+	typ := reflect.TypeOf(model)
 	for i := 0; i < typ.NumField(); i++ {
 		tag := typ.Field(i).Tag.Get("json")
 		// foreign tables column
@@ -29,32 +32,55 @@ func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 			// tables
 			switch {
 			case !strings.Contains(tag, v+"_id") && strings.Contains(tag, v+"_"):
-				sql += "`" + v + "`.`" + string([]byte(tag)[len(v)+1:]) + "` as " + tag + ","
+				//sql += "`" + v + "`.`" + string([]byte(tag)[len(v)+1:]) + "` as " + tag + ","
+				buf.WriteString("`")
+				buf.WriteString(v)
+				buf.WriteString("`.`")
+				buf.Write([]byte(tag)[len(v)+1:])
+				buf.WriteString("` as ")
+				buf.WriteString(tag)
+				buf.WriteString(",")
 				goto into
 			}
 		}
-		sql += "`" + tables[0] + "`.`" + tag + "`,"
+		//sql += "`" + tables[0] + "`.`" + tag + "`,"
+		buf.WriteString("`")
+		buf.WriteString(tables[0])
+		buf.WriteString("`.`")
+		buf.WriteString(tag)
+		buf.WriteString("`,")
 	into:
 	}
-	sql = string([]byte(sql)[:len(sql)-1]) //去点,
+	sql = string(buf.Bytes()[:buf.Len()-1]) //去点,
 	return sql
 }
 
 // select *替换
 // 两张表
 func GetDoubleTableColumnSQL(model interface{}, table1, table2 string) (sql string) {
+	var buf bytes.Buffer
+
 	typ := reflect.TypeOf(model)
-	//var buffer bytes.Buffer
 	for i := 0; i < typ.NumField(); i++ {
 		tag := typ.Field(i).Tag.Get("json")
-		//table2的数据处理,去除table2_id
+		// table2的数据处理,去除table2_id
 		if strings.Contains(tag, table2+"_") && !strings.Contains(tag, table2+"_id") {
-			sql += table2 + ".`" + string([]byte(tag)[len(table2)+1:]) + "` as " + tag + "," //string([]byte(tag)[len(table2+1-1):])
+			// sql += table2 + ".`" + string([]byte(tag)[len(table2)+1:]) + "` as " + tag + ","
+			buf.WriteString(table2)
+			buf.WriteString(".`")
+			buf.Write([]byte(tag)[len(table2)+1:])
+			buf.WriteString("` as ")
+			buf.WriteString(tag)
+			buf.WriteString(",")
 			continue
 		}
-		sql += table1 + ".`" + tag + "`,"
+		buf.WriteString(table1)
+		buf.WriteString(".`")
+		buf.WriteString(tag)
+		buf.WriteString("`,")
+		//sql += table1 + ".`" + tag + "`,"
 	}
-	sql = string([]byte(sql)[:len(sql)-1]) //去掉点,
+	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
 	return sql
 }
 
@@ -62,29 +88,60 @@ func GetDoubleTableColumnSQL(model interface{}, table1, table2 string) (sql stri
 // 将select* 中'*'变为对应的字段名
 // 增加别名,表连接问题
 func GetColAliasSQL(model interface{}, alias string) (sql string) {
+	var buf bytes.Buffer
+
 	typ := reflect.TypeOf(model)
-	// var buffer bytes.Buffer
 	for i := 0; i < typ.NumField(); i++ {
 		tag := typ.Field(i).Tag.Get("json")
-		// buffer.WriteString("`"+tag + "`,")
-		sql += alias + ".`" + tag + "`,"
+		//sql += alias + ".`" + tag + "`,"
+		buf.WriteString(alias)
+		buf.WriteString(".`")
+		buf.WriteString(tag)
+		buf.WriteString("`,")
 	}
-	sql = string([]byte(sql)[:len(sql)-1]) //去掉点,
+	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
 	return sql
 }
 
 // 根据model中表模型的json标签获取表字段
 // 将select* 变为对应的字段名
 func GetColSQL(model interface{}) (sql string) {
+	var buf bytes.Buffer
+
 	typ := reflect.TypeOf(model)
-	//var buffer bytes.Buffer
 	for i := 0; i < typ.NumField(); i++ {
 		tag := typ.Field(i).Tag.Get("json")
-		//buffer.WriteString("`"+tag + "`,")
-		sql += "`" + tag + "`,"
+		//sql += "`" + tag + "`,"
+		buf.WriteString("`")
+		buf.WriteString(tag)
+		buf.WriteString("`,")
 	}
-	sql = string([]byte(sql)[:len(sql)-1]) //去掉点,
+	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
 	return sql
+}
+
+// get col ?
+func GetColParamSQL(model interface{}) (sql string) {
+	var buf bytes.Buffer
+
+	typ := reflect.TypeOf(model)
+	for i := 0; i < typ.NumField(); i++ {
+		buf.WriteString("?,")
+	}
+	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
+	return sql
+}
+
+// get data value
+// like GetColSQL
+func GetParams(data interface{}) (params []interface{}) {
+
+	typ := reflect.ValueOf(data)
+	for i := 0; i < typ.NumField(); i++ {
+		value := typ.Field(i).Interface() //.Tag.Get("json")
+		params = append(params, value)
+	}
+	return
 }
 
 //=======================================sql语句处理==========================================
@@ -96,10 +153,6 @@ func GetColSQL(model interface{}) (sql string) {
 // return: select sql
 // table1 as main table, include other tables_id(foreign key)
 func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables []string, leftTables []string) (sqlNt, sql string, clientPage, everyPage int64) {
-
-	// default pager
-	//clientPage, _ = strconv.ParseInt(GetDevModeConfig("clientPage"), 10, 64)
-	//everyPage, _ = strconv.ParseInt(GetDevModeConfig("everyPage"), 10, 64)
 
 	var (
 		clientPageStr = GetDevModeConfig("clientPage") // page number
@@ -205,7 +258,7 @@ func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables
 
 // 两张表名,查询语句拼接
 // 表1中有表2 id
-func GetDoubleSearchSql(model interface{}, table1, table2 string, params map[string][]string) (sqlNt, sql string, clientPage, everyPage int64) {
+func GetDoubleSearchSQL(model interface{}, table1, table2 string, params map[string][]string) (sqlNt, sql string, clientPage, everyPage int64) {
 
 	var (
 		clientPageStr = GetDevModeConfig("clientPage") // page number
@@ -257,7 +310,7 @@ func GetDoubleSearchSql(model interface{}, table1, table2 string, params map[str
 	sql = string([]byte(sql)[:len(sql)-4])       //去and
 	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4]) //去and
 	if every == "" {
-		sql += "order by " + table1 + ".id desc limit " + strconv.FormatInt((clientPage-1)*everyPage, 10) + "," + everyPageStr
+		sql += "order by " + table1 + ".id desc "
 	}
 
 	return sqlNt, sql, clientPage, everyPage
@@ -459,7 +512,7 @@ func GetMoreDataBySearch(model, data interface{}, params map[string][]string, in
 // 如table2中查询,字段用table2_+"字段名",table1字段查询不变
 func GetLeftDoubleTableDataBySearch(model, data interface{}, table1, table2 string, params map[string][]string) (pager result.Pager, err error) {
 	//级联表的查询
-	sqlNt, sql, clientPage, everyPage := GetDoubleSearchSql(model, table1, table2, params)
+	sqlNt, sql, clientPage, everyPage := GetDoubleSearchSQL(model, table1, table2, params)
 	sql = strings.Replace(sql, "inner join", "left join", 1)
 	sqlNt = strings.Replace(sqlNt, "inner join", "left join", 1)
 
@@ -470,7 +523,7 @@ func GetLeftDoubleTableDataBySearch(model, data interface{}, table1, table2 stri
 // 如table2中查询,字段用table2_+"字段名",table1字段查询不变
 func GetDoubleTableDataBySearch(model, data interface{}, table1, table2 string, params map[string][]string) (pager result.Pager, err error) {
 	//级联表的查询以及
-	sqlNt, sql, clientPage, everyPage := GetDoubleSearchSql(model, table1, table2, params)
+	sqlNt, sql, clientPage, everyPage := GetDoubleSearchSQL(model, table1, table2, params)
 
 	return GetDataBySQLSearch(data, sql, sqlNt, clientPage, everyPage)
 }
@@ -602,6 +655,8 @@ func CreateData(table string, params map[string][]string) (err error) {
 	return CreateDataBySQL(sql, args[:]...)
 }
 
+// map[string][]string 形式批量创建问题: 顺序对应, 使用json形式批量创建
+
 // 创建数据,通用
 // 返回id,事务,慎用
 // 业务少可用
@@ -636,6 +691,7 @@ func CreateDataResID(table string, params map[string][]string) (id ID, err error
 }
 
 // select检查是否存在
+// == nil 即存在
 func ValidateSQL(sql string) (err error) {
 	var num int64 //返回影响的行数
 
@@ -671,10 +727,32 @@ func CreateDataJ(data interface{}) (err error) {
 	return err
 }
 
+// data must array type
 // more data create
-// writing
-func CreateMoreData(data interface{}) {
+// single table
+func CreateMoreDataJ(table string, model interface{}, data interface{}) error {
+	var (
+		//buf    bytes.Buffer
+		buf   bytes.Buffer
+		params []interface{}
+	)
 
+	// array data
+	arrayData := reflect2.ToSlice(data)
+
+	for _, v := range arrayData {
+		// buf
+		buf.WriteString("(")
+		buf.WriteString(GetColParamSQL(model))
+		buf.WriteString("),")
+		// params
+		params = append(params, GetParams(v)[:]...)
+	}
+	values := string(buf.Bytes()[:buf.Len()-1])
+
+	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", table, GetColSQL(model), values)
+	err := DB.Exec(sql, params[:]...).Error
+	return err
 }
 
 // update

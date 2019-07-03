@@ -1,4 +1,3 @@
-// @author  dreamlu
 package sql
 
 import (

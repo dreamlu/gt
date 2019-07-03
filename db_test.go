@@ -1,4 +1,6 @@
-// @author  dreamlu
+
+// package der
+
 package der
 
 import (
@@ -7,18 +9,19 @@ import (
 	"github.com/dreamlu/go-tool/tool/type/time"
 	"log"
 	"testing"
+	time2 "time"
 )
 
 type User struct {
 	ID         int64      `json:"id"`
 	Name       string     `json:"name"`
-	Createtime time.CDate `json:"createtime"`
+	Createtime time.CTime `json:"createtime"`
 }
 
 type UserInfo struct {
-	ID       int64       `json:"id"`
-	UserID   int64       `json:"user_id"`   //用户id
-	UserName string      `json:"user_name"` //用户名
+	ID       int64      `json:"id"`
+	UserID   int64      `json:"user_id"`   //用户id
+	UserName string     `json:"user_name"` //用户名
 	Userinfo json.CJSON `json:"userinfo"`
 }
 
@@ -76,7 +79,7 @@ func TestSqlSearch(t *testing.T) {
 
 	//页码,每页数量
 	clientPage := int64(1) //默认第1页
-	everyPage := int64(10)   //默认10页
+	everyPage := int64(10) //默认10页
 
 	//可定制
 	//args map[string][]string
@@ -134,7 +137,7 @@ func TestGetSearchSql(t *testing.T) {
 	log.Println("SQLNOLIMIT:", sqlNt, "\nSQL:", sql)
 
 	// 两张表，待重新测试
-	sqlNt, sql, _, _ = GetDoubleSearchSql(UserInfo{}, "userinfo", "user", args)
+	sqlNt, sql, _, _ = GetDoubleSearchSQL(UserInfo{}, "userinfo", "user", args)
 	log.Println("SQLNOLIMIT==>2:", sqlNt, "\nSQL==>2:", sql)
 
 }
@@ -144,7 +147,7 @@ func TestGetDataBySql(t *testing.T) {
 	var sql = "select id,name,createtime from `user` where id = ? and name = ?"
 
 	var user User
-	GetDataBySQL(&user, sql, "1", "梦")
+	_ = GetDataBySQL(&user, sql, "1", "梦")
 	log.Println(user)
 
 	//DB.Raw(sql, []interface{}{1, "梦"}[:]...).Scan(&user)
@@ -196,18 +199,6 @@ func TestCrud(t *testing.T) {
 	//info = db.Create(args2)
 	//log.Println(info)
 
-	// 多表查询
-	// get more search
-	var params = make(map[string][]string)
-	var or []*OrderD
-	db = DbCrud{
-		InnerTables: []string{"order", "user"},
-		LeftTables:  []string{"service"},
-		Model:       OrderD{},
-		ModelData:   &or,
-	}
-	db.GetMoreBySearch(params)
-	log.Println("\n[User Info]:", or[0])
 }
 
 // 通用增删改查sql测试
@@ -215,4 +206,34 @@ func TestCrudSQL(t *testing.T) {
 	var db = DbCrud{}
 	sql := "update `user` set name=? where id=?"
 	log.Println("[Info]:", db.UpdateBySQL(sql, "梦sql", 1))
+}
+
+// 测试多表连接
+func TestGetMoreDataBySearch(t *testing.T) {
+	// 多表查询
+	// get more search
+	var params = make(map[string][]string)
+	var or []*OrderD
+	db := DbCrud{
+		InnerTables: []string{"order", "user"},
+		LeftTables:  []string{"service"},
+		Model:       OrderD{},
+		ModelData:   &or,
+	}
+	_, err := db.GetMoreBySearch(params)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println("\n[User Info]:", or[0])
+}
+
+// 批量创建
+func TestCreateMoreDataJ(t *testing.T) {
+
+	var user = []User{
+		{Name: "测试1", Createtime:time.CTime(time2.Now())},
+		{Name: "测试2"},
+	}
+	err := CreateMoreDataJ("user", User{}, user)
+	log.Println(err)
 }

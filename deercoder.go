@@ -1,4 +1,9 @@
-// @author  dreamlu
+// package der
+
+/*
+	go-tool is a fast go tool, help you dev project
+*/
+
 package der
 
 import (
