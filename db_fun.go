@@ -533,8 +533,8 @@ func GetDoubleTableDataBySearch(model, data interface{}, table1, table2 string, 
 // sql, sqlNt args 相同, 共用args
 func GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args ...interface{}) (pager result.Pager, err error) {
 
-	limit := fmt.Sprintf("limit %d,%d", (clientPage-1)*everyPage, everyPage)
-	sql += limit
+	// limit := fmt.Sprintf("limit %d,%d", (clientPage-1)*everyPage, everyPage)
+	sql += fmt.Sprintf(" limit %d,%d", (clientPage-1)*everyPage, everyPage)
 	// sqlNt += limit
 	dba := DB.Raw(sqlNt, args[:]...).Scan(&pager)
 	if dba.Error != nil {

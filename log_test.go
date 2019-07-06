@@ -7,14 +7,17 @@ import (
 )
 
 var projectPath, _ = os.Getwd()
-var myLog = NewFileLog(projectPath + "/test/log/", "go-tool.log", 3*time.Second, time.Second)
+
+func init()  {
+	NewFileLog(projectPath + "/test/log/", "go-tool.log", 3*time.Second, time.Second)
+}
 
 func TestNewFileLog(t *testing.T) {
 
-	myLog.Info("项目路径", projectPath)
+	Log.Info("项目路径", projectPath)
 	for {
 		time.Sleep(1 * time.Second)
-		myLog.Error("测试")
+		Log.Error("测试")
 	}
 }
 

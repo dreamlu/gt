@@ -3,6 +3,7 @@
 package der
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"log"
@@ -10,14 +11,30 @@ import (
 	"time"
 )
 
-var (
-	DB *gorm.DB
-)
+var DB *gorm.DB
+
+// db params
+type dba struct {
+	user     string
+	password string
+	host     string
+	name     string
+}
 
 func NewDB() {
-	var err error
+	dbS := &dba{
+		user:     GetDevModeConfig("db.user"),
+		password: GetDevModeConfig("db.password"),
+		host:     GetDevModeConfig("db.host"),
+		name:     GetDevModeConfig("db.name"),
+	}
+	var (
+		err error
+		sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", dbS.user, dbS.password, dbS.host, dbS.name)
+	)
+
 	//database, initialize once
-	DB, err = gorm.Open("mysql", GetDevModeConfig("db.user")+":"+GetDevModeConfig("db.password")+"@"+GetDevModeConfig("db.host")+"/"+GetDevModeConfig("db.name")+"?charset=utf8&parseTime=True&loc=Local")
+	DB, err = gorm.Open("mysql", sql)
 	//defer DB.Close()
 	if err != nil {
 		log.Println("[mysql连接错误]:", err)
@@ -27,7 +44,7 @@ func NewDB() {
 			// go is so fast
 			// try it every 5s
 			time.Sleep(5 * time.Second)
-			DB, err = gorm.Open("mysql", GetDevModeConfig("db.user")+":"+GetDevModeConfig("db.password")+"@"+GetDevModeConfig("db.host")+"/"+GetDevModeConfig("db.name")+"?charset=utf8&parseTime=True&loc=Local")
+			DB, err = gorm.Open("mysql", sql)
 			//defer DB.Close()
 			if err != nil {
 				log.Println("[mysql连接错误]:", err)
@@ -42,7 +59,7 @@ func NewDB() {
 	DB.SingularTable(true)
 	// sql print console log
 	// or print sql err to file
-	LogMode("debug") // or sqlErr
+	//LogMode("debug") // or sqlErr
 
 	// connection pool
 	var maxIdle, maxOpen int
