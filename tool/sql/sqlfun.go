@@ -18,50 +18,53 @@ func GetTags(model interface{}) (tags []string) {
 }
 
 // key search sql
-func GetKeySQL(sql, sqlNt string, key string, model interface{}, alias string) (sqlKey, sqlNtKey string) {
+func GetKeySQL(key string, model interface{}, alias string) (sqlKey, sqlNtKey string, argsKey []interface{}) {
 
-	tags := GetTags(model)
-	keys := strings.Split(key, " ") //空格隔开
+	var (
+		tags = GetTags(model)
+		keys = strings.Split(key, " ") // 空格隔开
+		//buf,bufNt bytes.Buffer
+	)
+
 	for _, key := range keys {
 		if key == "" {
 			continue
 		}
-		sql += "("
-		sqlNt += "("
+		sqlKey += "("
+		sqlNtKey += "("
 		for _, tag := range tags {
 			switch {
 			// 排除id结尾字段
 			// 排除date,time结尾字段
-			case !strings.HasSuffix(tag, "id") ://&& !strings.HasSuffix(tag, "date") && !strings.HasSuffix(tag, "time"):
-				sql += "`" + alias + "`.`" + tag + "` like binary '%" + key + "%' or "
-				sqlNt += "`" + alias + "`.`" + tag + "` like binary '%" + key + "%' or "
+			case !strings.HasSuffix(tag, "id"): //&& !strings.HasSuffix(tag, "date") && !strings.HasSuffix(tag, "time"):
+				sqlKey += "`" + alias + "`.`" + tag + "` like binary ? or "
+				sqlNtKey += "`" + alias + "`.`" + tag + "` like binary ? or "
+				argsKey = append(argsKey, "%"+key+"%")
 			}
 
 		}
-		sql = string([]byte(sql)[:len(sql)-4]) + ") and "
-		sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4]) + ") and "
+		sqlKey = string([]byte(sqlKey)[:len(sqlKey)-4]) + ") and "
+		sqlNtKey = string([]byte(sqlNtKey)[:len(sqlNtKey)-4]) + ") and "
 	}
-	//sql = string([]byte(sql)[:len(sql)-4])
-	//sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
-	return sql, sqlNt
+	return
 }
 
 // 多张表, 第一个表为主表
 // key search sql
 // tables [table1:table1_alias]
 // searModel : 搜索字段模型
-func GetMoreKeySQL(sql, sqlNt string, key string, searModel interface{}, tables ...string) (sqlKey, sqlNtKey string) {
+func GetMoreKeySQL(key string, searModel interface{}, tables ...string) (sqlKey, sqlNtKey string, argsKey []interface{}) {
 
 	// 搜索字段
 	tags := GetTags(searModel)
 	// 多表
-	keys := strings.Split(key, " ") //空格隔开
+	keys := strings.Split(key, " ") // 空格隔开
 	for _, key := range keys {
 		if key == "" {
 			continue
 		}
-		sql += "("
-		sqlNt += "("
+		sqlKey += "("
+		sqlNtKey += "("
 		for _, tag := range tags {
 			switch {
 			// 排除id结尾字段
@@ -74,8 +77,9 @@ func GetMoreKeySQL(sql, sqlNt string, key string, searModel interface{}, tables 
 					table := ts[0]
 					alias := ts[1]
 					if strings.Contains(tag, table+"_") && !strings.Contains(tag, table+"_id") {
-						sql += "`" + alias + "`.`" + string([]byte(tag)[len(table)+1:]) + "` like binary '%" + key + "%' or "
-						sqlNt += "`" + alias + "`.`" + string([]byte(tag)[len(table)+1:]) + "` like binary '%" + key + "%' or "
+						sqlKey += "`" + alias + "`.`" + string([]byte(tag)[len(table)+1:]) + "` like binary ? or "
+						sqlNtKey += "`" + alias + "`.`" + string([]byte(tag)[len(table)+1:]) + "` like binary ? or "
+						argsKey = append(argsKey, "%"+key+"%")
 						goto into
 					}
 				}
@@ -83,15 +87,14 @@ func GetMoreKeySQL(sql, sqlNt string, key string, searModel interface{}, tables 
 				// 主表
 				ts := strings.Split(tables[0], ":")
 				alias := ts[1]
-				sql += "`" + alias + "`.`" + tag + "` like binary '%" + key + "%' or "
-				sqlNt += "`" + alias + "`.`" + tag + "` like binary '%" + key + "%' or "
+				sqlKey += "`" + alias + "`.`" + tag + "` like binary ? or "
+				sqlNtKey += "`" + alias + "`.`" + tag + "` like binary ? or "
+				argsKey = append(argsKey, "%"+key+"%")
 			}
 		into:
 		}
-		sql = string([]byte(sql)[:len(sql)-4]) + ") and "
-		sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4]) + ") and "
+		sqlKey = string([]byte(sqlKey)[:len(sqlKey)-4]) + ") and "
+		sqlNtKey = string([]byte(sqlNtKey)[:len(sqlNtKey)-4]) + ") and "
 	}
-	//sql = string([]byte(sql)[:len(sql)-4])
-	//sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
-	return sql, sqlNt
+	return
 }

@@ -152,68 +152,66 @@ func GetParams(data interface{}) (params []interface{}) {
 // params: leftTables is left join tables
 // return: select sql
 // table1 as main table, include other tables_id(foreign key)
-func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables []string, leftTables []string) (sqlNt, sql string, clientPage, everyPage int64) {
+func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables []string, leftTables []string) (sqlNt, sql string, clientPage, everyPage int64, args []interface{}) {
 
 	var (
-		clientPageStr = GetDevModeConfig("clientPage") // page number
-		everyPageStr  = GetDevModeConfig("everyPage")  // Number of pages per page
-		every         = ""                             // if every != "", it will return all data
-		key           = ""                             // key like binary search
-		tables        = innerTables                    // all tables
-		buf           bytes.Buffer                     // sql bytes connect
+		order               = "desc"      // order by
+		key                 = ""          // key like binary search
+		tables              = innerTables // all tables
+		bufNt, bufW, bufNtW bytes.Buffer  // sql bytes connect
 	)
 
 	tables = append(tables, leftTables...)
 	// sql and sqlCount
-	buf.WriteString("select ")
-	buf.WriteString("count(`")
-	buf.WriteString(tables[0])
-	buf.WriteString("`.id) as total_num ")
-	//buf.WriteString(GetMoreTableColumnSQL(model, tables[:]...))
-	buf.WriteString("from `")
-	buf.WriteString(tables[0])
-	buf.WriteString("`")
+	bufNt.WriteString("select ")
+	bufNt.WriteString("count(`")
+	bufNt.WriteString(tables[0])
+	bufNt.WriteString("`.id) as total_num ")
+	// bufNt.WriteString(GetMoreTableColumnSQL(model, tables[:]...))
+	bufNt.WriteString("from `")
+	bufNt.WriteString(tables[0])
+	bufNt.WriteString("`")
 	// inner join
 	for i := 1; i < len(innerTables); i++ {
-		buf.WriteString(" inner join `")
-		buf.WriteString(innerTables[i])
-		buf.WriteString("` on `")
-		buf.WriteString(tables[0])
-		buf.WriteString("`.")
-		buf.WriteString(innerTables[i])
-		buf.WriteString("_id=`")
-		buf.WriteString(innerTables[i])
-		buf.WriteString("`.id ")
+		bufNt.WriteString(" inner join `")
+		bufNt.WriteString(innerTables[i])
+		bufNt.WriteString("` on `")
+		bufNt.WriteString(tables[0])
+		bufNt.WriteString("`.")
+		bufNt.WriteString(innerTables[i])
+		bufNt.WriteString("_id=`")
+		bufNt.WriteString(innerTables[i])
+		bufNt.WriteString("`.id ")
 		//sql += " inner join ·" + innerTables[i] + "`"
 	}
 	// left join
 	for i := 0; i < len(leftTables); i++ {
-		buf.WriteString(" left join `")
-		buf.WriteString(leftTables[i])
-		buf.WriteString("` on `")
-		buf.WriteString(tables[0])
-		buf.WriteString("`.")
-		buf.WriteString(leftTables[i])
-		buf.WriteString("_id=`")
-		buf.WriteString(leftTables[i])
-		buf.WriteString("`.id ")
+		bufNt.WriteString(" left join `")
+		bufNt.WriteString(leftTables[i])
+		bufNt.WriteString("` on `")
+		bufNt.WriteString(tables[0])
+		bufNt.WriteString("`.")
+		bufNt.WriteString(leftTables[i])
+		bufNt.WriteString("_id=`")
+		bufNt.WriteString(leftTables[i])
+		bufNt.WriteString("`.id ")
 		//sql += " inner join ·" + innerTables[i] + "`"
 	}
-	buf.WriteString(" where 1=1 and ")
+	// bufNt.WriteString(" where 1=1 and ")
 
-	//select* 变为对应的字段名
-	sqlNt = buf.String()
-	sql = strings.Replace(sqlNt, "count(`"+tables[0]+"`.id) as total_num", GetMoreTableColumnSQL(model, tables[:]...), 1)
+	// select* 变为对应的字段名
+	sqlNt = bufNt.String()
+	sql = strings.Replace(bufNt.String(), "count(`"+tables[0]+"`.id) as total_num", GetMoreTableColumnSQL(model, tables[:]...), 1)
 	for k, v := range params {
 		switch k {
 		case "clientPage":
-			clientPageStr = v[0]
+			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
 		case "everyPage":
-			everyPageStr = v[0]
+			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case "every":
-			every = v[0]
+		case "order":
+			order = v[0]
 			continue
 		case "key":
 			key = v[0]
@@ -222,7 +220,10 @@ func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables
 				tablens[k] += ":" + v
 			}
 			// more tables key search
-			sql, sqlNt = sq.GetMoreKeySQL(sql, sqlNt, key, model, tablens[:]...)
+			sqlKey, sqlNtKey, argsKey := sq.GetMoreKeySQL(key, model, tablens[:]...)
+			bufW.WriteString(sqlKey)
+			bufNtW.WriteString(sqlNtKey)
+			args = append(args, argsKey[:]...)
 			continue
 		case "":
 			continue
@@ -233,138 +234,79 @@ func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables
 			switch {
 			case !strings.Contains(table, table+"_id") && strings.Contains(table, table+"_"):
 				v[0] = strings.Replace(v[0], "'", "\\'", -1)
-				sql += "`" + table + "`.`" + string([]byte(k)[len(v)+1:]) + "`" + " = '" + v[0] + "' and "
-				sqlNt += "`" + table + "`.`" + string([]byte(k)[len(v)+1:]) + "`" + " = '" + v[0] + "' and "
+				bufW.WriteString("`" + table + "`.`" + string([]byte(k)[len(v)+1:]) + "`" + " = ? and ")
+				bufNtW.WriteString("`" + table + "`.`" + string([]byte(k)[len(v)+1:]) + "`" + " = ? and ")
+				args = append(args, v[0])
 				goto into
 			}
 		}
 		v[0] = strings.Replace(v[0], "'", "\\'", -1)
-		sql += "`" + tables[0] + "`." + k + " = '" + v[0] + "' and "
-		sqlNt += "`" + tables[0] + "`." + k + " = '" + v[0] + "' and "
+		bufW.WriteString("`" + tables[0] + "`." + k + " = ? and ")
+		bufNtW.WriteString("`" + tables[0] + "`." + k + " = ? and ")
+		args = append(args, v[0])
 	into:
 	}
 
-	clientPage, _ = strconv.ParseInt(clientPageStr, 10, 64)
-	everyPage, _ = strconv.ParseInt(everyPageStr, 10, 64)
-
-	sql = string([]byte(sql)[:len(sql)-4])       //去and
-	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4]) //去and
-	if every == "" {
-		sql += "order by `" + tables[0] + "`.id desc "
+	if len(params) != 0 {
+		sql += fmt.Sprintf("where %s order by id %s ", bufW.Bytes()[:bufW.Len()-4], order)
+		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
 	}
 
-	return sqlNt, sql, clientPage, everyPage
+	return
 }
 
-// 两张表名,查询语句拼接
-// 表1中有表2 id
-func GetDoubleSearchSQL(model interface{}, table1, table2 string, params map[string][]string) (sqlNt, sql string, clientPage, everyPage int64) {
-
-	var (
-		clientPageStr = GetDevModeConfig("clientPage") // page number
-		everyPageStr  = GetDevModeConfig("everyPage")  // Number of pages per page
-		every         = ""                             // if every != "", it will return all data
-		key           = ""                             // key like binary search
-	)
-
-	//select* 变为对应的字段名
-	sql = fmt.Sprintf("select %s from `%s` inner join `%s` on `%s`.%s_id=%s.id where 1=1 and ", GetDoubleTableColumnSQL(model, table1, table2), table1, table2, table1, table2, table2)
-
-	sqlNt = fmt.Sprintf("select count(%s.id) as total_num from `%s` inner join `%s` on `%s`.%s_id=%s.id where 1=1 and ", table1, table1, table2, table1, table2, table2)
-	for k, v := range params {
-		switch k {
-		case "clientPage":
-			clientPageStr = v[0]
-			continue
-		case "everyPage":
-			everyPageStr = v[0]
-			continue
-		case "every":
-			every = v[0]
-			continue
-		case "key":
-			key = v[0]
-			// 多表搜索
-			sql, sqlNt = sq.GetMoreKeySQL(sql, sqlNt, key, model, table1+":"+table1, table2+":"+table2)
-			//sql, sqlNt = lib.GetKeySql(sql, sqlNt, key, model , table2)
-			continue
-		case "":
-			continue
-		}
-
-		//表2值查询
-		if strings.Contains(k, table2+"_") && !strings.Contains(k, table2+"_id") {
-			sql += table2 + ".`" + string([]byte(k)[len(table2)+1:]) + "`" + " = '" + v[0] + "' and " //string([]byte(tag)[len(table2+1-1):])
-			sqlNt += table2 + ".`" + string([]byte(k)[len(table2)+1:]) + "`" + " = '" + v[0] + "' and "
-			continue
-		}
-
-		v[0] = strings.Replace(v[0], "'", "\\'", -1) //转义
-		sql += table1 + "." + k + " = '" + v[0] + "' and "
-		sqlNt += table1 + "." + k + " = '" + v[0] + "' and "
-	}
-
-	clientPage, _ = strconv.ParseInt(clientPageStr, 10, 64)
-	everyPage, _ = strconv.ParseInt(everyPageStr, 10, 64)
-
-	sql = string([]byte(sql)[:len(sql)-4])       //去and
-	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4]) //去and
-	if every == "" {
-		sql += "order by " + table1 + ".id desc "
-	}
-
-	return sqlNt, sql, clientPage, everyPage
-}
-
-// 传入表名,查询语句拼接
+// 分页参数不传, 查询所有
+// 默认根据id倒序
 // 单张表
 func GetSearchSQL(model interface{}, table string, params map[string][]string) (sqlNt, sql string, clientPage, everyPage int64, args []interface{}) {
 
 	var (
-		clientPageStr = GetDevModeConfig("clientPage") // page number
-		everyPageStr  = GetDevModeConfig("everyPage")  // Number of pages per page
-		every         = ""                             // if every != "", it will return all data
-		key           = ""                             // key like binary search
+		order        = "desc"     // order by
+		key          = ""         // key like binary search
+		bufW, bufNtW bytes.Buffer // where sql, sqlNt bytes sql
 	)
 
-	//select* replace
-	sql = fmt.Sprintf("select %s from `%s` where 1=1 and ", GetColSQL(model), table)
-	sqlNt = fmt.Sprintf("select count(id) as total_num from `%s` where 1=1 and ", table)
+	// select* replace
+	sql = fmt.Sprintf("select %s from `%s` ", GetColSQL(model), table)
+	sqlNt = fmt.Sprintf("select count(id) as total_num from `%s` ", table)
 	for k, v := range params {
 		switch k {
 		case "clientPage":
-			clientPageStr = v[0]
+			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
 		case "everyPage":
-			everyPageStr = v[0]
+			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case "every":
-			every = v[0]
+		case "order":
+			order = v[0]
 			continue
 		case "key":
 			key = v[0]
-			sql, sqlNt = sq.GetKeySQL(sql, sqlNt, key, model, table)
+			sqlKey, sqlNtKey, argsKey := sq.GetKeySQL(key, model, table)
+			bufW.WriteString(sqlKey)
+			bufNtW.WriteString(sqlNtKey)
+			args = append(args, argsKey[:]...)
 			continue
 		case "":
 			continue
 		}
 
 		//v[0] = strings.Replace(v[0], "'", "\\'", -1) //转义
-		sql += k + " = ? and "
-		sqlNt += k + " = ? and "
+		//sql += k + " = ? and "
+		//sqlNt += k + " = ? and "
+		bufW.WriteString(k)
+		bufW.WriteString(" = ? and ")
+		bufNtW.WriteString(k)
+		bufNtW.WriteString(" = ? and ")
 		args = append(args, v[0]) // args
 	}
 
-	clientPage, _ = strconv.ParseInt(clientPageStr, 10, 64)
-	everyPage, _ = strconv.ParseInt(everyPageStr, 10, 64)
-
-	sql = string([]byte(sql)[:len(sql)-4])       //去and
-	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4]) //去and
-	if every == "" {
-		sql += "order by id desc "
+	if len(params) != 0 {
+		sql += fmt.Sprintf("where %s order by id %s ", bufW.Bytes()[:bufW.Len()-4], order)
+		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
 	}
 
-	return sqlNt, sql, clientPage, everyPage, args
+	return
 }
 
 // 传入数据库表名
@@ -503,29 +445,9 @@ func GetDataByID(data interface{}, id string) (err error) {
 // table1 as main table, include other tables_id(foreign key)
 func GetMoreDataBySearch(model, data interface{}, params map[string][]string, innerTables []string, leftTables []string, args ...interface{}) (pager result.Pager, err error) {
 	// more table search
-	sqlNt, sql, clientPage, everyPage := GetMoreSearchSQL(model, params, innerTables, leftTables)
+	sqlNt, sql, clientPage, everyPage, args := GetMoreSearchSQL(model, params, innerTables, leftTables)
 
 	return GetDataBySQLSearch(data, sql, sqlNt, clientPage, everyPage, args[:]...)
-}
-
-// 获得数据,分页/查询,遵循一定查询规则,两张表,使用left join
-// 如table2中查询,字段用table2_+"字段名",table1字段查询不变
-func GetLeftDoubleTableDataBySearch(model, data interface{}, table1, table2 string, params map[string][]string) (pager result.Pager, err error) {
-	//级联表的查询
-	sqlNt, sql, clientPage, everyPage := GetDoubleSearchSQL(model, table1, table2, params)
-	sql = strings.Replace(sql, "inner join", "left join", 1)
-	sqlNt = strings.Replace(sqlNt, "inner join", "left join", 1)
-
-	return GetDataBySQLSearch(data, sql, sqlNt, clientPage, everyPage)
-}
-
-// 获得数据,分页/查询,遵循一定查询规则,两张表,默认inner join
-// 如table2中查询,字段用table2_+"字段名",table1字段查询不变
-func GetDoubleTableDataBySearch(model, data interface{}, table1, table2 string, params map[string][]string) (pager result.Pager, err error) {
-	//级联表的查询以及
-	sqlNt, sql, clientPage, everyPage := GetDoubleSearchSQL(model, table1, table2, params)
-
-	return GetDataBySQLSearch(data, sql, sqlNt, clientPage, everyPage)
 }
 
 // 获得数据,根据sql语句,分页
@@ -533,8 +455,12 @@ func GetDoubleTableDataBySearch(model, data interface{}, table1, table2 string, 
 // sql, sqlNt args 相同, 共用args
 func GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args ...interface{}) (pager result.Pager, err error) {
 
-	// limit := fmt.Sprintf("limit %d,%d", (clientPage-1)*everyPage, everyPage)
-	sql += fmt.Sprintf(" limit %d,%d", (clientPage-1)*everyPage, everyPage)
+	// if no clientPage or everyPage
+	// return all data
+	if clientPage != 0 && everyPage != 0 {
+		sql += fmt.Sprintf("limit %d, %d", (clientPage-1)*everyPage, everyPage)
+	}
+
 	// sqlNt += limit
 	dba := DB.Raw(sqlNt, args[:]...).Scan(&pager)
 	if dba.Error != nil {
@@ -733,7 +659,7 @@ func CreateDataJ(data interface{}) (err error) {
 func CreateMoreDataJ(table string, model interface{}, data interface{}) error {
 	var (
 		//buf    bytes.Buffer
-		buf   bytes.Buffer
+		buf    bytes.Buffer
 		params []interface{}
 	)
 

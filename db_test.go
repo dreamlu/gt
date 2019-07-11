@@ -12,6 +12,9 @@ import (
 	time2 "time"
 )
 
+// params map[string][]string is web request GET params
+// in golang, it was url.values
+
 type User struct {
 	ID         int64      `json:"id"`
 	Name       string     `json:"name"`
@@ -46,6 +49,7 @@ type OrderD struct {
 func init() {
 	// init DB
 	NewDB()
+	DB.LogMode(true)
 }
 
 func TestDB(t *testing.T) {
@@ -137,8 +141,8 @@ func TestGetSearchSql(t *testing.T) {
 	log.Println("SQLNOLIMIT:", sqlNt, "\nSQL:", sql)
 
 	// 两张表，待重新测试
-	sqlNt, sql, _, _ = GetDoubleSearchSQL(UserInfo{}, "userinfo", "user", args)
-	log.Println("SQLNOLIMIT==>2:", sqlNt, "\nSQL==>2:", sql)
+	// sqlNt, sql, _, _ = GetDoubleSearchSQL(UserInfo{}, "userinfo", "user", args)
+	// log.Println("SQLNOLIMIT==>2:", sqlNt, "\nSQL==>2:", sql)
 
 }
 
@@ -152,6 +156,17 @@ func TestGetDataBySql(t *testing.T) {
 
 	//DB.Raw(sql, []interface{}{1, "梦"}[:]...).Scan(&user)
 	//log.Println(user)
+}
+
+func TestGetDataBySearch(t *testing.T) {
+	var args = make(map[string][]string)
+	args["name"] = append(args["name"], "梦")
+	args["key"] = append(args["key"], "梦")
+	args["clientPage"] = append(args["clientPage"], "1")
+	args["everyPage"] = append(args["everyPage"], "2")
+	var user []*User
+	_, _ = GetDataBySearch(User{}, &user, "user", args)
+	t.Log(user[0])
 }
 
 // 通用增删该查测试
@@ -213,6 +228,10 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	// 多表查询
 	// get more search
 	var params = make(map[string][]string)
+	params["user_id"] = append(params["user_id"], "1")
+	params["key"] = append(params["key"], "梦")
+	params["clientPage"] = append(params["clientPage"], "1")
+	params["everyPage"] = append(params["everyPage"], "2")
 	var or []*OrderD
 	db := DbCrud{
 		InnerTables: []string{"order", "user"},
@@ -224,7 +243,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println("\n[User Info]:", or[0])
+	t.Log("\n[User Info]:", or[0])
 }
 
 // 批量创建
