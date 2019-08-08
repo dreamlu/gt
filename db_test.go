@@ -1,4 +1,3 @@
-
 // package der
 
 package der
@@ -46,10 +45,13 @@ type OrderD struct {
 	Createtime  time.CTime `json:"createtime"`   // createtime
 }
 
+var GOTool = &DBCrud{
+}
+
 func init() {
 	// init DB
-	NewDB()
-	DB.LogMode(true)
+	GOTool.InitDBTool()
+	GOTool.DB.LogMode(true)
 }
 
 func TestDB(t *testing.T) {
@@ -63,7 +65,7 @@ func TestDB(t *testing.T) {
 	//log.Println(err)
 
 	// return create id
-	_ = CreateDataJ(&user)
+	_ = GOTool.DBTool.CreateDataJ(&user)
 	log.Println("user: ", user)
 
 	//user.ID = 8 //0
@@ -109,7 +111,7 @@ func TestSqlSearch(t *testing.T) {
 	sql = string([]byte(sql)[:len(sql)-4]) //去and
 	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
 	sql += "order by a.id "
-	log.Println(GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage))
+	log.Println(GOTool.DBTool.GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage))
 	log.Println(ui[0].Userinfo.String())
 }
 
@@ -128,7 +130,7 @@ func TestSqlSearchV2(t *testing.T) {
 // select 数据存在验证
 func TestValidateData(t *testing.T) {
 	sql := "select *from `user` where id=2"
-	ss := ValidateSQL(sql)
+	ss := GOTool.DBTool.ValidateSQL(sql)
 	log.Println(ss)
 }
 
@@ -151,10 +153,10 @@ func TestGetDataBySql(t *testing.T) {
 	var sql = "select id,name,createtime from `user` where id = ? and name = ?"
 
 	var user User
-	_ = GetDataBySQL(&user, sql, "1", "梦")
+	_ = GOTool.DBTool.GetDataBySQL(&user, sql, "1", "梦")
 	log.Println(user)
 
-	//DB.Raw(sql, []interface{}{1, "梦"}[:]...).Scan(&user)
+	//GOTool.Raw(sql, []interface{}{1, "梦"}[:]...).Scan(&user)
 	//log.Println(user)
 }
 
@@ -165,7 +167,7 @@ func TestGetDataBySearch(t *testing.T) {
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
 	var user []*User
-	_, _ = GetDataBySearch(User{}, &user, "user", args)
+	_, _ = GOTool.DBTool.GetDataBySearch(User{}, &user, "user", args)
 	t.Log(user[0])
 }
 
@@ -177,34 +179,34 @@ func TestCrud(t *testing.T) {
 	// var crud DbCrud
 	// must use AutoMigrate
 	// get by id
-	DB.AutoMigrate(&User{})
+	GOTool.DBTool.DB.AutoMigrate(&User{})
 	var user User
-	var db = DbCrud{
+	GOTool.Param = CrudParam{
 		Table:     "user",
 		ModelData: &user,
 	}
-	info := db.GetByID("1")
+	info := GOTool.GetByID("1")
 	log.Println(info, "\n[User Info]:", user)
 
 	// get by search
 	var users []*User
-	db = DbCrud{
+	GOTool.Param = CrudParam{
 		Table:     "user",
 		Model:     User{},
 		ModelData: &users,
 	}
 	args["name"][0] = "梦4"
-	db.GetBySearch(args)
+	GOTool.GetBySearch(args)
 	log.Println("\n[User Info]:", users)
 
 	// delete
-	info2 := db.Delete("12")
+	info2 := GOTool.Delete("12")
 	log.Println(info2)
 
 	// update
 	args["id"] = append(args["id"], "4")
 	args["name"][0] = "梦4"
-	info2 = db.Update(args)
+	info2 = GOTool.Update(args)
 	log.Println(info2)
 
 	// create
@@ -218,9 +220,9 @@ func TestCrud(t *testing.T) {
 
 // 通用增删改查sql测试
 func TestCrudSQL(t *testing.T) {
-	var db = DbCrud{}
+	//var db = DbCrud{}
 	sql := "update `user` set name=? where id=?"
-	log.Println("[Info]:", db.UpdateBySQL(sql, "梦sql", 1))
+	log.Println("[Info]:", GOTool.UpdateBySQL(sql, "梦sql", 1))
 }
 
 // 测试多表连接
@@ -233,13 +235,13 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	params["clientPage"] = append(params["clientPage"], "1")
 	params["everyPage"] = append(params["everyPage"], "2")
 	var or []*OrderD
-	db := DbCrud{
+	GOTool.Param = CrudParam{
 		InnerTables: []string{"order", "user"},
 		LeftTables:  []string{"service"},
 		Model:       OrderD{},
 		ModelData:   &or,
 	}
-	_, err := db.GetMoreBySearch(params)
+	_, err := GOTool.GetMoreBySearch(params)
 	if err != nil {
 		log.Println(err)
 	}
@@ -250,9 +252,20 @@ func TestGetMoreDataBySearch(t *testing.T) {
 func TestCreateMoreDataJ(t *testing.T) {
 
 	var user = []User{
-		{Name: "测试1", Createtime:time.CTime(time2.Now())},
+		{Name: "测试1", Createtime: time.CTime(time2.Now())},
 		{Name: "测试2"},
 	}
-	err := CreateMoreDataJ("user", User{}, user)
+
+	DB2 := &DBCrudJ{
+	}
+	DB2.InitDBTool()
+	DB2.DB.LogMode(true)
+
+	DB2.Param = CrudParam{
+		Table: "user",
+		Model: User{},
+	}
+
+	err := DB2.CreateMoreDataJ(user)
 	log.Println(err)
 }

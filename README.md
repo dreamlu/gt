@@ -12,7 +12,7 @@ go-tool 是一个通用的api快速开发工具库
 2.反射  
 
 ##### demo(待完善)  
-deercoder-gin  
+[deercoder-gin](https://github.com/dreamlu/deercoder-gin)  
 
 ##### 特点:
 | 特点 | 
@@ -136,31 +136,11 @@ func (c *Order) GetMoreBySearch(params map[string][]string) interface{} {
 
 ```
 
-##### GetDataBySQL
-```go
-// like UpdateBySQL
-```
-
-##### GetDataBySearchSQL
-```go
-// like UpdateBySQL
-```
-
-##### DeleteBySQL
-```go
-// like UpdateBySQL
-```
-
 ##### UpdateBySQL
 ```go
 var db = DbCrud{}
 sql := "update `user` set name=? where id=?"
 log.Println("[Info]:", db.UpdateBySQL(sql,"梦sql", 1))
-```
-
-##### CreateBySQL
-```go
-// like UpdateBySQL
 ```
 
 #### Json Request

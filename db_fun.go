@@ -375,9 +375,9 @@ func GetInsertSQL(table string, params map[string][]string) (sql string, args []
 ////////////////
 
 // 获得数据,根据sql语句,无分页
-func GetDataBySQL(data interface{}, sql string, args ...interface{}) (err error) {
+func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}) (err error) {
 
-	dba := DB.Raw(sql, args[:]...).Scan(data)
+	dba := db.DB.Raw(sql, args[:]...).Scan(data)
 	// 有数据是返回相应信息
 	if dba.Error != nil {
 		err = sq.GetSQLError(dba.Error.Error())
@@ -389,9 +389,9 @@ func GetDataBySQL(data interface{}, sql string, args ...interface{}) (err error)
 }
 
 // 获得数据,根据name条件
-func GetDataByName(data interface{}, name, value string) (err error) {
+func (db *DBTool) GetDataByName(data interface{}, name, value string) (err error) {
 
-	dba := DB.Where(name+" = ?", value).Find(data) //只要一行数据时使用 LIMIT 1,增加查询性能
+	dba := db.DB.Where(name+" = ?", value).Find(data) //只要一行数据时使用 LIMIT 1,增加查询性能
 
 	//有数据是返回相应信息
 	if dba.Error != nil {
@@ -406,27 +406,27 @@ func GetDataByName(data interface{}, name, value string) (err error) {
 // inner join
 // 查询数据约定,表名_字段名(若有重复)
 // 获得数据,根据id,两张表连接尝试
-func GetDoubleTableDataByID(model, data interface{}, id, table1, table2 string) error {
+func (db *DBTool) GetDoubleTableDataByID(model, data interface{}, id, table1, table2 string) error {
 	sql := fmt.Sprintf("select %s from `%s` inner join `%s` "+
 		"on `%s`.%s_id=`%s`.id where `%s`.id=? limit 1", GetDoubleTableColumnSQL(model, table1, table2), table1, table2, table1, table2, table2, table1)
 
-	return GetDataBySQL(data, sql, id)
+	return db.GetDataBySQL(data, sql, id)
 }
 
 // left join
 // 查询数据约定,表名_字段名(若有重复)
 // 获得数据,根据id,两张表连接
-func GetLeftDoubleTableDataByID(model, data interface{}, id, table1, table2 string) error {
+func (db *DBTool) GetLeftDoubleTableDataByID(model, data interface{}, id, table1, table2 string) error {
 
 	sql := fmt.Sprintf("select %s from `%s` left join `%s` on `%s`.%s_id=`%s`.id where `%s`.id=? limit 1", GetDoubleTableColumnSQL(model, table1, table2), table1, table2, table1, table2, table2, table1)
 
-	return GetDataBySQL(data, sql, id)
+	return db.GetDataBySQL(data, sql, id)
 }
 
 // 获得数据,根据id
-func GetDataByID(data interface{}, id string) (err error) {
+func (db *DBTool) GetDataByID(data interface{}, id string) (err error) {
 
-	dba := DB.First(data, id) //只要一行数据时使用 LIMIT 1,增加查询性能
+	dba := db.DB.First(data, id) //只要一行数据时使用 LIMIT 1,增加查询性能
 
 	//有数据是返回相应信息
 	if dba.Error != nil {
@@ -443,17 +443,17 @@ func GetDataByID(data interface{}, id string) (err error) {
 // params: leftTables is left join tables
 // return: search info
 // table1 as main table, include other tables_id(foreign key)
-func GetMoreDataBySearch(model, data interface{}, params map[string][]string, innerTables []string, leftTables []string, args ...interface{}) (pager result.Pager, err error) {
+func (db *DBTool) GetMoreDataBySearch(model, data interface{}, params map[string][]string, innerTables []string, leftTables []string, args ...interface{}) (pager result.Pager, err error) {
 	// more table search
 	sqlNt, sql, clientPage, everyPage, args := GetMoreSearchSQL(model, params, innerTables, leftTables)
 
-	return GetDataBySQLSearch(data, sql, sqlNt, clientPage, everyPage, args[:]...)
+	return db.GetDataBySQLSearch(data, sql, sqlNt, clientPage, everyPage, args[:]...)
 }
 
 // 获得数据,根据sql语句,分页
 // args : sql参数'？'
 // sql, sqlNt args 相同, 共用args
-func GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args ...interface{}) (pager result.Pager, err error) {
+func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args ...interface{}) (pager result.Pager, err error) {
 
 	// if no clientPage or everyPage
 	// return all data
@@ -462,12 +462,12 @@ func GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPa
 	}
 
 	// sqlNt += limit
-	dba := DB.Raw(sqlNt, args[:]...).Scan(&pager)
+	dba := db.DB.Raw(sqlNt, args[:]...).Scan(&pager)
 	if dba.Error != nil {
 		err = sq.GetSQLError(dba.Error.Error())
 	} else {
 		// DB.Debug().Find(&dest)
-		dba = DB.Raw(sql, args[:]...).Scan(data)
+		dba = db.DB.Raw(sql, args[:]...).Scan(data)
 
 		if dba.Error != nil {
 			err = sq.GetSQLError(dba.Error.Error())
@@ -482,20 +482,20 @@ func GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPa
 }
 
 // 获得数据,分页/查询
-func GetDataBySearch(model, data interface{}, table string, params map[string][]string) (pager result.Pager, err error) {
+func (db *DBTool) GetDataBySearch(model, data interface{}, table string, params map[string][]string) (pager result.Pager, err error) {
 
 	sqlNt, sql, clientPage, everyPage, args := GetSearchSQL(model, table, params)
 
-	return GetDataBySQLSearch(data, sql, sqlNt, clientPage, everyPage, args[:]...)
+	return db.GetDataBySQLSearch(data, sql, sqlNt, clientPage, everyPage, args[:]...)
 }
 
 // delete
 ///////////////////
 
 // delete by sql
-func DeleteDataBySQL(sql string, args ...interface{}) (err error) {
+func (db *DBTool) DeleteDataBySQL(sql string, args ...interface{}) (err error) {
 
-	dba := DB.Exec(sql, args[:]...)
+	dba := db.DB.Exec(sql, args[:]...)
 	switch {
 	case dba.Error != nil:
 		err = sq.GetSQLError(dba.Error.Error())
@@ -506,20 +506,20 @@ func DeleteDataBySQL(sql string, args ...interface{}) (err error) {
 }
 
 // 删除通用,任意参数
-func DeleteDataByName(table string, key, value string) error {
+func (db *DBTool) DeleteDataByName(table string, key, value string) error {
 	sql := fmt.Sprintf("delete from `%s` where %s=?", table, key)
 
-	return DeleteDataBySQL(sql, value)
+	return db.DeleteDataBySQL(sql, value)
 }
 
 // update
 ///////////////////
 
 // 修改数据,通用
-func UpdateDataBySQL(sql string, args ...interface{}) (err error) {
+func (db *DBTool) UpdateDataBySQL(sql string, args ...interface{}) (err error) {
 	var num int64 //返回影响的行数
 
-	dba := DB.Exec(sql, args[:]...)
+	dba := db.DB.Exec(sql, args[:]...)
 	num = dba.RowsAffected
 	switch {
 	case dba.Error != nil:
@@ -533,18 +533,18 @@ func UpdateDataBySQL(sql string, args ...interface{}) (err error) {
 }
 
 // 修改数据,通用
-func UpdateData(table string, params map[string][]string) error {
+func (db *DBTool) UpdateData(table string, params map[string][]string) error {
 
 	sql, args := GetUpdateSQL(table, params)
 
-	return UpdateDataBySQL(sql, args[:]...)
+	return db.UpdateDataBySQL(sql, args[:]...)
 }
 
 // 结合struct修改
-func UpdateStructData(data interface{}) (err error) {
+func (db *DBTool) UpdateStructData(data interface{}) (err error) {
 	var num int64 //返回影响的行数
 
-	dba := DB.Save(data)
+	dba := db.DB.Save(data)
 	num = dba.RowsAffected
 	switch {
 	case dba.Error != nil:
@@ -561,9 +561,9 @@ func UpdateStructData(data interface{}) (err error) {
 ////////////////////
 
 // Create data by sql
-func CreateDataBySQL(sql string, args ...interface{}) (err error) {
+func (db *DBTool) CreateDataBySQL(sql string, args ...interface{}) (err error) {
 
-	dba := DB.Exec(sql, args[:]...)
+	dba := db.DB.Exec(sql, args[:]...)
 	switch {
 	case dba.Error != nil:
 		err = sq.GetSQLError(dba.Error.Error())
@@ -574,11 +574,11 @@ func CreateDataBySQL(sql string, args ...interface{}) (err error) {
 }
 
 // 创建数据,通用
-func CreateData(table string, params map[string][]string) (err error) {
+func (db *DBTool) CreateData(table string, params map[string][]string) (err error) {
 
 	sql, args := GetInsertSQL(table, params)
 
-	return CreateDataBySQL(sql, args[:]...)
+	return db.CreateDataBySQL(sql, args[:]...)
 }
 
 // map[string][]string 形式批量创建问题: 顺序对应, 使用json形式批量创建
@@ -586,10 +586,10 @@ func CreateData(table string, params map[string][]string) (err error) {
 // 创建数据,通用
 // 返回id,事务,慎用
 // 业务少可用
-func CreateDataResID(table string, params map[string][]string) (id ID, err error) {
+func (db *DBTool) CreateDataResID(table string, params map[string][]string) (id ID, err error) {
 
 	//开启事务
-	tx := DB.Begin()
+	tx := db.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
@@ -618,11 +618,11 @@ func CreateDataResID(table string, params map[string][]string) (id ID, err error
 
 // select检查是否存在
 // == nil 即存在
-func ValidateSQL(sql string) (err error) {
+func (db *DBTool) ValidateSQL(sql string) (err error) {
 	var num int64 //返回影响的行数
 
 	var ve Value
-	dba := DB.Raw(sql).Scan(&ve)
+	dba := db.DB.Raw(sql).Scan(&ve)
 	num = dba.RowsAffected
 	switch {
 	case dba.Error != nil:
@@ -640,9 +640,9 @@ func ValidateSQL(sql string) (err error) {
 //==============================================================
 
 // create
-func CreateDataJ(data interface{}) (err error) {
+func (db *DBTool) CreateDataJ(data interface{}) (err error) {
 
-	dba := DB.Create(data)
+	dba := db.DB.Create(data)
 
 	switch {
 	case dba.Error != nil:
@@ -656,7 +656,7 @@ func CreateDataJ(data interface{}) (err error) {
 // data must array type
 // more data create
 // single table
-func CreateMoreDataJ(table string, model interface{}, data interface{}) error {
+func (db *DBTool) CreateMoreDataJ(table string, model interface{}, data interface{}) error {
 	var (
 		//buf    bytes.Buffer
 		buf    bytes.Buffer
@@ -677,14 +677,14 @@ func CreateMoreDataJ(table string, model interface{}, data interface{}) error {
 	values := string(buf.Bytes()[:buf.Len()-1])
 
 	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", table, GetColSQL(model), values)
-	err := DB.Exec(sql, params[:]...).Error
+	err := db.DB.Exec(sql, params[:]...).Error
 	return err
 }
 
 // update
-func UpdateDataJ(data interface{}) (err error) {
+func (db *DBTool) UpdateDataJ(data interface{}) (err error) {
 
-	dba := DB.Model(data).Update(data)
+	dba := db.DB.Model(data).Update(data)
 
 	switch {
 	case dba.Error != nil:

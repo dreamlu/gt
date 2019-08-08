@@ -11,7 +11,14 @@ import (
 	"time"
 )
 
-var DB *gorm.DB
+// DB tool
+type DBTool struct {
+	// db driver
+	DB *gorm.DB
+	// crud interface
+	//Crud  DBCruder
+	//CrudJ DBCrudJer
+}
 
 // db params
 type dba struct {
@@ -21,7 +28,8 @@ type dba struct {
 	name     string
 }
 
-func NewDB() {
+func (db *DBTool) NewDB() *DBTool {
+
 	dbS := &dba{
 		user:     GetDevModeConfig("db.user"),
 		password: GetDevModeConfig("db.password"),
@@ -34,8 +42,8 @@ func NewDB() {
 	)
 
 	//database, initialize once
-	DB, err = gorm.Open("mysql", sql)
-	//defer DB.Close()
+	DB, err := gorm.Open("mysql", sql)
+	//defer db.DB.Close()
 	if err != nil {
 		log.Println("[mysql连接错误]:", err)
 		log.Println("[mysql开始尝试重连中]: try it every 5s...")
@@ -79,4 +87,19 @@ func NewDB() {
 	DB.DB().SetMaxIdleConns(maxIdle)
 	// SetMaxOpenConns sets the maximum number of open connections to the database.
 	DB.DB().SetMaxOpenConns(maxOpen)
+
+	return &DBTool{DB: DB}
 }
+
+//func (db *DBTool) NewDBTool(crud interface{}) {
+//
+//	// init db driver
+//	db.NewDB()
+//	// init crud tool
+//	//switch crud.(type) {
+//	//case DBCruder:
+//	//	db.Crud = crud.(DBCruder)
+//	//case DBCrudJer:
+//	//	db.CrudJ = crud.(DBCrudJer)
+//	//}
+//}
