@@ -45,12 +45,11 @@ type OrderD struct {
 	Createtime  time.CTime `json:"createtime"`   // createtime
 }
 
-var GOTool = &DBCrud{
-}
+var GOTool *DBTool
 
 func init() {
 	// init DB
-	GOTool.InitDBTool()
+	GOTool = GOTool.NewDBTool()
 	GOTool.DB.LogMode(true)
 }
 
@@ -65,7 +64,7 @@ func TestDB(t *testing.T) {
 	//log.Println(err)
 
 	// return create id
-	_ = GOTool.DBTool.CreateDataJ(&user)
+	_ = GOTool.CreateDataJ(&user)
 	log.Println("user: ", user)
 
 	//user.ID = 8 //0
@@ -111,7 +110,7 @@ func TestSqlSearch(t *testing.T) {
 	sql = string([]byte(sql)[:len(sql)-4]) //去and
 	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
 	sql += "order by a.id "
-	log.Println(GOTool.DBTool.GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage))
+	log.Println(GOTool.GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage))
 	log.Println(ui[0].Userinfo.String())
 }
 
@@ -130,7 +129,7 @@ func TestSqlSearchV2(t *testing.T) {
 // select 数据存在验证
 func TestValidateData(t *testing.T) {
 	sql := "select *from `user` where id=2"
-	ss := GOTool.DBTool.ValidateSQL(sql)
+	ss := GOTool.ValidateSQL(sql)
 	log.Println(ss)
 }
 
@@ -153,7 +152,7 @@ func TestGetDataBySql(t *testing.T) {
 	var sql = "select id,name,createtime from `user` where id = ? and name = ?"
 
 	var user User
-	_ = GOTool.DBTool.GetDataBySQL(&user, sql, "1", "梦")
+	_ = GOTool.GetDataBySQL(&user, sql, "1", "梦")
 	log.Println(user)
 
 	//GOTool.Raw(sql, []interface{}{1, "梦"}[:]...).Scan(&user)
@@ -167,7 +166,7 @@ func TestGetDataBySearch(t *testing.T) {
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
 	var user []*User
-	_, _ = GOTool.DBTool.GetDataBySearch(User{}, &user, "user", args)
+	_, _ = GOTool.GetDataBySearch(User{}, &user, "user", args)
 	t.Log(user[0])
 }
 
@@ -179,13 +178,13 @@ func TestCrud(t *testing.T) {
 	// var crud DbCrud
 	// must use AutoMigrate
 	// get by id
-	GOTool.DBTool.DB.AutoMigrate(&User{})
+	GOTool.DB.AutoMigrate(&User{})
 	var user User
 	GOTool.Param = CrudParam{
 		Table:     "user",
 		ModelData: &user,
 	}
-	info := GOTool.GetByID("1")
+	info := GOTool.Crud.GetByID("1")
 	log.Println(info, "\n[User Info]:", user)
 
 	// get by search
@@ -196,17 +195,17 @@ func TestCrud(t *testing.T) {
 		ModelData: &users,
 	}
 	args["name"][0] = "梦4"
-	GOTool.GetBySearch(args)
+	GOTool.Crud.GetBySearch(args)
 	log.Println("\n[User Info]:", users)
 
 	// delete
-	info2 := GOTool.Delete("12")
+	info2 := GOTool.Crud.Delete("12")
 	log.Println(info2)
 
 	// update
 	args["id"] = append(args["id"], "4")
 	args["name"][0] = "梦4"
-	info2 = GOTool.Update(args)
+	info2 = GOTool.Crud.Update(args)
 	log.Println(info2)
 
 	// create
@@ -222,7 +221,7 @@ func TestCrud(t *testing.T) {
 func TestCrudSQL(t *testing.T) {
 	//var db = DbCrud{}
 	sql := "update `user` set name=? where id=?"
-	log.Println("[Info]:", GOTool.UpdateBySQL(sql, "梦sql", 1))
+	log.Println("[Info]:", GOTool.Crud.UpdateBySQL(sql, "梦sql", 1))
 }
 
 // 测试多表连接
@@ -241,7 +240,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		Model:       OrderD{},
 		ModelData:   &or,
 	}
-	_, err := GOTool.GetMoreBySearch(params)
+	_, err := GOTool.Crud.GetMoreBySearch(params)
 	if err != nil {
 		log.Println(err)
 	}
@@ -256,16 +255,11 @@ func TestCreateMoreDataJ(t *testing.T) {
 		{Name: "测试2"},
 	}
 
-	DB2 := &DBCrudJ{
-	}
-	DB2.InitDBTool()
-	DB2.DB.LogMode(true)
-
-	DB2.Param = CrudParam{
+	GOTool.Param = CrudParam{
 		Table: "user",
 		Model: User{},
 	}
 
-	err := DB2.CreateMoreDataJ(user)
+	err := GOTool.Crud.CreateMoreDataJ(user)
 	log.Println(err)
 }

@@ -16,8 +16,9 @@ type DBTool struct {
 	// db driver
 	DB *gorm.DB
 	// crud interface
-	//Crud  DBCruder
-	//CrudJ DBCrudJer
+	Crud Crud
+	// crud param
+	Param CrudParam
 }
 
 // db params
@@ -28,7 +29,7 @@ type dba struct {
 	name     string
 }
 
-func (db *DBTool) NewDB() *DBTool {
+func (db *DBTool) NewDB() *gorm.DB {
 
 	dbS := &dba{
 		user:     GetDevModeConfig("db.user"),
@@ -88,18 +89,16 @@ func (db *DBTool) NewDB() *DBTool {
 	// SetMaxOpenConns sets the maximum number of open connections to the database.
 	DB.DB().SetMaxOpenConns(maxOpen)
 
-	return &DBTool{DB: DB}
+	return DB
 }
 
-//func (db *DBTool) NewDBTool(crud interface{}) {
-//
-//	// init db driver
-//	db.NewDB()
-//	// init crud tool
-//	//switch crud.(type) {
-//	//case DBCruder:
-//	//	db.Crud = crud.(DBCruder)
-//	//case DBCrudJer:
-//	//	db.CrudJ = crud.(DBCrudJer)
-//	//}
-//}
+func (db *DBTool) NewDBTool() *DBTool {
+
+	dbTool := &DBTool{
+		DB:   db.NewDB(),
+		Crud: &DBCrud{},
+	}
+
+	dbTool.Crud.InitDBTool(dbTool)
+	return dbTool
+}
