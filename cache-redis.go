@@ -5,7 +5,6 @@ package der
 import (
 	"bytes"
 	"encoding/json"
-	"strconv"
 )
 
 // impl cache manager
@@ -16,31 +15,25 @@ type RedisManager struct {
 	Rc *ConnPool
 }
 
+// toMe: wait the future complete it
 // new cache by redis
 // other cacher maybe have this too
 func (r *RedisManager) NewCache(args ...interface{}) error {
+
+	config := &Config{}
+	config.NewConfig()
+
 	var (
-		Host        = GetDevModeConfig("redis.host")
-		Password    = GetDevModeConfig("redis.password")
-		Database    = GetDevModeConfig("redis.database")
-		MaxOpenConn = GetDevModeConfig("redis.maxOpenConn") // max number of connections
-		MaxIdleConn = GetDevModeConfig("redis.maxIdleConn") // 最大的空闲连接数
+		Host        = config.GetString("app.redis.host")
+		Password    = config.GetString("app.redis.password")
+		Database    = config.GetInt("app.redis.database")
+		poolSize = config.GetInt("app.redis.poolSize") // max number of connections
+		MinIdleConns = config.GetInt("app.redis.minIdleConns") // 最大的空闲连接数
 	)
 
 	// default value
-	if "" == Database {
-		Database = "0"
-	}
-	if "" == MaxOpenConn {
-		MaxOpenConn = "0"
-	}
-	if "" == MaxIdleConn {
-		MaxIdleConn = "0"
-	}
-	dba, _ := strconv.Atoi(Database)
-	mops, _ := strconv.Atoi(MaxOpenConn)
-	midas, _ := strconv.Atoi(MaxIdleConn)
-	r.Rc = InitRedisPool(Host, Password, dba, mops, midas)
+
+	r.Rc = InitRedisPool(Host, Password, Database, poolSize, MinIdleConns)
 	return nil
 }
 

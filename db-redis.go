@@ -13,20 +13,21 @@ type ConnPool struct {
 }
 
 // InitRedisPool func init RDS fd
-func InitRedisPool(host, password string, database, maxOpenConns, maxIdleConns int) *ConnPool {
+func InitRedisPool(host, password string, database, poolSize, MinIdleConns int) *ConnPool {
 	r := &ConnPool{}
-	r.redisDB = newPool(host, password, database, maxOpenConns, maxIdleConns)
+	r.redisDB = newPool(host, password, database, poolSize, MinIdleConns)
 	//r.redisDB.Ping()
 	return r
 }
 
-func newPool(host, password string, database, maxOpenConns, maxIdleConns int) *redis.Client {
+func newPool(host, password string, database, poolSize, MinIdleConns int) *redis.Client {
 	return redis.NewClient(
 		&redis.Options{
-			Addr:     host,
-			Password: password,
-			DB:       database,
-
+			Addr:         host,
+			Password:     password,
+			DB:           database,
+			PoolSize:     poolSize,
+			MinIdleConns: MinIdleConns,
 			//DialTimeout:  10 * time.Second,
 			//ReadTimeout:  30 * time.Second,
 			//WriteTimeout: 30 * time.Second,
@@ -36,10 +37,10 @@ func newPool(host, password string, database, maxOpenConns, maxIdleConns int) *r
 }
 
 // Close pool
-func (p *ConnPool) Close()  {
+func (p *ConnPool) Close() {
 	err := p.redisDB.Close()
 	if err != nil {
-		log.Println("[Redis Error]: ",err)
+		log.Println("[Redis Error]: ", err)
 	}
 }
 
@@ -69,8 +70,6 @@ func (p *ConnPool) Keys(keys interface{}) *redis.Cmd {
 	//defer p.Close()
 	return p.Do("KEYS", keys)
 }
-
-
 
 // DelKey for key
 func (p *ConnPool) Delete(key interface{}) *redis.Cmd {

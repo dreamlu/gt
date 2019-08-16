@@ -47,7 +47,7 @@ type Crud interface {
 	// json data
 	Update(data interface{}) error          // update
 	Create(data interface{}) error          // create, include res insert id
-	CreateMoreDataJ(data interface{}) error // create more
+	CreateMoreData(data interface{}) error // create more
 }
 
 // crud params

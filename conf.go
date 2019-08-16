@@ -3,43 +3,90 @@
 package der
 
 import (
-	"github.com/go-ini/ini"
 	"log"
-	"os"
 )
 
-// get path file params
-func Config(key, path string) string {
-	cfg, err := ini.Load(path)
+// config
+type Config struct {
+	// different devMode yaml data
+	YamlS map[string]*Yaml
+	// yaml dir
+	dir string
+}
+
+// new Config
+// load all devMode yaml data
+func (c *Config) NewConfig() {
+
+	// init param
+	c.dir = "conf/"
+	c.YamlS = make(map[string]*Yaml, 2)
+
+	// devMode
+	devMode := c.getDevMode()
+	// load data
+	yaml := c.loadYaml(c.dir + "app-" + devMode + ".yaml")
+
+	// add yamlS data
+	c.YamlS[devMode] = yaml
+}
+
+// find yaml dev mode
+// default devMode is app.yaml
+// use 'app' as the map key
+func (c *Config) getDevMode() (devMode string) {
+	yaml := c.loadYaml(c.dir + "app.yaml")
+
+	// add yamlS data
+	c.YamlS["app"] = yaml
+
+	return yaml.Get("app.devMode").(string)
+}
+
+// load dev mode data
+func (c *Config) loadYaml(path string) *Yaml {
+	yaml := &Yaml{}
+	err := yaml.loadYaml(path)
 	if err != nil {
-		log.Printf("[CONFIG ERROR]: %s", err.Error())
-		os.Exit(1)
+		log.Println("[CONFIG ERROR]: ", err)
 	}
-	return cfg.Section("").Key(key).String()
+	return yaml
 }
 
-// default get conf/app.conf
-func GetConfigValue(key string) string {
-
-	return Config(key, "conf/app.conf")
+// get yaml data
+// find the first data, must different from app.yaml
+func (c *Config) Get(name string) interface{} {
+	for _, v := range c.YamlS {
+		if value := v.Get(name); value != nil {
+			return value
+		}
+	}
+	return nil
 }
 
-// devMode file config
-// devMode like dev/prod, and must has app-dev.conf/app-prod.conf
-func GetDevModeConfig(key string) string {
-
-	// dev mode
-	devMode := GetConfigValue("devMode")
-	if devMode == "" {
-		return GetConfigValue(key)
+func (c *Config) GetString(name string) string {
+	for _, v := range c.YamlS {
+		if value := v.GetString(name); value != "" {
+			return value
+		}
 	}
+	return ""
+}
 
-	// mode config file
-	// get devMode value
-	value := Config(key, "conf/app-"+devMode+".conf")
-	if "" == value {
-		// read the default config
-		value = GetConfigValue(key)
+func (c *Config) GetInt(name string) int {
+	for _, v := range c.YamlS {
+		if value := v.GetInt(name); value != 0 {
+			return value
+		}
 	}
-	return value
+	return 0
+}
+
+func (c *Config) GetBool(name string) bool {
+	for _, v := range c.YamlS {
+		if value := v.GetBool(name); value != false {
+			return value
+		}
+	}
+	return false
 }

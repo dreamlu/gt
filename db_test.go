@@ -45,11 +45,11 @@ type OrderD struct {
 	Createtime  time.CTime `json:"createtime"`   // createtime
 }
 
-var GOTool *DBTool
+var GOTool = &DBTool{}
 
 func init() {
 	// init DB
-	GOTool = GOTool.NewDBTool()
+	GOTool.NewDBTool()
 	GOTool.DB.LogMode(true)
 }
 
@@ -149,10 +149,10 @@ func TestGetSearchSql(t *testing.T) {
 
 // 通用sql以及参数
 func TestGetDataBySql(t *testing.T) {
-	var sql = "select id,name,createtime from `user` where id = ? and name = ?"
+	var sql = "select id,name,createtime from `user` where id = ?"
 
 	var user User
-	_ = GOTool.GetDataBySQL(&user, sql, "1", "梦")
+	_ = GOTool.GetDataBySQL(&user, sql, "1")
 	log.Println(user)
 
 	//GOTool.Raw(sql, []interface{}{1, "梦"}[:]...).Scan(&user)
@@ -248,7 +248,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 }
 
 // 批量创建
-func TestCreateMoreDataJ(t *testing.T) {
+func TestCreateMoreData(t *testing.T) {
 
 	var user = []User{
 		{Name: "测试1", Createtime: time.CTime(time2.Now())},
@@ -260,6 +260,6 @@ func TestCreateMoreDataJ(t *testing.T) {
 		Model: User{},
 	}
 
-	err := GOTool.Crud.CreateMoreDataJ(user)
+	err := GOTool.Crud.CreateMoreData(user)
 	log.Println(err)
 }

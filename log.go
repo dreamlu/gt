@@ -68,7 +68,9 @@ func DefaultFileLog(logPath string, logFileName string) {
 // dev mode not output file
 // other mode output your project/log/projectName.log
 func DefaultDevModeLog() {
-	devMode := GetConfigValue("devMode")
+	config := &Config{}
+	config.NewConfig()
+	devMode := config.GetString("devMode")
 	if devMode == "dev" {
 		NewLog()
 	} else {

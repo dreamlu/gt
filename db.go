@@ -31,11 +31,14 @@ type dba struct {
 
 func (db *DBTool) NewDB() *gorm.DB {
 
+	config := &Config{}
+	config.NewConfig()
+
 	dbS := &dba{
-		user:     GetDevModeConfig("db.user"),
-		password: GetDevModeConfig("db.password"),
-		host:     GetDevModeConfig("db.host"),
-		name:     GetDevModeConfig("db.name"),
+		user:     config.GetString("app.db.user"),
+		password: config.GetString("app.db.password"),
+		host:     config.GetString("app.db.host"),
+		name:     config.GetString("app.db.name"),
 	}
 	var (
 		err error
@@ -72,13 +75,13 @@ func (db *DBTool) NewDB() *gorm.DB {
 
 	// connection pool
 	var maxIdle, maxOpen int
-	maxIdleConn := GetDevModeConfig("db.maxIdleConn")
+	maxIdleConn := config.GetString("db.maxIdleConn")
 	if maxIdleConn == "" {
 		maxIdle = 20
 	}
 	maxIdle, _ = strconv.Atoi(maxIdleConn)
 
-	maxOpenConn := GetDevModeConfig("db.maxOpenConn")
+	maxOpenConn := config.GetString("db.maxOpenConn")
 	if maxOpenConn == "" {
 		maxOpen = 100
 	}
@@ -92,13 +95,16 @@ func (db *DBTool) NewDB() *gorm.DB {
 	return DB
 }
 
-func (db *DBTool) NewDBTool() *DBTool {
+// init DBTool
+func (db *DBTool) NewDBTool() {
 
-	dbTool := &DBTool{
-		DB:   db.NewDB(),
-		Crud: &DBCrud{},
-	}
+	//dbTool := &DBTool{
+	//	DB:   db.NewDB(),
+	//	Crud: &DBCrud{},
+	//}
 
-	dbTool.Crud.InitDBTool(dbTool)
-	return dbTool
+	db.DB = db.NewDB()
+	db.Crud = &DBCrud{}
+
+	db.Crud.InitDBTool(db)
 }

@@ -1,0 +1,7 @@
+app:
+  # database
+  db:
+    host: tcp(mysql:3306)
+    name: go-tool
+    password: docker
+    user: root

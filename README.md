@@ -17,16 +17,14 @@ go-tool 是一个通用的api快速开发工具库
 ##### 特点:
 | 特点 | 
 | ------ |
-| 单/多张表的增删改查以及分页 |   
-| 多张表连接操作 |  
-| select `*`优化<br>反射替换*为具体字段名 |
-| 自定义gorm日志<br>存储错误sql以及相关error<br>支持mysql JSON类型 |  
-| 增加权限<br>用户-组(角色)-权限(菜单)(待优化) |
+| 根据模型快速生成代码 |   
+| 多张表连接模型快速生成 |  
+| gorm 业务封装<br>支持mysql JSON类型 |  
 | 增加参数验证 |
 | 增加mysql远程连接 |
 | 增加多表key模糊搜索 |
 | session(cookie/redis) |
-| conf/app.conf 多开发模式支持 |
+| YAML多开发模式配置 |
 | 请求方式json/form data |
 | [cache](./cache.go) 缓存实现 |
 | [参数验证](tool/validator/validator_test.go) |  
@@ -36,21 +34,9 @@ go-tool 是一个通用的api快速开发工具库
 go modules
 ##### API
 - [API 使用](#api-examples)
-    - [FORM请求](#form-request)
-        - [Create](#create)
-        - [Update](#update)
-        - [Delete](#delete)
-        - [GetBySearch](#getbysearch)
-        - [GetByID](#getbyid)
-        - [GetMoreBySearch](#getmorebysearch)
-        - [GetDataBySQL](#getdatabysql)
-        - [GetDataBySearchSQL](#getdatabysearchsql)
-        - [DeleteBySQL](#deletebysql)
-        - [UpdateBySQL](#updatebysql)
-        - [CreateBySQL](#createbysql)
-    - [JSON请求](#json-request)
+    - [SQL动态请求](#SQL-request)
     - [批量创建](#createmore)
-    - [配置文件模式](#getdevmodeconfig)
+    - [配置文件模式](#getdevmode)
     - [缓存使用](#cachemanager)
     - [加解密](#aesende)
     - [标准日期](#time)
@@ -61,162 +47,83 @@ go modules
 
 ### API Examples  
 
-#### Form Request
+#### SQL Request
 
-##### Create
+###### SQL API
 ```go
-// dbcrud form data
-var db = deercoder.DbCrud{
-	Model: User{},		// model
-	Table:"user",		// table name
-}
+	// init db tool
+	InitDBTool(dbTool *DBTool)
+	// crud method
 
-// create user
-func (c *User)Create(params map[string][]string) interface{} {
+	// get url params
+	// like form data
+	GetBySearch(args map[string][]string) (pager result.Pager, err error)     // search
+	GetByID(id string) error                                                  // by id
+	GetMoreBySearch(args map[string][]string) (pager result.Pager, err error) // more search
 
-	params["createtime"] = append(params["createtime"], time.Now().Format("2006-01-02 15:04:05"))
-	return db.Create(params)
-}
+	// common sql data
+	// through sql, get the data
+	GetDataBySQL(sql string, args ...interface{}) error // single data
+	// page limit ?,?
+	// args not include limit ?,?
+	GetDataBySearchSQL(sql, sqlNt string, args ...interface{}) (pager result.Pager, err error) // more data
+	DeleteBySQL(sql string, args ...interface{}) error
+	UpdateBySQL(sql string, args ...interface{}) error
+	CreateBySQL(sql string, args ...interface{}) error
+
+	// delete
+	Delete(id string) error // delete
+
+	// crud and search id
+	// form data
+	UpdateForm(args map[string][]string) error        // update
+	CreateForm(args map[string][]string) error        // create
+	CreateResID(args map[string][]string) (ID, error) // create res insert id
+
+	// crud and search id
+	// json data
+	Update(data interface{}) error          // update
+	Create(data interface{}) error          // create, include res insert id
+	CreateMoreData(data interface{}) error // create more
 ```
-
-##### Update
-```go
-// update user
-func (c *User)Update(params map[string][]string) interface{} {
-
-	return db.Update(params)
-}
-```
-
-##### Delete
-```go
-// delete user, by id
-func (c *User)Delete(id string) interface{} {
-
-	return db.Delete(id)
-}
-```
-
-##### GetBySearch
-```go
-// get user, limit and search
-// clientPage 1, everyPage 10 default
-func (c *User)GetBySearch(params map[string][]string) interface{} {
-	var users []*User
-	db.ModelData = &users
-	return db.GetBySearch(params)
-}
-```
-
-##### GetByID
-```go
-// get user, by id
-func (c *User)GetByID(id string) interface{} {
-
-	var user User	// not use *User
-	db.ModelData = &user
-	return db.GetByID(id)
-}
-```
-
-##### GetMoreBySearch
-```go
-// get order, limit and search
-// clientPage 1, everyPage 10 default
-func (c *Order) GetMoreBySearch(params map[string][]string) interface{} {
-	var or []*OrderD
-	db = deercoder.DbCrud{
-		InnerTables: []string{"order", "user"}, // inner join tables, 'order' must the first table
-		LeftTables:  []string{"service"},       // left join tables
-		Model:       OrderD{},                  // order model
-		ModelData:   &or,                       // model value
-	}
-	return db.GetMoreBySearch(params)
-}
-
-```
-
-##### UpdateBySQL
-```go
-var db = DbCrud{}
-sql := "update `user` set name=? where id=?"
-log.Println("[Info]:", db.UpdateBySQL(sql,"梦sql", 1))
-```
-
-#### Json Request
-```go
-// dbcrud json
-// json request
-var db_json = deercoder.DbCrudJ{
-	Model: User{}, // model
-	Table: "user", // table name
-}
-
-// get user, by id
-func (c *User) GetByIDJ(id string) interface{} {
-
-	var user User // not use *User
-	db_json.ModelData = &user
-	return db.GetByID(id)
-}
-
-// get user, limit and search
-// clientPage 1, everyPage 10 default
-func (c *User) GetBySearchJ(params map[string][]string) interface{} {
-	var users []*User
-	db_json.ModelData = &users
-	return db.GetBySearch(params)
-}
-
-// delete user, by id
-func (c *User) DeleteJ(id string) interface{} {
-
-	return db_json.Delete(id)
-}
-
-// update user
-func (c *User) UpdateJ(data *User) interface{} {
-
-	return db_json.Update(data)
-}
-
-// create user
-func (c *User) CreateJ(data *User) interface{} {
-
-	// create time
-	(*data).Createtime = deercoder.JsonTime(time.Now())
-
-	return db_json.Create(data)
-}
-
-```
+###### 如何使用
+参考[测试](db_test.go)
 
 #### CreateMore
 ```go
 // 批量创建
 func TestCreateMoreDataJ(t *testing.T) {
 
-	var user = []User{
-		{Name: "测试1", Createtime:time.CTime(time2.Now())},
-		{Name: "测试2"},
-	}
-	err := CreateMoreDataJ("user", User{}, user)
-	log.Println(err)
+    	var user = []User{
+    		{Name: "测试1", Createtime: time.CTime(time2.Now())},
+    		{Name: "测试2"},
+    	}
+    
+    	GOTool.Param = CrudParam{
+    		Table: "user",
+    		Model: User{},
+    	}
+    
+    	err := GOTool.Crud.CreateMoreData(user)
+    	log.Println(err)
 }
 
 ```
 
 - 多模式配置文件  
-> 配置方式: conf/app.conf 中 `devMode = dev` 对应conf/app-`dev`.conf  
+> 配置方式: conf/app.yaml 中 `devMode = dev` 对应conf/app-`dev`.yaml  
 
-#### GetDevModeConfig
+#### GetDevMode
 ```go
-// devMode test
-// app.conf devMode = dev
-// test the app-dev.conf value
-func TestDevMode(t *testing.T)  {
-	log.Println("config read test: ", GetDevModeConfig("db.host"))
-}
+	config := &Config{}
+	config.NewConfig()
+
+	dbS := &dba{
+		user:     config.GetString("app.db.user"),
+		password: config.GetString("app.db.password"),
+		host:     config.GetString("app.db.host"),
+		name:     config.GetString("app.db.name"),
+	}
 ```
 
 #### CacheManager

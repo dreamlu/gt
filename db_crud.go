@@ -105,7 +105,7 @@ func (c *DBCrud) CreateResID(params map[string][]string) (ID, error) {
 // == json data ==
 
 // create
-func (c *DBCrud) CreateMoreDataJ(data interface{}) error {
+func (c *DBCrud) CreateMoreData(data interface{}) error {
 
 	return c.db.CreateMoreDataJ(c.db.Param.Table, c.db.Param.Model, data)
 }

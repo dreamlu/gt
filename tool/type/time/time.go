@@ -51,7 +51,7 @@ func (t *CTime) Scan(v interface{}) error {
 		*t = CTime(value)
 		return nil
 	}
-	return fmt.Errorf("can not convert %v to JsonTime", v)
+	return fmt.Errorf("can not convert %v to CTime", v)
 }
 
 // must sure MarshalJSON is right
@@ -100,7 +100,7 @@ func (t *CDate) Scan(v interface{}) error {
 		*t = CDate(value)
 		return nil
 	}
-	return fmt.Errorf("can not convert %v to JsonDate", v)
+	return fmt.Errorf("can not convert %v to CDate", v)
 }
 
 // must sure MarshalJSON is right

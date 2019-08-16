@@ -7,15 +7,12 @@ import (
 	"testing"
 )
 
-const ConfigPath = "conf/app.conf"
+var config = &Config{}
 
-func TestConfig(t *testing.T){
-	log.Println("config read test: ",Config("http_port",ConfigPath))
+func init() {
+	config.NewConfig()
 }
 
-// devMode test
-// app.conf devMode = dev
-// test the app-dev.conf value
-func TestDevMode(t *testing.T)  {
-	log.Println("config read test: ", GetDevModeConfig("db.host"))
+func TestConfig(t *testing.T) {
+	log.Println("config read test: ", config.GetString("app.port"))
 }
