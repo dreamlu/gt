@@ -137,7 +137,9 @@ func TestValidateData(t *testing.T) {
 func TestGetSearchSql(t *testing.T) {
 
 	var args = make(map[string][]string)
-	args["key"] = append(args["key"], "梦 嘿,伙计")
+	args["clientPage"] = append(args["clientPage"], "1")
+	args["everyPage"] = append(args["everyPage"], "2")
+	//args["key"] = append(args["key"], "梦 嘿,伙计")
 	sqlNt, sql, _, _, _ := GetSearchSQL(User{}, "user", args)
 	log.Println("SQLNOLIMIT:", sqlNt, "\nSQL:", sql)
 

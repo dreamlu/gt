@@ -247,7 +247,7 @@ func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables
 	into:
 	}
 
-	if len(params) != 0 {
+	if bufW.Len() != 0 {
 		sql += fmt.Sprintf("where %s order by id %s ", bufW.Bytes()[:bufW.Len()-4], order)
 		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
 	}
@@ -301,7 +301,8 @@ func GetSearchSQL(model interface{}, table string, params map[string][]string) (
 		args = append(args, v[0]) // args
 	}
 
-	if len(params) != 0 {
+
+	if bufW.Len() != 0 {
 		sql += fmt.Sprintf("where %s order by id %s ", bufW.Bytes()[:bufW.Len()-4], order)
 		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
 	}
