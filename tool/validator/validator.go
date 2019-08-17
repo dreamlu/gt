@@ -214,7 +214,7 @@ func (n *DefaultRule) Check(data interface{}) (Err error) {
 			}
 		case "email":
 
-			if b, _ := regexp.MatchString(`^([\w\.\_]{2,10})@(\w{1,}).([a-z]{2,4})$`, data.(string)); !b {
+			if b, _ := regexp.MatchString(`^([\w\.\_]{2,10})@(\w+).([a-z]{2,4})$`, data.(string)); !b {
 				return errors.New(fmt.Sprintln("邮箱格式非法"))
 			}
 		default:

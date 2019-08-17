@@ -34,6 +34,9 @@ type File struct {
 //获得文件上传路径,内部专用
 func (f *File) GetUploadFile(file *multipart.FileHeader, fname string) (filename string) {
 
+	config := &der.Config{}
+	config.NewConfig()
+
 	filenameSplit := strings.Split(file.Filename, ".")
 	ftype := filenameSplit[len(filenameSplit)-1]
 	//防止文件名中多个“.”,获得文件后缀
@@ -45,7 +48,7 @@ func (f *File) GetUploadFile(file *multipart.FileHeader, fname string) (filename
 		//防止文件名中多个“.”,获得文件后缀
 		filename = fname + filename
 	}
-	path := der.GetDevModeConfig("filepath") + filename //文件目录
+	path := config.GetString("app.filepath") + filename //文件目录
 	_ = f.SaveUploadedFile(file, path)
 	switch ftype {
 	case "jpeg", "jpg", "png":

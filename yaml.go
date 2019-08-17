@@ -145,12 +145,12 @@ func (c *Yaml) setField(obj interface{}, name string, value interface{}) error {
 
 	// isValid 显示的测试一个空指针
 	if !structFieldValue.IsValid() {
-		return fmt.Errorf("No such field: %s in obj", name)
+		return errors.New("No such field: " + name)
 	}
 
 	// CanSet判断值是否可以被更改
 	if !structFieldValue.CanSet() {
-		return fmt.Errorf("Cannot set %s field value", name)
+		return errors.New("Cannot set field value" + name)
 	}
 
 	// 获取要更改值的类型
@@ -173,7 +173,7 @@ func (c *Yaml) setField(obj interface{}, name string, value interface{}) error {
 
 	} else {
 		if structFieldType != val.Type() {
-			return errors.New("Provided value type didn't match obj field type")
+			return errors.New("provided value type didn't match field type")
 		}
 
 		structFieldValue.Set(val)

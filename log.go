@@ -14,25 +14,24 @@ import (
 	"time"
 )
 
-// global log
-var Log *logrus.Logger
+// log
+type Log struct {
+	Log *logrus.Logger
+}
 
 // new log
-func NewLog() {
+func (l *Log) NewLog() {
 
-	Log := logrus.New()
-	Log.SetFormatter(&logrus.JSONFormatter{
+	l.Log = logrus.New()
+	l.Log.SetFormatter(&logrus.JSONFormatter{
 		TimestampFormat: "2006-01-02 15:04:05",
 	})
 }
 
 // new output file log
-func NewFileLog(logPath string, logFileName string, maxAge time.Duration, rotationTime time.Duration) {
+func (l *Log) NewFileLog(logPath string, logFileName string, maxAge time.Duration, rotationTime time.Duration) {
 
-	Log = logrus.New()
-	Log.SetFormatter(&logrus.JSONFormatter{
-		TimestampFormat: "2006-01-02 15:04:05",
-	})
+	l.NewLog()
 
 	baseLogPath := path.Join(logPath, logFileName)
 	writer, err := rotatelogs.New(
@@ -42,7 +41,7 @@ func NewFileLog(logPath string, logFileName string, maxAge time.Duration, rotati
 		rotatelogs.WithRotationTime(rotationTime), // 日志切割时间间隔
 	)
 	if err != nil {
-		Log.Errorf("日志文件系统配置错误. %+v", errors.WithStack(err))
+		l.Log.Errorf("日志文件系统配置错误. %+v", errors.WithStack(err))
 	}
 	lfHook := lfshook.NewHook(lfshook.WriterMap{
 		logrus.DebugLevel: writer, // 为不同级别设置不同的输出目的
@@ -54,29 +53,29 @@ func NewFileLog(logPath string, logFileName string, maxAge time.Duration, rotati
 	}, &logrus.JSONFormatter{
 		TimestampFormat: "2006-01-02 15:04:05",
 	})
-	Log.Hooks.Add(lfHook)
+	l.Log.Hooks.Add(lfHook)
 }
 
 // Default file log
 // maintain 7 days data, every 24 hour split file
-func DefaultFileLog(logPath string, logFileName string) {
+func (l *Log) DefaultFileLog(logPath string, logFileName string) {
 
-	NewFileLog(logPath, logFileName, time2.Week, time2.Day)
+	l.NewFileLog(logPath, logFileName, time2.Week, time2.Day)
 }
 
 // dev/prod/.. mode
 // dev mode not output file
 // other mode output your project/log/projectName.log
-func DefaultDevModeLog() {
+func (l *Log) DefaultDevModeLog() {
 	config := &Config{}
 	config.NewConfig()
 	devMode := config.GetString("devMode")
 	if devMode == "dev" {
-		NewLog()
+		l.NewLog()
 	} else {
 		var projectPath, _ = os.Getwd()
 		var pns = strings.Split(projectPath, "/")
 		var projectName = pns[len(pns)-1]
-		DefaultFileLog(projectPath+"/log/", projectName+".log")
+		l.DefaultFileLog(projectPath+"/log/", projectName+".log")
 	}
 }
