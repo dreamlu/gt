@@ -8,17 +8,20 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"log"
 	"strconv"
+	"sync"
 	"time"
 )
 
 // DB tool
 type DBTool struct {
+	// once
+	once sync.Once
 	// db driver
 	DB *gorm.DB
 	// crud interface
-	Crud Crud
+	//Crud Crud
 	// crud param
-	Param CrudParam
+	//Param *CrudParam
 }
 
 // db params
@@ -30,6 +33,8 @@ type dba struct {
 }
 
 func (db *DBTool) NewDB() *gorm.DB {
+
+	DB := &gorm.DB{}
 
 	config := &Config{}
 	config.NewConfig()
@@ -45,27 +50,29 @@ func (db *DBTool) NewDB() *gorm.DB {
 		sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", dbS.user, dbS.password, dbS.host, dbS.name)
 	)
 
-	//database, initialize once
-	DB, err := gorm.Open("mysql", sql)
-	//defer db.DB.Close()
-	if err != nil {
-		log.Println("[mysql连接错误]:", err)
-		log.Println("[mysql开始尝试重连中]: try it every 5s...")
-		// try to reconnect
-		for {
-			// go is so fast
-			// try it every 5s
-			time.Sleep(5 * time.Second)
-			DB, err = gorm.Open("mysql", sql)
-			//defer DB.Close()
-			if err != nil {
-				log.Println("[mysql连接错误]:", err)
-				continue
+	db.once.Do(func() {
+		//database, initialize once
+		DB, err = gorm.Open("mysql", sql)
+		//defer db.DB.Close()
+		if err != nil {
+			log.Println("[mysql连接错误]:", err)
+			log.Println("[mysql开始尝试重连中]: try it every 5s...")
+			// try to reconnect
+			for {
+				// go is so fast
+				// try it every 5s
+				time.Sleep(5 * time.Second)
+				DB, err = gorm.Open("mysql", sql)
+				//defer DB.Close()
+				if err != nil {
+					log.Println("[mysql连接错误]:", err)
+					continue
+				}
+				log.Println("[mysql重连成功]")
+				break
 			}
-			log.Println("[mysql重连成功]")
-			break
 		}
-	}
+	})
 	// Globally disable table names
 	// use name replace names
 	DB.SingularTable(true)
@@ -104,7 +111,7 @@ func (db *DBTool) NewDBTool() {
 	//}
 
 	db.DB = db.NewDB()
-	db.Crud = &DBCrud{}
+	//db.Crud = &DBCrud{}
 
-	db.Crud.InitDBTool(db)
+	//db.Crud.InitDBTool(db)
 }

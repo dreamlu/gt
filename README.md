@@ -52,7 +52,7 @@ go modules
 ###### SQL API
 ```go
 	// init db tool
-	InitDBTool(dbTool *DBTool)
+	InitDBTool(dbTool *DBTool, param *CrudParam)
 	// crud method
 
 	// get url params
@@ -94,18 +94,18 @@ go modules
 // 批量创建
 func TestCreateMoreDataJ(t *testing.T) {
 
-    	var user = []User{
-    		{Name: "测试1", Createtime: time.CTime(time2.Now())},
-    		{Name: "测试2"},
-    	}
-    
-    	GOTool.Param = CrudParam{
-    		Table: "user",
-    		Model: User{},
-    	}
-    
-    	err := GOTool.Crud.CreateMoreData(user)
-    	log.Println(err)
+	var user = []User{
+		{Name: "测试1", Createtime: time.CTime(time2.Now())},
+		{Name: "测试2"},
+	}
+
+	crud.Param = &CrudParam{
+		Table: "user",
+		Model: User{},
+	}
+
+	err := crud.CreateMoreData(user)
+	log.Println(err)
 }
 
 ```

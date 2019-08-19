@@ -45,7 +45,13 @@ type OrderD struct {
 	Createtime  time.CTime `json:"createtime"`   // createtime
 }
 
+// 全局
 var GOTool = &DBTool{}
+// 局部
+var crud = &DBCrud{
+	DBTool: GOTool,
+	Param:  &CrudParam{},
+}
 
 func init() {
 	// init DB
@@ -182,32 +188,32 @@ func TestCrud(t *testing.T) {
 	// get by id
 	GOTool.DB.AutoMigrate(&User{})
 	var user User
-	GOTool.Param = CrudParam{
+	crud.Param = &CrudParam{
 		Table:     "user",
 		ModelData: &user,
 	}
-	info := GOTool.Crud.GetByID("1")
+	info := crud.GetByID("1")
 	log.Println(info, "\n[User Info]:", user)
 
 	// get by search
 	var users []*User
-	GOTool.Param = CrudParam{
+	crud.Param = &CrudParam{
 		Table:     "user",
 		Model:     User{},
 		ModelData: &users,
 	}
 	args["name"][0] = "梦4"
-	GOTool.Crud.GetBySearch(args)
+	crud.GetBySearch(args)
 	log.Println("\n[User Info]:", users)
 
 	// delete
-	info2 := GOTool.Crud.Delete("12")
+	info2 := crud.Delete("12")
 	log.Println(info2)
 
 	// update
 	args["id"] = append(args["id"], "4")
 	args["name"][0] = "梦4"
-	info2 = GOTool.Crud.Update(args)
+	info2 = crud.Update(args)
 	log.Println(info2)
 
 	// create
@@ -223,7 +229,7 @@ func TestCrud(t *testing.T) {
 func TestCrudSQL(t *testing.T) {
 	//var db = DbCrud{}
 	sql := "update `user` set name=? where id=?"
-	log.Println("[Info]:", GOTool.Crud.UpdateBySQL(sql, "梦sql", 1))
+	log.Println("[Info]:", crud.UpdateBySQL(sql, "梦sql", 1))
 }
 
 // 测试多表连接
@@ -236,13 +242,13 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	params["clientPage"] = append(params["clientPage"], "1")
 	params["everyPage"] = append(params["everyPage"], "2")
 	var or []*OrderD
-	GOTool.Param = CrudParam{
+	crud.Param = &CrudParam{
 		InnerTables: []string{"order", "user"},
 		LeftTables:  []string{"service"},
 		Model:       OrderD{},
 		ModelData:   &or,
 	}
-	_, err := GOTool.Crud.GetMoreBySearch(params)
+	_, err := crud.GetMoreBySearch(params)
 	if err != nil {
 		log.Println(err)
 	}
@@ -257,11 +263,11 @@ func TestCreateMoreData(t *testing.T) {
 		{Name: "测试2"},
 	}
 
-	GOTool.Param = CrudParam{
+	crud.Param = &CrudParam{
 		Table: "user",
 		Model: User{},
 	}
 
-	err := GOTool.Crud.CreateMoreData(user)
+	err := crud.CreateMoreData(user)
 	log.Println(err)
 }

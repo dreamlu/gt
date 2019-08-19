@@ -15,7 +15,7 @@ const Version = "1.1.x"
 // crud
 type Crud interface {
 	// init db tool
-	InitDBTool(dbTool *DBTool)
+	InitDBTool(dbTool *DBTool, param *CrudParam)
 	// crud method
 
 	// get url params
