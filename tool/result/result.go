@@ -1,5 +1,7 @@
 package result
 
+import "encoding/json"
+
 // status and msg
 const (
 	Status = "status"
@@ -24,15 +26,7 @@ const (
 	CodeSQL        = 222 // 数据库相关
 	CodeLackArgs   = 223 // 缺少参数
 	CodeFile       = 224 // 文件上传相关
-	CodeNoDelete   = 225 // 存在外健约束(逻辑或数据库约束)
-	CodeEcrypt     = 230 // 数据解密失败
-	CodeWx         = 240 // 微信小程序相关
-	CodeWxPay      = 242 // 微信支付相关
-	CodeWxWithDraw = 243 // 微信提现相关
-	CodeOrder      = 251 // 订单相关
-	CodeAliPay     = 262 // 支付宝支付相关
 	CodeText       = 271 // 全局文字提示
-	CodeChat       = 280 // chat相关
 	CodeError      = 500 // 系统繁忙
 )
 
@@ -101,54 +95,84 @@ type MapData struct {
 
 // 信息通用,状态码及信息提示
 func GetMapData(status int64, msg interface{}) MapData {
-	me := MapData{
+
+	return MapData{
 		Status: status,
 		Msg:    msg,
 	}
-	return me
+}
+
+// 后端提示
+func GetText(Msg interface{}) MapData {
+
+	return GetMapData(CodeText, Msg)
 }
 
 // 信息成功通用(成功通用, 无分页)
 func GetSuccess(data interface{}) GetInfo {
-	me := GetInfo{
+
+	return GetInfo{
 		MapData: MapSuccess,
 		Data:    data,
 	}
-	return me
 }
 
 // 信息分页通用(成功通用, 分页)
 func GetSuccessPager(data interface{}, pager Pager) GetInfoPager {
-	me := GetInfoPager{
+
+	return GetInfoPager{
 		GetInfo: GetSuccess(data),
 		Pager:   pager,
 	}
-	return me
 }
 
 // 信息失败通用
 func GetError(data interface{}) GetInfo {
-	me := GetInfo{
+
+	return GetInfo{
 		MapData: MapError,
 		Data:    data,
 	}
-	return me
 }
 
 // 无分页通用
 func GetData(data interface{}, mapData MapData) GetInfo {
-	me := GetInfo{
+
+	return GetInfo{
 		MapData: mapData,
 		Data:    data,
 	}
-	return me
 }
 
 // 分页通用
 func GetDataPager(data interface{}, mapData MapData, pager Pager) GetInfoPager {
-	me := GetInfoPager{
+
+	return GetInfoPager{
 		GetInfo: GetData(data, mapData),
 		Pager:   pager,
 	}
-	return me
+}
+
+// string
+func (m *MapData) String() (string, error) {
+
+	return structToString(m)
+}
+
+func (m *GetInfo) String() (string, error) {
+
+	return structToString(m)
+}
+
+func (m *GetInfoPager) String() (string, error) {
+
+	return structToString(m)
+}
+
+func structToString(st interface{}) (string, error) {
+	s, err := json.Marshal(st)
+	if err != nil {
+		return "", err
+	}
+	return string(s), nil
 }

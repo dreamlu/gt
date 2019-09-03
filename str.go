@@ -14,3 +14,8 @@ type Value struct {
 type ID struct {
 	ID int64 `json:"id"`
 }
+
+// string
+type String interface {
+	String() (string, error)
+}

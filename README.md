@@ -4,14 +4,9 @@ go-tool 是一个通用的api快速开发工具库
 ##### 工具构成:  
 | 路由    | orm  | 数据库 | 权限   |  配置   |  缓存  |
 | ------ | ---- | ----  | ------ | ------ | ----- |
-| go web | gorm | mysql | casbin(待完善)  | go-ini | redis |  
+| go web | gorm | mysql | casbin(待完善)  | go-ini | redis |   
 
-##### 原理：
-
-1.封装  
-2.反射  
-
-##### demo(待完善)  
+##### demo  
 [deercoder-gin](https://github.com/dreamlu/deercoder-gin)  
 
 ##### 特点:
@@ -30,8 +25,6 @@ go-tool 是一个通用的api快速开发工具库
 | [参数验证](tool/validator/validator_test.go) |  
 | ...... |  
 
-##### 使用  
-go modules
 ##### API
 - [API 使用](#api-examples)
     - [SQL动态请求](#SQL-request)
@@ -43,6 +36,7 @@ go modules
     - [JSON类型](#jsontype)
     - [字段验证](#validator)  
     - [日志支持](#customlog)
+    - [snowflake ID](#snowflakeid)
     
 
 ### API Examples  
@@ -213,6 +207,18 @@ func TestNewFileLog(t *testing.T) {
 		time.Sleep(1 * time.Second)
 		myLog.Error("测试")
 	}
+}
+```
+
+### SnowflakeId
+```go
+func TestId(t *testing.T) {
+	id, err := NewID(1)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	t.Log(id.String())
 }
 ```
 
