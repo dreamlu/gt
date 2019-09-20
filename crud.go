@@ -8,14 +8,19 @@ package der
 
 import (
 	"github.com/dreamlu/go-tool/tool/result"
+	"sync"
 )
 
 const Version = "1.1.x"
 
 // crud
 type Crud interface {
-	// init db tool
-	InitDBTool(dbTool *DBTool, param *CrudParam)
+	// init crud
+	InitCrud(dbTool *DBTool, param *CrudParam)
+	// DB
+	DB() *DBTool
+	// param
+	Param() *CrudParam
 	// crud method
 
 	// get url params
@@ -45,8 +50,8 @@ type Crud interface {
 
 	// crud and search id
 	// json data
-	Update(data interface{}) error          // update
-	Create(data interface{}) error          // create, include res insert id
+	Update(data interface{}) error         // update
+	Create(data interface{}) error         // create, include res insert id
 	CreateMoreData(data interface{}) error // create more
 }
 
@@ -62,4 +67,25 @@ type CrudParam struct {
 	// pager info
 	ClientPage int64 // page number
 	EveryPage  int64 // Number of pages per page
+}
+
+var (
+	onceDB sync.Once
+	// dbTool
+	// dbTool was global
+	dbTool *DBTool
+	// config
+	//config = NewConfig()
+)
+
+// new crud
+func NewCrud(param *CrudParam) Crud {
+
+	onceDB.Do(func() {
+		dbTool = NewDBTool()
+	})
+
+	crud := new(DBCrud)
+	crud.InitCrud(dbTool, param)
+	return crud
 }

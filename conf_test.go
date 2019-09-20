@@ -7,12 +7,7 @@ import (
 	"testing"
 )
 
-var config = &Config{}
-
-func init() {
-	config.NewConfig()
-}
-
 func TestConfig(t *testing.T) {
+	var config = Configger()
 	log.Println("config read test: ", config.GetString("app.port"))
 }

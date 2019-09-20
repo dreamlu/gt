@@ -13,9 +13,9 @@ type Order struct {
 	CreateTime int64 `json:"create_time"` // createtime
 }
 
-func TestGetDataID(t *testing.T){
-	or := Order{}//new(Order)
+func TestGetDataID(t *testing.T) {
+	or := Order{} //new(Order)
 	or.ID = 23
-	id,_ := GetDataByFieldName(or, "ID")
-	log.Println("id value is ",id)
+	id, _ := GetDataByFieldName(or, "ID")
+	log.Println("id value is ", id)
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"log"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -17,11 +16,7 @@ type DBTool struct {
 	// once
 	once sync.Once
 	// db driver
-	DB *gorm.DB
-	// crud interface
-	//Crud Crud
-	// crud param
-	//Param *CrudParam
+	*gorm.DB
 }
 
 // db params
@@ -32,18 +27,17 @@ type dba struct {
 	name     string
 }
 
+// new db driver
 func (db *DBTool) NewDB() *gorm.DB {
 
 	DB := &gorm.DB{}
-
-	config := &Config{}
-	config.NewConfig()
+	conf := Configger()
 
 	dbS := &dba{
-		user:     config.GetString("app.db.user"),
-		password: config.GetString("app.db.password"),
-		host:     config.GetString("app.db.host"),
-		name:     config.GetString("app.db.name"),
+		user:     conf.GetString("app.db.user"),
+		password: conf.GetString("app.db.password"),
+		host:     conf.GetString("app.db.host"),
+		name:     conf.GetString("app.db.name"),
 	}
 	var (
 		err error
@@ -82,17 +76,15 @@ func (db *DBTool) NewDB() *gorm.DB {
 
 	// connection pool
 	var maxIdle, maxOpen int
-	maxIdleConn := config.GetString("db.maxIdleConn")
-	if maxIdleConn == "" {
+	var logMode bool
+	if maxIdle = conf.GetInt("app.db.maxIdleConn"); maxIdle == 0 {
 		maxIdle = 20
 	}
-	maxIdle, _ = strconv.Atoi(maxIdleConn)
-
-	maxOpenConn := config.GetString("db.maxOpenConn")
-	if maxOpenConn == "" {
+	if maxOpen = conf.GetInt("app.db.maxOpenConn"); maxOpen == 0 {
 		maxOpen = 100
 	}
-	maxOpen, _ = strconv.Atoi(maxIdleConn)
+	logMode = conf.GetBool("app.db.log")
+	DB.LogMode(logMode)
 
 	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
 	DB.DB().SetMaxIdleConns(maxIdle)
@@ -103,15 +95,11 @@ func (db *DBTool) NewDB() *gorm.DB {
 }
 
 // init DBTool
-func (db *DBTool) NewDBTool() {
+func NewDBTool() *DBTool {
 
-	//dbTool := &DBTool{
-	//	DB:   db.NewDB(),
-	//	Crud: &DBCrud{},
-	//}
+	dbTool := &DBTool{}
 
-	db.DB = db.NewDB()
-	//db.Crud = &DBCrud{}
-
-	//db.Crud.InitDBTool(db)
+	// init db
+	dbTool.DB = dbTool.NewDB()
+	return dbTool
 }

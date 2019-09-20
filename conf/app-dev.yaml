@@ -1,6 +1,7 @@
 app:
   # database
   db:
+    log: true
     host: tcp(127.0.0.1:3306)
     user: root
     password: lucheng

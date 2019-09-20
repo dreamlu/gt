@@ -10,6 +10,7 @@ import (
 )
 
 var r = RedisManager{}
+
 // cache test
 var cache CacheManager = new(RedisManager)
 
@@ -76,7 +77,6 @@ func TestCacheCheckDelRedis(t *testing.T) {
 	err := cache.DeleteMore(user)
 	log.Println("delete: ", err)
 }
-
 
 // cookie test
 func TestCookie(t *testing.T) {

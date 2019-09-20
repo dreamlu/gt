@@ -11,27 +11,45 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 	"time"
 )
 
 // log
 type Log struct {
-	Log *logrus.Logger
+	*logrus.Logger
+}
+
+var (
+	onceLog sync.Once
+	// global log
+	l       *Log
+)
+
+// one single log
+func Logger() *Log {
+
+	onceLog.Do(func() {
+		l = NewLog()
+	})
+
+	return l
 }
 
 // new log
-func (l *Log) NewLog() {
+func NewLog() *Log {
 
-	l.Log = logrus.New()
-	l.Log.SetFormatter(&logrus.JSONFormatter{
-		TimestampFormat: "2006-01-02 15:04:05",
-	})
+	lgr := logrus.New()
+	log := &Log{}
+	log.Logger = lgr
+
+	return log
 }
 
 // new output file log
 func (l *Log) NewFileLog(logPath string, logFileName string, maxAge time.Duration, rotationTime time.Duration) {
 
-	l.NewLog()
+	//l.NewLog()
 
 	baseLogPath := path.Join(logPath, logFileName)
 	writer, err := rotatelogs.New(
@@ -41,7 +59,7 @@ func (l *Log) NewFileLog(logPath string, logFileName string, maxAge time.Duratio
 		rotatelogs.WithRotationTime(rotationTime), // 日志切割时间间隔
 	)
 	if err != nil {
-		l.Log.Errorf("日志文件系统配置错误. %+v", errors.WithStack(err))
+		l.Errorf("日志文件系统配置错误. %+v", errors.WithStack(err))
 	}
 	lfHook := lfshook.NewHook(lfshook.WriterMap{
 		logrus.DebugLevel: writer, // 为不同级别设置不同的输出目的
@@ -53,7 +71,7 @@ func (l *Log) NewFileLog(logPath string, logFileName string, maxAge time.Duratio
 	}, &logrus.JSONFormatter{
 		TimestampFormat: "2006-01-02 15:04:05",
 	})
-	l.Log.Hooks.Add(lfHook)
+	l.Hooks.Add(lfHook)
 }
 
 // Default file log
@@ -67,11 +85,11 @@ func (l *Log) DefaultFileLog(logPath string, logFileName string) {
 // dev mode not output file
 // other mode output your project/log/projectName.log
 func (l *Log) DefaultDevModeLog() {
-	config := &Config{}
-	config.NewConfig()
-	devMode := config.GetString("devMode")
-	if devMode == "dev" {
-		l.NewLog()
+	// config := Configger()
+	devMode := Configger().GetString("devMode")
+	if devMode == Dev {
+		//l.NewLog()
+		return
 	} else {
 		var projectPath, _ = os.Getwd()
 		var pns = strings.Split(projectPath, "/")

@@ -19,13 +19,10 @@ const (
 	CodeDelete     = 209 // 删除成功
 	CodeValidator  = 210 // 字段验证
 	CodeCount      = 211 // 账号相关
-	CodeCaptcha    = 214 // 验证码
 	CodeValSuccess = 217 // 验证成功
 	CodeValError   = 218 // 验证失败
 	CodeExistOrNo  = 220 // 数据无变化
 	CodeSQL        = 222 // 数据库相关
-	CodeLackArgs   = 223 // 缺少参数
-	CodeFile       = 224 // 文件上传相关
 	CodeText       = 271 // 全局文字提示
 	CodeError      = 500 // 系统繁忙
 )
@@ -39,14 +36,11 @@ const (
 	MsgDelete     = "删除成功"
 	MsgUpdate     = "修改成功"
 	MsgError      = "未知错误"
-	MsgCaptcha    = "验证码验证失败"
 	MsgExistOrNo  = "数据无变化"
 	MsgCountErr   = "用户账号或密码错误"
 	MsgNoCount    = "用户账号不存在"
-	MsgLackArgs   = "缺少参数"
 	MsgValSuccess = "验证成功"
 	MsgValError   = "验证失败"
-	MsgFile       = "上传成功"
 )
 
 // 约定提示信息
@@ -58,11 +52,9 @@ var (
 	MapCreate     = GetMapData(CodeCreate, MsgCreate)         // 创建成功
 	MapNoResult   = GetMapData(CodeNoResult, MsgNoResult)     // 暂无数据
 	MapNoAuth     = GetMapData(CodeNoAuth, MsgNoAuth)         // 请求非法
-	MapCaptcha    = GetMapData(CodeCaptcha, MsgCaptcha)       // 验证码验证失败
 	MapExistOrNo  = GetMapData(CodeExistOrNo, MsgExistOrNo)   // 指数据修改没有变化 或者 给的条件值不存在
 	MapCountErr   = GetMapData(CodeCount, MsgCountErr)        // 用户账号密码错误
 	MapNoCount    = GetMapData(CodeCount, MsgNoCount)         // 用户账号不存在
-	MapLackArgs   = GetMapData(CodeLackArgs, MsgLackArgs)     // 缺少参数
 	MapValSuccess = GetMapData(CodeValSuccess, MsgValSuccess) // 验证成功
 	MapValError   = GetMapData(CodeValError, MsgValError)     // 验证失败
 )

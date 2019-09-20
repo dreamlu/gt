@@ -46,18 +46,9 @@ type OrderD struct {
 }
 
 // 全局
-var GOTool = &DBTool{}
+//var GOTool = NewDBTool()
 // 局部
-var crud = &DBCrud{
-	DBTool: GOTool,
-	Param:  &CrudParam{},
-}
-
-func init() {
-	// init DB
-	GOTool.NewDBTool()
-	GOTool.DB.LogMode(true)
-}
+var crud = NewCrud(&CrudParam{})
 
 func TestDB(t *testing.T) {
 
@@ -70,7 +61,7 @@ func TestDB(t *testing.T) {
 	//log.Println(err)
 
 	// return create id
-	_ = GOTool.CreateDataJ(&user)
+	_ = crud.DB().CreateDataJ(&user)
 	log.Println("user: ", user)
 
 	//user.ID = 8 //0
@@ -116,7 +107,7 @@ func TestSqlSearch(t *testing.T) {
 	sql = string([]byte(sql)[:len(sql)-4]) //去and
 	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
 	sql += "order by a.id "
-	log.Println(GOTool.GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage))
+	log.Println(crud.DB().GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage))
 	log.Println(ui[0].Userinfo.String())
 }
 
@@ -135,7 +126,7 @@ func TestSqlSearchV2(t *testing.T) {
 // select 数据存在验证
 func TestValidateData(t *testing.T) {
 	sql := "select *from `user` where id=2"
-	ss := GOTool.ValidateSQL(sql)
+	ss := crud.DB().ValidateSQL(sql)
 	log.Println(ss)
 }
 
@@ -160,7 +151,7 @@ func TestGetDataBySql(t *testing.T) {
 	var sql = "select id,name,createtime from `user` where id = ?"
 
 	var user User
-	_ = GOTool.GetDataBySQL(&user, sql, "1")
+	_ = crud.DB().GetDataBySQL(&user, sql, "1")
 	log.Println(user)
 
 	//GOTool.Raw(sql, []interface{}{1, "梦"}[:]...).Scan(&user)
@@ -174,7 +165,7 @@ func TestGetDataBySearch(t *testing.T) {
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
 	var user []*User
-	_, _ = GOTool.GetDataBySearch(User{}, &user, "user", args)
+	_, _ = crud.DB().GetDataBySearch(User{}, &user, "user", args)
 	t.Log(user[0])
 }
 
@@ -186,23 +177,28 @@ func TestCrud(t *testing.T) {
 	// var crud DbCrud
 	// must use AutoMigrate
 	// get by id
-	GOTool.DB.AutoMigrate(&User{})
+	//GOTool.DB.AutoMigrate(&User{})
+	//crud.DB().DB.AutoMigrate(&User{})
 	var user User
-	crud.Param = &CrudParam{
+	param := &CrudParam{
 		Table:     "user",
 		ModelData: &user,
 	}
+	crud = NewCrud(param)
 	info := crud.GetByID("1")
 	log.Println(info, "\n[User Info]:", user)
 
 	// get by search
 	var users []*User
-	crud.Param = &CrudParam{
-		Table:     "user",
-		Model:     User{},
-		ModelData: &users,
-	}
-	args["name"][0] = "梦4"
+	//param = &CrudParam{
+	//	Table:     "user",
+	//	Model:     User{},
+	//	ModelData: &users,
+	//}
+	//crud = NewCrud(param)
+	crud.Param().Model = User{}
+	crud.Param().ModelData = &users
+	args["name"][0] = "梦"
 	crud.GetBySearch(args)
 	log.Println("\n[User Info]:", users)
 
@@ -213,7 +209,7 @@ func TestCrud(t *testing.T) {
 	// update
 	args["id"] = append(args["id"], "4")
 	args["name"][0] = "梦4"
-	info2 = crud.Update(args)
+	info2 = crud.UpdateForm(args)
 	log.Println(info2)
 
 	// create
@@ -242,12 +238,13 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	params["clientPage"] = append(params["clientPage"], "1")
 	params["everyPage"] = append(params["everyPage"], "2")
 	var or []*OrderD
-	crud.Param = &CrudParam{
+	param := &CrudParam{
 		InnerTables: []string{"order", "user"},
 		LeftTables:  []string{"service"},
 		Model:       OrderD{},
 		ModelData:   &or,
 	}
+	crud := NewCrud(param)
 	_, err := crud.GetMoreBySearch(params)
 	if err != nil {
 		log.Println(err)
@@ -263,10 +260,11 @@ func TestCreateMoreData(t *testing.T) {
 		{Name: "测试2"},
 	}
 
-	crud.Param = &CrudParam{
+	param := &CrudParam{
 		Table: "user",
 		Model: User{},
 	}
+	crud := NewCrud(param)
 
 	err := crud.CreateMoreData(user)
 	log.Println(err)

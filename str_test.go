@@ -7,9 +7,9 @@ import (
 	"testing"
 )
 
-func TestStr(t *testing.T){
+func TestStr(t *testing.T) {
 	//get defalult upload max size
 	//r := routers.SetRouter()
 	//MaxUploadMemory = r.MaxMultipartMemory
-	fmt.Println("str :",MaxUploadMemory)
+	fmt.Println("str :", MaxUploadMemory)
 }

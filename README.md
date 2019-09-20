@@ -1,10 +1,12 @@
 #### [个人]开发工具设计  
-go-tool 是一个通用的api快速开发工具库  
+go-tool 
+
+web快速开发工具库,模型生成  
 
 ##### 工具构成:  
-| 路由    | orm  | 数据库 | 权限   |  配置   |  缓存  |
-| ------ | ---- | ----  | ------ | ------ | ----- |
-| go web | gorm | mysql | casbin(待完善)  | go-ini | redis |   
+| 路由    | orm  | 数据库 |  配置   |  缓存  |
+| ------ | ---- | ----  |  ------ | ----- |
+| http | gorm | mysql | go-yaml | redis/cookie |   
 
 ##### demo  
 [deercoder-gin](https://github.com/dreamlu/deercoder-gin)  
@@ -15,12 +17,11 @@ go-tool 是一个通用的api快速开发工具库
 | 根据模型快速生成代码 |   
 | 多张表连接模型快速生成 |  
 | gorm 业务封装<br>支持mysql JSON类型 |  
-| 增加参数验证 |
-| 增加mysql远程连接 |
-| 增加多表key模糊搜索 |
+| mysql yaml配置 |
+| 多表key多关键字搜索 |
 | session(cookie/redis) |
 | YAML多开发模式配置 |
-| 请求方式json/form data |
+| json/form请求支持 |
 | [cache](./cache.go) 缓存实现 |
 | [参数验证](tool/validator/validator_test.go) |  
 | ...... |  

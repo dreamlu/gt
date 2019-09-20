@@ -301,7 +301,6 @@ func GetSearchSQL(model interface{}, table string, params map[string][]string) (
 		args = append(args, v[0]) // args
 	}
 
-
 	if bufW.Len() != 0 {
 		sql += fmt.Sprintf("where %s order by id %s ", bufW.Bytes()[:bufW.Len()-4], order)
 		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])

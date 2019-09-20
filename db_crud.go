@@ -8,17 +8,26 @@ import "github.com/dreamlu/go-tool/tool/result"
 // form data
 type DBCrud struct {
 	// DBTool  tool
-	DBTool *DBTool
+	dbTool *DBTool
 	// crud param
-	Param *CrudParam
+	param *CrudParam
 }
 
 // init DBTool tool
-func (c *DBCrud) InitDBTool(dbTool *DBTool, param *CrudParam) {
+func (c *DBCrud) InitCrud(dbTool *DBTool, param *CrudParam) {
 
-	c.DBTool = dbTool
-	c.Param = param
+	c.dbTool = dbTool
+	c.param = param
 	return
+}
+
+func (c *DBCrud) DB() *DBTool {
+	return c.dbTool
+}
+
+//
+func (c *DBCrud) Param() *CrudParam {
+	return c.param
 }
 
 // search
@@ -27,28 +36,28 @@ func (c *DBCrud) InitDBTool(dbTool *DBTool, param *CrudParam) {
 // everyPage : default 10
 func (c *DBCrud) GetBySearch(params map[string][]string) (pager result.Pager, err error) {
 
-	return c.DBTool.GetDataBySearch(c.Param.Model, c.Param.ModelData, c.Param.Table, params)
+	return c.dbTool.GetDataBySearch(c.param.Model, c.param.ModelData, c.param.Table, params)
 }
 
 // by id
 func (c *DBCrud) GetByID(id string) error {
 
 	//DB.AutoMigrate(&c.Model)
-	return c.DBTool.GetDataByID(c.Param.ModelData, id)
+	return c.dbTool.GetDataByID(c.param.ModelData, id)
 }
 
 // the same as search
 // more tables
 func (c *DBCrud) GetMoreBySearch(params map[string][]string) (pager result.Pager, err error) {
 
-	return c.DBTool.GetMoreDataBySearch(c.Param.Model, c.Param.ModelData, params, c.Param.InnerTables, c.Param.LeftTables)
+	return c.dbTool.GetMoreDataBySearch(c.param.Model, c.param.ModelData, params, c.param.InnerTables, c.param.LeftTables)
 }
 
 // common sql
 // through sql get data
 func (c *DBCrud) GetDataBySQL(sql string, args ...interface{}) error {
 
-	return c.DBTool.GetDataBySQL(c.Param.ModelData, sql, args[:]...)
+	return c.dbTool.GetDataBySQL(c.param.ModelData, sql, args[:]...)
 }
 
 // common sql
@@ -57,31 +66,31 @@ func (c *DBCrud) GetDataBySQL(sql string, args ...interface{}) error {
 // args is sql and sqlNt common params
 func (c *DBCrud) GetDataBySearchSQL(sql, sqlNt string, args ...interface{}) (pager result.Pager, err error) {
 
-	return c.DBTool.GetDataBySQLSearch(c.Param.ModelData, sql, sqlNt, c.Param.ClientPage, c.Param.EveryPage, args)
+	return c.dbTool.GetDataBySQLSearch(c.param.ModelData, sql, sqlNt, c.param.ClientPage, c.param.EveryPage, args)
 }
 
 // delete by sql
 func (c *DBCrud) DeleteBySQL(sql string, args ...interface{}) error {
 
-	return c.DBTool.DeleteDataBySQL(sql, args[:]...)
+	return c.dbTool.DeleteDataBySQL(sql, args[:]...)
 }
 
 // update by sql
 func (c *DBCrud) UpdateBySQL(sql string, args ...interface{}) error {
 
-	return c.DBTool.UpdateDataBySQL(sql, args[:]...)
+	return c.dbTool.UpdateDataBySQL(sql, args[:]...)
 }
 
 // create by sql
 func (c *DBCrud) CreateBySQL(sql string, args ...interface{}) error {
 
-	return c.DBTool.CreateDataBySQL(sql, args[:]...)
+	return c.dbTool.CreateDataBySQL(sql, args[:]...)
 }
 
 // delete
 func (c *DBCrud) Delete(id string) error {
 
-	return c.DBTool.DeleteDataByName(c.Param.Table, "id", id)
+	return c.dbTool.DeleteDataByName(c.param.Table, "id", id)
 }
 
 // === form data ===
@@ -89,19 +98,19 @@ func (c *DBCrud) Delete(id string) error {
 // update
 func (c *DBCrud) UpdateForm(params map[string][]string) error {
 
-	return c.DBTool.UpdateData(c.Param.Table, params)
+	return c.dbTool.UpdateData(c.param.Table, params)
 }
 
 // create
 func (c *DBCrud) CreateForm(params map[string][]string) error {
 
-	return c.DBTool.CreateData(c.Param.Table, params)
+	return c.dbTool.CreateData(c.param.Table, params)
 }
 
 // create res insert id
 func (c *DBCrud) CreateResID(params map[string][]string) (ID, error) {
 
-	return c.DBTool.CreateDataResID(c.Param.Table, params)
+	return c.dbTool.CreateDataResID(c.param.Table, params)
 }
 
 // == json data ==
@@ -109,17 +118,17 @@ func (c *DBCrud) CreateResID(params map[string][]string) (ID, error) {
 // create
 func (c *DBCrud) CreateMoreData(data interface{}) error {
 
-	return c.DBTool.CreateMoreDataJ(c.Param.Table, c.Param.Model, data)
+	return c.dbTool.CreateMoreDataJ(c.param.Table, c.param.Model, data)
 }
 
 // update
 func (c *DBCrud) Update(data interface{}) error {
 
-	return c.DBTool.UpdateDataJ(data)
+	return c.dbTool.UpdateDataJ(data)
 }
 
 // create
 func (c *DBCrud) Create(data interface{}) error {
 
-	return c.DBTool.CreateDataJ(data)
+	return c.dbTool.CreateDataJ(data)
 }

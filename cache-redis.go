@@ -20,14 +20,13 @@ type RedisManager struct {
 // other cacher maybe have this too
 func (r *RedisManager) NewCache(args ...interface{}) error {
 
-	config := &Config{}
-	config.NewConfig()
+	config := Configger()
 
 	var (
-		Host        = config.GetString("app.redis.host")
-		Password    = config.GetString("app.redis.password")
-		Database    = config.GetInt("app.redis.database")
-		poolSize = config.GetInt("app.redis.poolSize") // max number of connections
+		Host         = config.GetString("app.redis.host")
+		Password     = config.GetString("app.redis.password")
+		Database     = config.GetInt("app.redis.database")
+		poolSize     = config.GetInt("app.redis.poolSize")     // max number of connections
 		MinIdleConns = config.GetInt("app.redis.minIdleConns") // 最大的空闲连接数
 	)
 

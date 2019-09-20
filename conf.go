@@ -4,6 +4,7 @@ package der
 
 import (
 	"log"
+	"sync"
 )
 
 // config
@@ -14,10 +15,26 @@ type Config struct {
 	dir string
 }
 
+var (
+	onceConfig sync.Once
+	// global log
+	config *Config
+)
+
+// single config
+func Configger() *Config {
+
+	onceConfig.Do(func() {
+		config = NewConfig()
+	})
+	return config
+}
+
 // new Config
 // load all devMode yaml data
-func (c *Config) NewConfig() {
+func NewConfig() *Config {
 
+	c := &Config{}
 	// init param
 	c.dir = "conf/"
 	c.YamlS = make(map[string]*Yaml, 2)
@@ -29,6 +46,7 @@ func (c *Config) NewConfig() {
 
 	// add yamlS data
 	c.YamlS[devMode] = yaml
+	return c
 }
 
 // find yaml dev mode
@@ -90,3 +108,13 @@ func (c *Config) GetBool(name string) bool {
 	}
 	return false
 }
+
+// TODO: yaml to struct
+//func (c *Config) GetStruct(name string, s interface{})  {
+//	for _, v := range c.YamlS {
+//		if value := v.GetStruct(name, s); value != nil {
+//			//return value
+//			return
+//		}
+//	}
+//}

@@ -19,3 +19,9 @@ type ID struct {
 type String interface {
 	String() (string, error)
 }
+
+// devMode const
+const (
+	Dev  = "dev"
+	Prod = "prod"
+)

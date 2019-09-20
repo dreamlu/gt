@@ -29,8 +29,8 @@ func (c *CookieManager) NewCache(args ...interface{}) error {
 func (c *CookieManager) Set(key interface{}, value CacheModel) error {
 
 	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     key.(string),
-		Value:    value.Data.(string),
+		Name:  key.(string),
+		Value: value.Data.(string),
 		//Domain:   "*",
 		MaxAge:   int(value.Time),
 		Path:     "/",

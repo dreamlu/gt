@@ -190,7 +190,7 @@ func (n *DefaultRule) Check(data interface{}) (Err error) {
 				max, _ = strconv.Atoi(param[1])
 			}
 
-			if lg < min || lg > max{
+			if lg < min || lg > max {
 				return errors.New(fmt.Sprintln(n.trans, "长度在", min, "与", max, "之间"))
 			}
 		case "max":
