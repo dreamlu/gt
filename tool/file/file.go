@@ -42,9 +42,6 @@ type File struct {
 // 获得文件上传路径
 func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err error) {
 
-	config := &der.Config{}
-	config.NewConfig()
-
 	filenameSplit := strings.Split(file.Filename, ".")
 	fType := filenameSplit[len(filenameSplit)-1]
 	//防止文件名中多个“.”,获得文件后缀
@@ -60,7 +57,7 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 		//防止文件名中多个“.”,获得文件后缀
 		filename = f.Name + filename
 	}
-	path := config.GetString("app.filepath") + filename //文件目录
+	path := der.Configger().GetString("app.filepath") + filename //文件目录
 	err = f.SaveUploadedFile(file, path)
 	if err != nil {
 		return "", err
