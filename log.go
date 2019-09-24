@@ -20,10 +20,18 @@ type Log struct {
 	*logrus.Logger
 }
 
+// log level
+const (
+	Debug = "debug" // default level
+	Info  = "info"
+	Warn  = "warn"
+	Error = "error"
+)
+
 var (
 	onceLog sync.Once
 	// global log
-	l       *Log
+	l *Log
 )
 
 // one single log
@@ -40,6 +48,9 @@ func Logger() *Log {
 func NewLog() *Log {
 
 	lgr := logrus.New()
+	lgr.SetFormatter(&logrus.JSONFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+	})
 	log := &Log{}
 	log.Logger = lgr
 
@@ -47,53 +58,51 @@ func NewLog() *Log {
 }
 
 // new output file log
-func (l *Log) NewFileLog(logPath string, logFileName string, maxAge time.Duration, rotationTime time.Duration) {
+func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationTime time.Duration) {
 
 	//l.NewLog()
 
 	baseLogPath := path.Join(logPath, logFileName)
 	writer, err := rotatelogs.New(
 		baseLogPath+".%Y%m%d%H%M",
-		rotatelogs.WithLinkName(baseLogPath),      // 生成软链，指向最新日志文件
-		rotatelogs.WithMaxAge(maxAge),             // 文件最大保存时间
+		rotatelogs.WithLinkName(baseLogPath), // 生成软链，指向最新日志文件
+		//rotatelogs.WithMaxAge(maxAge),             // 文件最大保存时间
 		rotatelogs.WithRotationTime(rotationTime), // 日志切割时间间隔
+		rotatelogs.WithRotationCount(maxNum),      // 维持的最近日志文件数量
 	)
 	if err != nil {
 		l.Errorf("日志文件系统配置错误. %+v", errors.WithStack(err))
 	}
-	lfHook := lfshook.NewHook(lfshook.WriterMap{
-		logrus.DebugLevel: writer, // 为不同级别设置不同的输出目的
-		logrus.InfoLevel:  writer,
-		logrus.WarnLevel:  writer,
-		logrus.ErrorLevel: writer,
-		logrus.FatalLevel: writer,
-		logrus.PanicLevel: writer,
-	}, &logrus.JSONFormatter{
-		TimestampFormat: "2006-01-02 15:04:05",
-	})
+
+	level := Configger().GetString("app.log.level")
+	wm := lfshook.WriterMap{}
+	switch level {
+	case Debug, "":
+		wm[logrus.DebugLevel] = writer
+		fallthrough
+	case Info:
+		wm[logrus.InfoLevel] = writer
+		fallthrough
+	case Warn:
+		wm[logrus.WarnLevel] = writer
+		fallthrough
+	case Error:
+		wm[logrus.ErrorLevel] = writer
+		wm[logrus.FatalLevel] = writer
+		wm[logrus.PanicLevel] = writer
+	}
+	lfHook := lfshook.NewHook(wm, l.Formatter)
 	l.Hooks.Add(lfHook)
 }
 
 // Default file log
 // maintain 7 days data, every 24 hour split file
-func (l *Log) DefaultFileLog(logPath string, logFileName string) {
+func (l *Log) DefaultFileLog() {
 
-	l.NewFileLog(logPath, logFileName, time2.Week, time2.Day)
-}
-
-// dev/prod/.. mode
-// dev mode not output file
-// other mode output your project/log/projectName.log
-func (l *Log) DefaultDevModeLog() {
-	// config := Configger()
-	devMode := Configger().GetString("devMode")
-	if devMode == Dev {
-		//l.NewLog()
-		return
-	} else {
-		var projectPath, _ = os.Getwd()
-		var pns = strings.Split(projectPath, "/")
-		var projectName = pns[len(pns)-1]
-		l.DefaultFileLog(projectPath+"/log/", projectName+".log")
-	}
+	var (
+		projectPath, _ = os.Getwd()
+		pns            = strings.Split(projectPath, "/")
+		projectName    = pns[len(pns)-1]
+	)
+	l.FileLog(projectPath+"/log/", projectName+".log", 7, time2.Day)
 }

@@ -1,4 +1,6 @@
 app:
+  # prod config
+  # see app-dev.yaml
   # database
   db:
     # default false
