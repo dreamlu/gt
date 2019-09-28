@@ -146,17 +146,17 @@ func GetDataPager(data interface{}, mapData MapData, pager Pager) GetInfoPager {
 }
 
 // string
-func (m *MapData) String() (string, error) {
+func (m MapData) String() (string, error) {
 
 	return structToString(m)
 }
 
-func (m *GetInfo) String() (string, error) {
+func (m GetInfo) String() (string, error) {
 
 	return structToString(m)
 }
 
-func (m *GetInfoPager) String() (string, error) {
+func (m GetInfoPager) String() (string, error) {
 
 	return structToString(m)
 }
