@@ -109,12 +109,10 @@ func (c *Config) GetBool(name string) bool {
 	return false
 }
 
-// TODO: yaml to struct
-//func (c *Config) GetStruct(name string, s interface{})  {
-//	for _, v := range c.YamlS {
-//		if value := v.GetStruct(name, s); value != nil {
-//			//return value
-//			return
-//		}
-//	}
-//}
+// yaml to struct
+// only support Accessible Field
+func (c *Config) GetStruct(name string, s interface{}) {
+	for _, v := range c.YamlS {
+		v.GetStruct(name, s)
+	}
+}

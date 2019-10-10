@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"log"
 	"sync"
 	"time"
 )
@@ -21,27 +20,27 @@ type DBTool struct {
 
 // db params
 type dba struct {
-	user     string
-	password string
-	host     string
-	name     string
+	User        string
+	Password    string
+	Host        string
+	Name        string
+	MaxIdleConn int
+	MaxOpenConn int
+	// db log mode
+	Log         bool
 }
 
 // new db driver
 func (db *DBTool) NewDB() *gorm.DB {
 
 	DB := &gorm.DB{}
-	conf := Configger()
+	//conf := Configger()
 
-	dbS := &dba{
-		user:     conf.GetString("app.db.user"),
-		password: conf.GetString("app.db.password"),
-		host:     conf.GetString("app.db.host"),
-		name:     conf.GetString("app.db.name"),
-	}
+	dbS := &dba{}
+	Configger().GetStruct("app.db", dbS)
 	var (
 		err error
-		sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", dbS.user, dbS.password, dbS.host, dbS.name)
+		sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
 	)
 
 	db.once.Do(func() {
@@ -49,8 +48,8 @@ func (db *DBTool) NewDB() *gorm.DB {
 		DB, err = gorm.Open("mysql", sql)
 		//defer db.DB.Close()
 		if err != nil {
-			log.Println("[mysql连接错误]:", err)
-			log.Println("[mysql开始尝试重连中]: try it every 5s...")
+			Logger().Error("[mysql连接错误]:", err)
+			Logger().Error("[mysql开始尝试重连中]: try it every 5s...")
 			// try to reconnect
 			for {
 				// go is so fast
@@ -59,10 +58,10 @@ func (db *DBTool) NewDB() *gorm.DB {
 				DB, err = gorm.Open("mysql", sql)
 				//defer DB.Close()
 				if err != nil {
-					log.Println("[mysql连接错误]:", err)
+					Logger().Error("[mysql连接错误]:", err)
 					continue
 				}
-				log.Println("[mysql重连成功]")
+				Logger().Info("[mysql重连成功]")
 				break
 			}
 		}
@@ -70,26 +69,13 @@ func (db *DBTool) NewDB() *gorm.DB {
 	// Globally disable table names
 	// use name replace names
 	DB.SingularTable(true)
-	// sql print console log
-	// or print sql err to file
-	//LogMode("debug") // or sqlErr
 
+	DB.LogMode(dbS.Log)
 	// connection pool
-	var maxIdle, maxOpen int
-	var logMode bool
-	if maxIdle = conf.GetInt("app.db.maxIdleConn"); maxIdle == 0 {
-		maxIdle = 20
-	}
-	if maxOpen = conf.GetInt("app.db.maxOpenConn"); maxOpen == 0 {
-		maxOpen = 100
-	}
-	logMode = conf.GetBool("app.db.log")
-	DB.LogMode(logMode)
-
 	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
-	DB.DB().SetMaxIdleConns(maxIdle)
+	DB.DB().SetMaxIdleConns(dbS.MaxIdleConn)
 	// SetMaxOpenConns sets the maximum number of open connections to the database.
-	DB.DB().SetMaxOpenConns(maxOpen)
+	DB.DB().SetMaxOpenConns(dbS.MaxOpenConn)
 
 	return DB
 }
@@ -101,5 +87,24 @@ func NewDBTool() *DBTool {
 
 	// init db
 	dbTool.DB = dbTool.NewDB()
+	return dbTool
+}
+
+var (
+	onceDB sync.Once
+	// dbTool
+	// dbTool was global
+	dbTool *DBTool
+	// config
+	//config = NewConfig()
+)
+
+// single db
+func DBTooler() *DBTool {
+
+	onceDB.Do(func() {
+		dbTool = NewDBTool()
+	})
+
 	return dbTool
 }

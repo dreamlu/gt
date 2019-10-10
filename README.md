@@ -3,11 +3,6 @@ go-tool
 
 web快速开发工具库,模型生成  
 
-##### 工具构成:  
-| 路由    | orm  | 数据库 |  配置   |  缓存  |
-| ------ | ---- | ----  |  ------ | ----- |
-| http | gorm | mysql | go-yaml | redis/cookie |   
-
 ##### demo  
 [deercoder-gin](https://github.com/dreamlu/deercoder-gin)  
 

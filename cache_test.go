@@ -12,13 +12,13 @@ import (
 var r = RedisManager{}
 
 // cache test
-var cache CacheManager = new(RedisManager)
+var cache, _ = NewCache(new(RedisManager))
 
 func init() {
 	// init redis
 	_ = r.NewCache()
 	// init cache
-	_ = cache.NewCache()
+	//_ = cache.NewCache()
 
 }
 

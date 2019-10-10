@@ -8,7 +8,6 @@ package der
 
 import (
 	"github.com/dreamlu/go-tool/tool/result"
-	"sync"
 )
 
 const Version = "1.1.x"
@@ -69,22 +68,10 @@ type CrudParam struct {
 	EveryPage  int64 // Number of pages per page
 }
 
-var (
-	onceDB sync.Once
-	// dbTool
-	// dbTool was global
-	dbTool *DBTool
-	// config
-	//config = NewConfig()
-)
-
 // new crud
 func NewCrud(param *CrudParam) Crud {
 
-	onceDB.Do(func() {
-		dbTool = NewDBTool()
-	})
-
+	DBTooler()
 	crud := new(DBCrud)
 	crud.InitCrud(dbTool, param)
 	return crud

@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // go tool yaml
@@ -116,31 +117,37 @@ func (c *Yaml) GetBool(name string) bool {
 	}
 }
 
-// 从配置文件中获取Struct类型的值,这里的struct是你自己定义的根据配置文件
-func (c *Yaml) GetStruct(name string, s interface{}) interface{} {
+// 从配置文件中获取Struct类型的值
+// 这里的struct是你自己定义的根据配置文件
+func (c *Yaml) GetStruct(name string, s interface{}) {
 	d := c.Get(name)
 	switch d.(type) {
 	case string:
-		c.setField(s, name, d)
+		_ = c.setField(s, name, d)
 	case map[interface{}]interface{}:
 		c.mapToStruct(d.(map[interface{}]interface{}), s)
 	}
-	return s
 }
 
 func (c *Yaml) mapToStruct(m map[interface{}]interface{}, s interface{}) interface{} {
 	for key, value := range m {
 		switch key.(type) {
 		case string:
-			c.setField(s, key.(string), value)
+			_ = c.setField(s, key.(string), value)
 		}
 	}
 	return s
 }
 
-func (c *Yaml) setField(obj interface{}, name string, value interface{}) error {
+func (c *Yaml) setField(s interface{}, name string, value interface{}) error {
+
+	for i, v := range name {
+		name = string(unicode.ToUpper(v)) + name[i+1:]
+		break
+	}
+
 	// reflect.Indirect 返回value对应的值
-	structValue := reflect.Indirect(reflect.ValueOf(obj))
+	structValue := reflect.Indirect(reflect.ValueOf(s))
 	structFieldValue := structValue.FieldByName(name)
 
 	// isValid 显示的测试一个空指针
@@ -163,11 +170,11 @@ func (c *Yaml) setField(obj interface{}, name string, value interface{}) error {
 		switch vint.(type) {
 		case map[interface{}]interface{}:
 			for key, value := range vint.(map[interface{}]interface{}) {
-				c.setField(structFieldValue.Addr().Interface(), key.(string), value)
+				_ = c.setField(structFieldValue.Addr().Interface(), key.(string), value)
 			}
 		case map[string]interface{}:
 			for key, value := range vint.(map[string]interface{}) {
-				c.setField(structFieldValue.Addr().Interface(), key, value)
+				_ = c.setField(structFieldValue.Addr().Interface(), key, value)
 			}
 		}
 
@@ -178,7 +185,5 @@ func (c *Yaml) setField(obj interface{}, name string, value interface{}) error {
 
 		structFieldValue.Set(val)
 	}
-
 	return nil
-
 }

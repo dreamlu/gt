@@ -38,3 +38,8 @@ const (
 	CacheDay    = 24 * CacheHour
 	CacheWeek   = 7 * CacheDay
 )
+
+func NewCache(cache CacheManager, args ...interface{}) (CacheManager, error) {
+	err := cache.NewCache(args)
+	return cache, err
+}
