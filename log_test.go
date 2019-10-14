@@ -1,4 +1,4 @@
-package der
+package gt
 
 import (
 	"os"

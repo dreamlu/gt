@@ -1,6 +1,6 @@
-// package der
+// package gt
 
-package der
+package gt
 
 import (
 	time2 "github.com/dreamlu/go-tool/tool/type/time"

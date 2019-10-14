@@ -1,6 +1,6 @@
-// package der
+// package gt
 
-package der
+package gt
 
 import (
 	"bytes"

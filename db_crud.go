@@ -1,6 +1,6 @@
-// package der
+// package gt
 
-package der
+package gt
 
 import "github.com/dreamlu/go-tool/tool/result"
 
@@ -10,11 +10,11 @@ type DBCrud struct {
 	// DBTool  tool
 	dbTool *DBTool
 	// crud param
-	param *CrudParam
+	param *Params
 }
 
 // init DBTool tool
-func (c *DBCrud) InitCrud(dbTool *DBTool, param *CrudParam) {
+func (c *DBCrud) InitCrud(dbTool *DBTool, param *Params) {
 
 	c.dbTool = dbTool
 	c.param = param
@@ -25,8 +25,11 @@ func (c *DBCrud) DB() *DBTool {
 	return c.dbTool
 }
 
-//
-func (c *DBCrud) Param() *CrudParam {
+func (c *DBCrud) Params(params ...Param) *Params {
+
+	for _, p := range params {
+		p(c.param)
+	}
 	return c.param
 }
 
@@ -50,7 +53,7 @@ func (c *DBCrud) GetByID(id string) error {
 // more tables
 func (c *DBCrud) GetMoreBySearch(params map[string][]string) (pager result.Pager, err error) {
 
-	return c.dbTool.GetMoreDataBySearch(c.param.Model, c.param.ModelData, params, c.param.InnerTables, c.param.LeftTables)
+	return c.dbTool.GetMoreDataBySearch(c.param.Model, c.param.ModelData, params, c.param.InnerTable, c.param.LeftTable)
 }
 
 // common sql

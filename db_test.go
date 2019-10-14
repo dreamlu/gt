@@ -1,6 +1,6 @@
-// package der
+// package gt
 
-package der
+package gt
 
 import (
 	"fmt"
@@ -48,7 +48,7 @@ type OrderD struct {
 // 全局
 //var GOTool = NewDBTool()
 // 局部
-var crud = NewCrud(&CrudParam{})
+var crud = NewCrud()
 
 func TestDB(t *testing.T) {
 
@@ -180,24 +180,27 @@ func TestCrud(t *testing.T) {
 	//GOTool.DB.AutoMigrate(&User{})
 	//crud.DB().DB.AutoMigrate(&User{})
 	var user User
-	param := &CrudParam{
-		Table:     "user",
-		ModelData: &user,
-	}
-	crud = NewCrud(param)
+	//param := &Params{
+	//	Table:     "user",
+	//	ModelData: &user,
+	//}
+	crud = NewCrud(
+		Table("user"),
+		ModelData(&user),
+	)
 	info := crud.GetByID("1")
 	log.Println(info, "\n[User Info]:", user)
 
 	// get by search
 	var users []*User
-	//param = &CrudParam{
+	//param = &Params{
 	//	Table:     "user",
 	//	Model:     User{},
 	//	ModelData: &users,
 	//}
 	//crud = NewCrud(param)
-	crud.Param().Model = User{}
-	crud.Param().ModelData = &users
+	crud.Params().Model = User{}
+	crud.Params().ModelData = &users
 	args["name"][0] = "梦"
 	crud.GetBySearch(args)
 	log.Println("\n[User Info]:", users)
@@ -238,13 +241,18 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	params["clientPage"] = append(params["clientPage"], "1")
 	params["everyPage"] = append(params["everyPage"], "2")
 	var or []*OrderD
-	param := &CrudParam{
-		InnerTables: []string{"order", "user"},
-		LeftTables:  []string{"service"},
-		Model:       OrderD{},
-		ModelData:   &or,
-	}
-	crud := NewCrud(param)
+	//param := &Params{
+	//	InnerTable: []string{"order", "user"},
+	//	LeftTable:  []string{"service"},
+	//	Model:      OrderD{},
+	//	ModelData:  &or,
+	//}
+	crud := NewCrud(
+		InnerTable([]string{"order", "user"}),
+		LeftTable([]string{"service"}),
+		Model(OrderD{}),
+		ModelData(&or),
+	)
 	_, err := crud.GetMoreBySearch(params)
 	if err != nil {
 		log.Println(err)
@@ -260,11 +268,14 @@ func TestCreateMoreData(t *testing.T) {
 		{Name: "测试2"},
 	}
 
-	param := &CrudParam{
-		Table: "user",
-		Model: User{},
-	}
-	crud := NewCrud(param)
+	//param := &Params{
+	//	Table: "user",
+	//	Model: User{},
+	//}
+	crud := NewCrud(
+		Table("user"),
+		Model(User{}),
+	)
 
 	err := crud.CreateMoreData(user)
 	log.Println(err)

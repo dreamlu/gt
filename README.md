@@ -39,43 +39,6 @@ web快速开发工具库,模型生成
 
 #### SQL Request
 
-###### SQL API
-```go
-	// init db tool
-	InitDBTool(dbTool *DBTool, param *CrudParam)
-	// crud method
-
-	// get url params
-	// like form data
-	GetBySearch(args map[string][]string) (pager result.Pager, err error)     // search
-	GetByID(id string) error                                                  // by id
-	GetMoreBySearch(args map[string][]string) (pager result.Pager, err error) // more search
-
-	// common sql data
-	// through sql, get the data
-	GetDataBySQL(sql string, args ...interface{}) error // single data
-	// page limit ?,?
-	// args not include limit ?,?
-	GetDataBySearchSQL(sql, sqlNt string, args ...interface{}) (pager result.Pager, err error) // more data
-	DeleteBySQL(sql string, args ...interface{}) error
-	UpdateBySQL(sql string, args ...interface{}) error
-	CreateBySQL(sql string, args ...interface{}) error
-
-	// delete
-	Delete(id string) error // delete
-
-	// crud and search id
-	// form data
-	UpdateForm(args map[string][]string) error        // update
-	CreateForm(args map[string][]string) error        // create
-	CreateResID(args map[string][]string) (ID, error) // create res insert id
-
-	// crud and search id
-	// json data
-	Update(data interface{}) error          // update
-	Create(data interface{}) error          // create, include res insert id
-	CreateMoreData(data interface{}) error // create more
-```
 ###### 如何使用
 参考[测试](db_test.go)
 
@@ -89,7 +52,7 @@ func TestCreateMoreDataJ(t *testing.T) {
 		{Name: "测试2"},
 	}
 
-	crud.Param = &CrudParam{
+	crud.Params = &Params{
 		Table: "user",
 		Model: User{},
 	}

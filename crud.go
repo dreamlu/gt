@@ -1,25 +1,26 @@
-// package der
+// package gt
 
 /*
 	go-tool is a fast go tool, help you dev project
 */
 
-package der
+package gt
 
 import (
 	"github.com/dreamlu/go-tool/tool/result"
 )
 
-const Version = "1.1.x"
+const Version = "1.3.x"
 
-// crud
+// crud is db driver extend
 type Crud interface {
 	// init crud
-	InitCrud(dbTool *DBTool, param *CrudParam)
+	InitCrud(dbTool *DBTool, param *Params)
 	// DB
 	DB() *DBTool
-	// param
-	Param() *CrudParam
+	// new/replace param
+	// return param
+	Params(param ...Param) *Params
 	// crud method
 
 	// get url params
@@ -55,24 +56,84 @@ type Crud interface {
 }
 
 // crud params
-type CrudParam struct {
+type Params struct {
 	// attributes
-	InnerTables []string    // inner join tables
-	LeftTables  []string    // left join tables
-	Table       string      // table name
-	Model       interface{} // table model, like User{}
-	ModelData   interface{} // table model data, like var user User{}, it is 'user'
+	InnerTable []string    // inner join tables
+	LeftTable  []string    // left join tables
+	Table      string      // table name
+	Model      interface{} // table model, like User{}
+	ModelData  interface{} // table model data, like var user User{}, it is 'user'
 
 	// pager info
 	ClientPage int64 // page number
 	EveryPage  int64 // Number of pages per page
 }
 
+type Param func(*Params)
+
 // new crud
-func NewCrud(param *CrudParam) Crud {
+func NewCrud(p ...Param) Crud {
 
 	DBTooler()
 	crud := new(DBCrud)
-	crud.InitCrud(dbTool, param)
+	crud.InitCrud(dbTool, newParam(p...))
 	return crud
+}
+
+func newParam(params ...Param) *Params {
+	param := &Params{}
+
+	for _, p := range params {
+		p(param)
+	}
+	return param
+}
+
+func InnerTable(InnerTables []string) Param {
+
+	return func(params *Params) {
+		params.InnerTable = InnerTables
+	}
+}
+
+func LeftTable(LeftTable []string) Param {
+
+	return func(params *Params) {
+		params.LeftTable = LeftTable
+	}
+}
+
+func Table(Table string) Param {
+
+	return func(params *Params) {
+		params.Table = Table
+	}
+}
+
+func Model(Model interface{}) Param {
+
+	return func(params *Params) {
+		params.Model = Model
+	}
+}
+
+func ModelData(ModelData interface{}) Param {
+
+	return func(params *Params) {
+		params.ModelData = ModelData
+	}
+}
+
+func ClientPage(ClientPage int64) Param {
+
+	return func(params *Params) {
+		params.ClientPage = ClientPage
+	}
+}
+
+func EveryPage(EveryPage int64) Param {
+
+	return func(params *Params) {
+		params.EveryPage = EveryPage
+	}
 }

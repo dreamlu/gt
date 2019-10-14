@@ -57,7 +57,7 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 		//防止文件名中多个“.”,获得文件后缀
 		filename = f.Name + filename
 	}
-	path := der.Configger().GetString("app.filepath") + filename //文件目录
+	path := gt.Configger().GetString("app.filepath") + filename //文件目录
 	err = f.SaveUploadedFile(file, path)
 	if err != nil {
 		return "", err

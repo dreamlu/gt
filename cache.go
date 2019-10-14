@@ -1,6 +1,6 @@
-// package der
+// package gt
 
-package der
+package gt
 
 // data model
 type CacheModel struct {
@@ -39,6 +39,7 @@ const (
 	CacheWeek   = 7 * CacheDay
 )
 
+// cache sugar
 func NewCache(cache CacheManager, args ...interface{}) (CacheManager, error) {
 	err := cache.NewCache(args)
 	return cache, err

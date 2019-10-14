@@ -1,6 +1,6 @@
-// package der
+// package gt
 
-package der
+package gt
 
 // max upload file size
 var MaxUploadMemory int64
