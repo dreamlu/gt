@@ -1,6 +1,6 @@
 // package gt
 
-package gt
+package redis
 
 import (
 	"github.com/go-redis/redis"
@@ -12,28 +12,18 @@ type ConnPool struct {
 	redisDB *redis.Client
 }
 
+type Options func(*redis.Options)
+
 // InitRedisPool func init RDS fd
-func InitRedisPool(host, password string, database, poolSize, MinIdleConns int) *ConnPool {
+func InitRedisPool(options ...Options) *ConnPool {
 	r := &ConnPool{}
-	r.redisDB = newPool(host, password, database, poolSize, MinIdleConns)
+	option := &redis.Options{}
+	for _, o := range options {
+		o(option)
+	}
+	r.redisDB = redis.NewClient(option)
 	//r.redisDB.Ping()
 	return r
-}
-
-func newPool(host, password string, database, poolSize, MinIdleConns int) *redis.Client {
-	return redis.NewClient(
-		&redis.Options{
-			Addr:         host,
-			Password:     password,
-			DB:           database,
-			PoolSize:     poolSize,
-			MinIdleConns: MinIdleConns,
-			//DialTimeout:  10 * time.Second,
-			//ReadTimeout:  30 * time.Second,
-			//WriteTimeout: 30 * time.Second,
-			//PoolSize:     10,
-			//PoolTimeout:  30 * time.Second,
-		})
 }
 
 // Close pool

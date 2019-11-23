@@ -148,23 +148,27 @@ func GetDataPager(data interface{}, mapData MapData, pager Pager) GetInfoPager {
 // string
 func (m MapData) String() (string, error) {
 
-	return structToString(m)
+	return StructToString(m)
 }
 
 func (m GetInfo) String() (string, error) {
 
-	return structToString(m)
+	return StructToString(m)
 }
 
 func (m GetInfoPager) String() (string, error) {
 
-	return structToString(m)
+	return StructToString(m)
 }
 
-func structToString(st interface{}) (string, error) {
+func StructToString(st interface{}) (string, error) {
 	s, err := json.Marshal(st)
 	if err != nil {
 		return "", err
 	}
 	return string(s), nil
+}
+
+func StringToStruct(str string, st interface{}) error {
+	return json.Unmarshal([]byte(str), st)
 }

@@ -1,10 +1,13 @@
 // package gt
 
-package gt
+package redis
 
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/dreamlu/go-tool"
+	"github.com/dreamlu/go-tool/cache"
+	"github.com/go-redis/redis"
 )
 
 // impl cache manager
@@ -15,28 +18,26 @@ type RedisManager struct {
 	Rc *ConnPool
 }
 
-// toMe: wait the future complete it
 // new cache by redis
-// other cacher maybe have this too
-func (r *RedisManager) NewCache(args ...interface{}) error {
+// other cache maybe like this
+func (r *RedisManager) NewCache(params ...interface{}) error {
 
-	config := Configger()
+	var config *gt.Config
+	if len(params) > 0 {
+		config = gt.Configger(params[0].(string))
+	} else {
+		config = gt.Configger()
+	}
 
-	var (
-		Host         = config.GetString("app.redis.host")
-		Password     = config.GetString("app.redis.password")
-		Database     = config.GetInt("app.redis.database")
-		poolSize     = config.GetInt("app.redis.poolSize")     // max number of connections
-		MinIdleConns = config.GetInt("app.redis.minIdleConns") // 最大的空闲连接数
-	)
-
-	// default value
-
-	r.Rc = InitRedisPool(Host, Password, Database, poolSize, MinIdleConns)
+	// read config
+	r.Rc = InitRedisPool(
+		func(options *redis.Options) {
+			config.GetStruct("app.redis", options)
+		})
 	return nil
 }
 
-func (r *RedisManager) Set(key interface{}, value CacheModel) error {
+func (r *RedisManager) Set(key interface{}, value cache.CacheModel) error {
 
 	// change key to string
 	keyS, err := json.Marshal(key)
@@ -65,9 +66,9 @@ func (r *RedisManager) Set(key interface{}, value CacheModel) error {
 	return nil
 }
 
-func (r *RedisManager) Get(key interface{}) (CacheModel, error) {
+func (r *RedisManager) Get(key interface{}) (cache.CacheModel, error) {
 
-	var reply CacheModel
+	var reply cache.CacheModel
 
 	// change key to string
 	keyS, err := json.Marshal(key)
@@ -129,7 +130,7 @@ func (r *RedisManager) DeleteMore(key interface{}) error {
 
 func (r *RedisManager) Check(key interface{}) error {
 
-	var reply CacheModel
+	var reply cache.CacheModel
 
 	// change key to string
 	keyS, err := json.Marshal(key)

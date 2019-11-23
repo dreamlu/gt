@@ -27,44 +27,21 @@ type dba struct {
 	MaxIdleConn int
 	MaxOpenConn int
 	// db log mode
-	Log         bool
+	Log bool
 }
 
 // new db driver
 func (db *DBTool) NewDB() *gorm.DB {
 
 	DB := &gorm.DB{}
-	//conf := Configger()
-
 	dbS := &dba{}
 	Configger().GetStruct("app.db", dbS)
 	var (
-		err error
 		sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
 	)
 
 	db.once.Do(func() {
-		//database, initialize once
-		DB, err = gorm.Open("mysql", sql)
-		//defer db.DB.Close()
-		if err != nil {
-			Logger().Error("[mysql连接错误]:", err)
-			Logger().Error("[mysql开始尝试重连中]: try it every 5s...")
-			// try to reconnect
-			for {
-				// go is so fast
-				// try it every 5s
-				time.Sleep(5 * time.Second)
-				DB, err = gorm.Open("mysql", sql)
-				//defer DB.Close()
-				if err != nil {
-					Logger().Error("[mysql连接错误]:", err)
-					continue
-				}
-				Logger().Info("[mysql重连成功]")
-				break
-			}
-		}
+		DB = db.open(sql)
 	})
 	// Globally disable table names
 	// use name replace names
@@ -77,6 +54,31 @@ func (db *DBTool) NewDB() *gorm.DB {
 	// SetMaxOpenConns sets the maximum number of open connections to the database.
 	DB.DB().SetMaxOpenConns(dbS.MaxOpenConn)
 
+	return DB
+}
+
+func (db *DBTool) open(sql string) *gorm.DB {
+	// database, initialize once
+	DB, err := gorm.Open("mysql", sql)
+	//defer db.DB.Close()
+	if err != nil {
+		Logger().Error("[mysql连接错误]:", err)
+		Logger().Error("[mysql开始尝试重连中]: try it every 5s...")
+		// try to reconnect
+		for {
+			// go is so fast
+			// try it every 5s
+			time.Sleep(5 * time.Second)
+			DB, err = gorm.Open("mysql", sql)
+			//defer DB.Close()
+			if err != nil {
+				Logger().Error("[mysql连接错误]:", err)
+				continue
+			}
+			Logger().Info("[mysql重连成功]")
+			break
+		}
+	}
 	return DB
 }
 

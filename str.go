@@ -24,4 +24,6 @@ type String interface {
 const (
 	Dev  = "dev"
 	Prod = "prod"
+	// default config file dir
+	ConfDir = "conf/"
 )

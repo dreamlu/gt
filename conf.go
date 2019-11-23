@@ -3,6 +3,7 @@
 package gt
 
 import (
+	"fmt"
 	"log"
 	"sync"
 )
@@ -22,27 +23,31 @@ var (
 )
 
 // single config
-func Configger() *Config {
+func Configger(params ...string) *Config {
 
 	onceConfig.Do(func() {
-		config = NewConfig()
+		config = NewConfig(params[:]...)
 	})
 	return config
 }
 
 // new Config
 // load all devMode yaml data
-func NewConfig() *Config {
+func NewConfig(params ...string) *Config {
 
-	c := &Config{}
-	// init param
-	c.dir = "conf/"
-	c.YamlS = make(map[string]*Yaml, 2)
-
+	// default param
+	confDir := ConfDir
+	if len(params) > 0 {
+		confDir = params[0]
+	}
+	c := &Config{
+		YamlS: make(map[string]*Yaml, 2),
+		dir:   confDir,
+	}
 	// devMode
 	devMode := c.getDevMode()
 	// load data
-	yaml := c.loadYaml(c.dir + "app-" + devMode + ".yaml")
+	yaml := c.loadYaml(fmt.Sprintf("%sapp-%s.yaml", c.dir, devMode))
 
 	// add yamlS data
 	c.YamlS[devMode] = yaml

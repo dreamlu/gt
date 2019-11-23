@@ -1,22 +1,30 @@
 // package gt
 
-package gt
+package test
 
 import (
+	"github.com/dreamlu/go-tool/cache"
+	"github.com/dreamlu/go-tool/cache/redis"
+	"github.com/dreamlu/go-tool/tool/type/time"
 	"log"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
-var r = RedisManager{}
+type User struct {
+	ID         int64      `json:"id"`
+	Name       string     `json:"name"`
+	Createtime time.CTime `json:"createtime"`
+}
 
-// cache test
-var cache, _ = NewCache(new(RedisManager))
+var (
+	testConfDir = "../../conf/"
+	r = redis.RedisManager{}
+	ce, _ = cache.NewCache(new(redis.RedisManager), testConfDir)
+)
 
 func init() {
 	// init redis
-	_ = r.NewCache()
+	_ = r.NewCache(testConfDir)
 	// init cache
 	//_ = cache.NewCache()
 
@@ -41,19 +49,19 @@ var user = User{
 // set and get interface value
 func TestCacheRedis(t *testing.T) {
 	// data
-	data := CacheModel{
-		Time: 50 * CacheMinute,
+	data := cache.CacheModel{
+		Time: 50 * cache.CacheMinute,
 		Data: user,
 	}
 
 	// key can use user.ID,user.Name,user
 	// because it can be interface
 	// set
-	err := cache.Set(user, data)
+	err := ce.Set(user, data)
 	log.Println("set err: ", err)
 
 	// get
-	reply, _ := cache.Get(user)
+	reply, _ := ce.Get(user)
 	log.Println("user data :", reply.Data)
 
 }
@@ -74,23 +82,6 @@ func TestCacheCheckDelRedis(t *testing.T) {
 	//log.Println("delete: ", err)
 
 	// del more
-	err := cache.DeleteMore(user)
+	err := ce.DeleteMore(user)
 	log.Println("delete: ", err)
-}
-
-// cookie test
-func TestCookie(t *testing.T) {
-
-	recorder := httptest.NewRecorder()
-
-	// Drop a cookie on the recorder.
-	http.SetCookie(recorder, &http.Cookie{Name: "test", Value: "test"})
-
-	// Copy the Cookie over to a new Request
-	request := &http.Request{Header: http.Header{"Cookie": recorder.HeaderMap["Set-Cookie"]}}
-
-	// Extract the dropped cookie from the request.
-	cookie, _ := request.Cookie("test")
-	log.Println(cookie)
-
 }

@@ -1,6 +1,6 @@
 // package gt
 
-package gt
+package cache
 
 // data model
 type CacheModel struct {
@@ -13,7 +13,7 @@ type CacheModel struct {
 // cache manager
 type CacheManager interface {
 	// init cache
-	NewCache(args ...interface{}) error
+	NewCache(params ...interface{}) error
 	// operate method
 	// set value
 	// if time != 0 set it
@@ -40,7 +40,7 @@ const (
 )
 
 // cache sugar
-func NewCache(cache CacheManager, args ...interface{}) (CacheManager, error) {
-	err := cache.NewCache(args)
+func NewCache(cache CacheManager, params ...interface{}) (CacheManager, error) {
+	err := cache.NewCache(params[:]...)
 	return cache, err
 }
