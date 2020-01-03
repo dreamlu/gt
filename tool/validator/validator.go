@@ -5,6 +5,7 @@ import (
 	"fmt"
 	myReflect "github.com/dreamlu/go-tool/tool/reflect"
 	"github.com/dreamlu/go-tool/tool/result"
+	"github.com/dreamlu/go-tool/tool/type/te"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -153,7 +154,7 @@ func (v *Validator) Check() (errs map[string]error) {
 
 //  common rule
 // 字段值转换成string进行验证
-func (n *DefaultRule) Check(data interface{}) (Err error) {
+func (n *DefaultRule) Check(data interface{}) (err error) {
 	// required 判断
 	if !strings.Contains(n.valid, "required") && data == "" {
 		return
@@ -173,7 +174,7 @@ func (n *DefaultRule) Check(data interface{}) (Err error) {
 
 		case "required":
 			if err := nonzero(data); err != nil {
-				return errors.New(fmt.Sprintln(n.trans, "为必填项"))
+				return &te.TextError{Msg: fmt.Sprintln(n.trans, "为必填项")}
 			}
 		case "len":
 			min := 0
@@ -191,31 +192,31 @@ func (n *DefaultRule) Check(data interface{}) (Err error) {
 			}
 
 			if lg < min || lg > max {
-				return errors.New(fmt.Sprintln(n.trans, "长度在", min, "与", max, "之间"))
+				return &te.TextError{Msg: fmt.Sprintln(n.trans, "长度在", min, "与", max, "之间")}
 			}
 		case "max":
 
 			if err := max(data, param[1]); err != nil {
-				return errors.New(fmt.Sprintln(n.trans, "最大值为", param[1]))
+				return &te.TextError{Msg: fmt.Sprintln(n.trans, "最大值为", param[1])}
 			}
 		case "min":
 
 			if err := min(data, param[1]); err != nil {
-				return errors.New(fmt.Sprintln(n.trans, "最小值为", param[1]))
+				return &te.TextError{Msg: fmt.Sprintln(n.trans, "最小值为", param[1])}
 			}
 		case "regex":
 			if err := regex(data, param[1]); err != nil {
-				return errors.New(fmt.Sprintln(n.trans, "正则规则为", param[1]))
+				return &te.TextError{Msg: fmt.Sprintln(n.trans, "正则规则为", param[1])}
 			}
 		case "phone":
 
 			if b, _ := regexp.MatchString(`^1[2-9]\d{9}$`, data.(string)); !b {
-				return errors.New(fmt.Sprintln("手机号格式非法"))
+				return &te.TextError{Msg: fmt.Sprintln("手机号格式非法")}
 			}
 		case "email":
 
 			if b, _ := regexp.MatchString(`^([\w\.\_]{2,10})@(\w+).([a-z]{2,4})$`, data.(string)); !b {
-				return errors.New(fmt.Sprintln("邮箱格式非法"))
+				return &te.TextError{Msg: fmt.Sprintln("邮箱格式非法")}
 			}
 		default:
 			return errors.New(fmt.Sprintf("rule error: not support of rule=%s", n.valid))

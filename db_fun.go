@@ -8,7 +8,7 @@ import (
 	reflect2 "github.com/dreamlu/go-tool/tool/reflect"
 	"github.com/dreamlu/go-tool/tool/result"
 	sq "github.com/dreamlu/go-tool/tool/sql"
-	"github.com/pkg/errors"
+	"github.com/dreamlu/go-tool/tool/type/te"
 	"reflect"
 	"strconv"
 	"strings"
@@ -525,7 +525,7 @@ func (db *DBTool) UpdateDataBySQL(sql string, args ...interface{}) (err error) {
 	case dba.Error != nil:
 		err = sq.GetSQLError(dba.Error.Error())
 	case num == 0 && dba.Error == nil:
-		err = errors.New(result.MsgExistOrNo)
+		err = &te.TextError{Msg: result.MsgExistOrNo}
 	default:
 		err = nil
 	}
@@ -550,7 +550,7 @@ func (db *DBTool) UpdateStructData(data interface{}) (err error) {
 	case dba.Error != nil:
 		err = sq.GetSQLError(dba.Error.Error())
 	case num == 0 && dba.Error == nil:
-		err = errors.New(result.MsgExistOrNo)
+		err = &te.TextError{Msg: result.MsgExistOrNo}
 	default:
 		err = nil
 	}
@@ -628,7 +628,7 @@ func (db *DBTool) ValidateSQL(sql string) (err error) {
 	case dba.Error != nil:
 		err = sq.GetSQLError(dba.Error.Error())
 	case num == 0 && dba.Error == nil:
-		err = errors.New(result.MsgExistOrNo)
+		err = &te.TextError{Msg: result.MsgExistOrNo}
 	default:
 		err = nil
 	}
