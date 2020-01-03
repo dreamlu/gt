@@ -280,3 +280,24 @@ func TestCreateMoreData(t *testing.T) {
 	err := crud.CreateMoreData(user)
 	log.Println(err)
 }
+
+// 继承tag解析测试
+func TestExtends(t *testing.T)  {
+	type UserDe struct {
+		User
+		Other string `json:"other"`
+	}
+
+	type UserDeX struct {
+		UserDe
+		OtherX string `json:"other_x"`
+	}
+
+	type UserMore struct {
+		UserDeX
+		ShopName string `json:"shop_name"`
+	}
+	t.Log(GetColSQL(UserDeX{}))
+	t.Log(GetMoreTableColumnSQL(UserMore{}, []string{"user","shop"}[:]...))
+}
+

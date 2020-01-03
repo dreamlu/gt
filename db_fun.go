@@ -27,6 +27,10 @@ func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 	typ := reflect.TypeOf(model)
 	for i := 0; i < typ.NumField(); i++ {
 		tag := typ.Field(i).Tag.Get("json")
+		if tag == "" {
+			GetReflectTagMore(typ.Field(i).Type, &buf, tables[:]...)
+			continue
+		}
 		// foreign tables column
 		for _, v := range tables {
 			// tables
@@ -55,44 +59,87 @@ func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 	return sql
 }
 
-// select *替换
-// 两张表
-func GetDoubleTableColumnSQL(model interface{}, table1, table2 string) (sql string) {
-	var buf bytes.Buffer
+// 层级递增解析tag, more tables
+func GetReflectTagMore(reflectType reflect.Type, buf *bytes.Buffer, tables ...string) {
 
-	typ := reflect.TypeOf(model)
-	for i := 0; i < typ.NumField(); i++ {
-		tag := typ.Field(i).Tag.Get("json")
-		// table2的数据处理,去除table2_id
-		if strings.Contains(tag, table2+"_") && !strings.Contains(tag, table2+"_id") {
-			// sql += table2 + ".`" + string([]byte(tag)[len(table2)+1:]) + "` as " + tag + ","
-			buf.WriteString(table2)
-			buf.WriteString(".`")
-			buf.Write([]byte(tag)[len(table2)+1:])
-			buf.WriteString("` as ")
-			buf.WriteString(tag)
-			buf.WriteString(",")
+	for i := 0; i < reflectType.NumField(); i++ {
+		tag := reflectType.Field(i).Tag.Get("json")
+		if tag == "" {
+			GetReflectTagMore(reflectType.Field(i).Type, buf, tables[:]...)
 			continue
 		}
-		buf.WriteString(table1)
-		buf.WriteString(".`")
+		// foreign tables column
+		for _, v := range tables {
+			// tables
+			switch {
+			case !strings.Contains(tag, v+"_id") && strings.Contains(tag, v+"_"):
+				//sql += "`" + v + "`.`" + string([]byte(tag)[len(v)+1:]) + "` as " + tag + ","
+				buf.WriteString("`")
+				buf.WriteString(v)
+				buf.WriteString("`.`")
+				buf.Write([]byte(tag)[len(v)+1:])
+				buf.WriteString("` as ")
+				buf.WriteString(tag)
+				buf.WriteString(",")
+				goto into
+			}
+		}
+		//sql += "`" + tables[0] + "`.`" + tag + "`,"
+		buf.WriteString("`")
+		buf.WriteString(tables[0])
+		buf.WriteString("`.`")
 		buf.WriteString(tag)
 		buf.WriteString("`,")
-		//sql += table1 + ".`" + tag + "`,"
+	into:
 	}
-	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
-	return sql
 }
+
+//// select *替换
+//// 两张表
+//func GetDoubleTableColumnSQL(model interface{}, table1, table2 string) (sql string) {
+//	var buf bytes.Buffer
+//
+//	typ := reflect.TypeOf(model)
+//	for i := 0; i < typ.NumField(); i++ {
+//		tag := typ.Field(i).Tag.Get("json")
+//		// table2的数据处理,去除table2_id
+//		if strings.Contains(tag, table2+"_") && !strings.Contains(tag, table2+"_id") {
+//			// sql += table2 + ".`" + string([]byte(tag)[len(table2)+1:]) + "` as " + tag + ","
+//			buf.WriteString(table2)
+//			buf.WriteString(".`")
+//			buf.Write([]byte(tag)[len(table2)+1:])
+//			buf.WriteString("` as ")
+//			buf.WriteString(tag)
+//			buf.WriteString(",")
+//			continue
+//		}
+//		buf.WriteString(table1)
+//		buf.WriteString(".`")
+//		buf.WriteString(tag)
+//		buf.WriteString("`,")
+//		//sql += table1 + ".`" + tag + "`,"
+//	}
+//	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
+//	return sql
+//}
 
 // 根据model中表模型的json标签获取表字段
 // 将select* 中'*'变为对应的字段名
 // 增加别名,表连接问题
-func GetColAliasSQL(model interface{}, alias string) (sql string) {
+func GetColSQLAlias(model interface{}, alias string) (sql string) {
 	var buf bytes.Buffer
 
 	typ := reflect.TypeOf(model)
 	for i := 0; i < typ.NumField(); i++ {
 		tag := typ.Field(i).Tag.Get("json")
+		if tag == "" {
+			GetReflectTagAlias(typ.Field(i).Type, &buf, alias)
+
+			//Logger().Println(reflectType.Field(i).Tag.Get("json"))
+			//Logger().Println(reflectType.NumField())
+			//Logger().Println(GetColSQL(reflectType))
+			continue
+		}
 		//sql += alias + ".`" + tag + "`,"
 		buf.WriteString(alias)
 		buf.WriteString(".`")
@@ -103,6 +150,37 @@ func GetColAliasSQL(model interface{}, alias string) (sql string) {
 	return sql
 }
 
+// 层级递增解析tag, 别名
+func GetReflectTagAlias(reflectType reflect.Type, buf *bytes.Buffer, alias string) {
+
+	for i := 0; i < reflectType.NumField(); i++ {
+		tag := reflectType.Field(i).Tag.Get("json")
+		if tag == "" {
+			GetReflectTagAlias(reflectType.Field(i).Type, buf, alias)
+			continue
+		}
+		buf.WriteString(alias)
+		buf.WriteString("`")
+		buf.WriteString(tag)
+		buf.WriteString("`,")
+	}
+}
+
+// 层级递增解析tag
+func GetReflectTag(reflectType reflect.Type, buf *bytes.Buffer) {
+
+	for i := 0; i < reflectType.NumField(); i++ {
+		tag := reflectType.Field(i).Tag.Get("json")
+		if tag == "" {
+			GetReflectTag(reflectType.Field(i).Type, buf)
+			continue
+		}
+		buf.WriteString("`")
+		buf.WriteString(tag)
+		buf.WriteString("`,")
+	}
+}
+
 // 根据model中表模型的json标签获取表字段
 // 将select* 变为对应的字段名
 func GetColSQL(model interface{}) (sql string) {
@@ -111,7 +189,15 @@ func GetColSQL(model interface{}) (sql string) {
 	typ := reflect.TypeOf(model)
 	for i := 0; i < typ.NumField(); i++ {
 		tag := typ.Field(i).Tag.Get("json")
-		//sql += "`" + tag + "`,"
+		if tag == "" {
+			GetReflectTag(typ.Field(i).Type, &buf)
+
+			//Logger().Println(reflectType.Field(i).Tag.Get("json"))
+			//Logger().Println(reflectType.NumField())
+			//Logger().Println(GetColSQL(reflectType))
+			continue
+		}
+		// sql += "`" + tag + "`,"
 		buf.WriteString("`")
 		buf.WriteString(tag)
 		buf.WriteString("`,")
@@ -155,10 +241,10 @@ func GetParams(data interface{}) (params []interface{}) {
 func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables []string, leftTables []string) (sqlNt, sql string, clientPage, everyPage int64, args []interface{}) {
 
 	var (
-		order               = "desc"      // order by
-		key                 = ""          // key like binary search
-		tables              = innerTables // all tables
-		bufNt, bufW, bufNtW bytes.Buffer  // sql bytes connect
+		order               = innerTables[0] + ".id desc" // order by
+		key                 = ""                          // key like binary search
+		tables              = innerTables                 // all tables
+		bufNt, bufW, bufNtW bytes.Buffer                  // sql bytes connect
 	)
 
 	tables = append(tables, leftTables...)
@@ -248,7 +334,7 @@ func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf("where %s order by id %s ", bufW.Bytes()[:bufW.Len()-4], order)
+		sql += fmt.Sprintf("where %s order by %s ", bufW.Bytes()[:bufW.Len()-4], order)
 		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
 	}
 
@@ -261,7 +347,7 @@ func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables
 func GetSearchSQL(model interface{}, table string, params map[string][]string) (sqlNt, sql string, clientPage, everyPage int64, args []interface{}) {
 
 	var (
-		order        = "desc"     // order by
+		order        = "id desc"  // default order by
 		key          = ""         // key like binary search
 		bufW, bufNtW bytes.Buffer // where sql, sqlNt bytes sql
 	)
@@ -302,7 +388,7 @@ func GetSearchSQL(model interface{}, table string, params map[string][]string) (
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf("where %s order by id %s ", bufW.Bytes()[:bufW.Len()-4], order)
+		sql += fmt.Sprintf("where %s order by %s ", bufW.Bytes()[:bufW.Len()-4], order)
 		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
 	}
 
@@ -403,25 +489,25 @@ func (db *DBTool) GetDataByName(data interface{}, name, value string) (err error
 	return
 }
 
-// inner join
-// 查询数据约定,表名_字段名(若有重复)
-// 获得数据,根据id,两张表连接尝试
-func (db *DBTool) GetDoubleTableDataByID(model, data interface{}, id, table1, table2 string) error {
-	sql := fmt.Sprintf("select %s from `%s` inner join `%s` "+
-		"on `%s`.%s_id=`%s`.id where `%s`.id=? limit 1", GetDoubleTableColumnSQL(model, table1, table2), table1, table2, table1, table2, table2, table1)
-
-	return db.GetDataBySQL(data, sql, id)
-}
-
-// left join
-// 查询数据约定,表名_字段名(若有重复)
-// 获得数据,根据id,两张表连接
-func (db *DBTool) GetLeftDoubleTableDataByID(model, data interface{}, id, table1, table2 string) error {
-
-	sql := fmt.Sprintf("select %s from `%s` left join `%s` on `%s`.%s_id=`%s`.id where `%s`.id=? limit 1", GetDoubleTableColumnSQL(model, table1, table2), table1, table2, table1, table2, table2, table1)
-
-	return db.GetDataBySQL(data, sql, id)
-}
+//// inner join
+//// 查询数据约定,表名_字段名(若有重复)
+//// 获得数据,根据id,两张表连接尝试
+//func (db *DBTool) GetDoubleTableDataByID(model, data interface{}, id, table1, table2 string) error {
+//	sql := fmt.Sprintf("select %s from `%s` inner join `%s` "+
+//		"on `%s`.%s_id=`%s`.id where `%s`.id=? limit 1", GetDoubleTableColumnSQL(model, table1, table2), table1, table2, table1, table2, table2, table1)
+//
+//	return db.GetDataBySQL(data, sql, id)
+//}
+//
+//// left join
+//// 查询数据约定,表名_字段名(若有重复)
+//// 获得数据,根据id,两张表连接
+//func (db *DBTool) GetLeftDoubleTableDataByID(model, data interface{}, id, table1, table2 string) error {
+//
+//	sql := fmt.Sprintf("select %s from `%s` left join `%s` on `%s`.%s_id=`%s`.id where `%s`.id=? limit 1", GetDoubleTableColumnSQL(model, table1, table2), table1, table2, table1, table2, table2, table1)
+//
+//	return db.GetDataBySQL(data, sql, id)
+//}
 
 // 获得数据,根据id
 func (db *DBTool) GetDataByID(data interface{}, id string) (err error) {
