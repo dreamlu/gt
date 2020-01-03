@@ -29,15 +29,16 @@ func (j *CJSON) Scan(value interface{}) error {
 }
 
 func (j CJSON) MarshalJSON() ([]byte, error) {
-	//if j == nil {
-	//	return []byte("nil"), nil
-	//}
+	if j == nil {
+		// use "" replace null
+		return []byte("\"\""), nil
+	}
 	return j, nil
 }
 
 func (j *CJSON) UnmarshalJSON(data []byte) error {
 	if j == nil {
-		return errors.New("null point exception")
+		return errors.New("CJSON nil error")
 	}
 	*j = append((*j)[0:0], data...)
 	return nil
