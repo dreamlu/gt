@@ -8,6 +8,7 @@ package gt
 
 import (
 	"github.com/dreamlu/go-tool/tool/result"
+	"strings"
 )
 
 const Version = "1.3.x"
@@ -25,9 +26,9 @@ type Crud interface {
 
 	// get url params
 	// like form data
-	GetBySearch(args map[string][]string) (pager result.Pager, err error)     // search
-	GetByID(id string) error                                                  // by id
-	GetMoreBySearch(args map[string][]string) (pager result.Pager, err error) // more search
+	GetBySearch(params map[string][]string) (pager result.Pager, err error)     // search
+	GetByID(id string) error                                                    // by id
+	GetMoreBySearch(params map[string][]string) (pager result.Pager, err error) // more search
 
 	// common sql data
 	// through sql, get the data
@@ -44,9 +45,9 @@ type Crud interface {
 
 	// crud and search id
 	// form data
-	UpdateForm(args map[string][]string) error        // update
-	CreateForm(args map[string][]string) error        // create
-	CreateResID(args map[string][]string) (ID, error) // create res insert id
+	UpdateForm(params map[string][]string) error        // update
+	CreateForm(params map[string][]string) error        // create
+	CreateResID(params map[string][]string) (ID, error) // create res insert id
 
 	// crud and search id
 	// json data
@@ -67,6 +68,9 @@ type Params struct {
 	// pager info
 	ClientPage int64 // page number
 	EveryPage  int64 // Number of pages per page
+
+	// count
+	SubSQL string // SubQuery SQL
 }
 
 type Param func(*Params)
@@ -135,5 +139,12 @@ func EveryPage(EveryPage int64) Param {
 
 	return func(params *Params) {
 		params.EveryPage = EveryPage
+	}
+}
+
+func SubSQL(SubSQL ...string) Param {
+
+	return func(params *Params) {
+		params.SubSQL = "," + strings.Join(SubSQL[:], ",")
 	}
 }

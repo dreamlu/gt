@@ -38,8 +38,13 @@ func (c *DBCrud) Params(params ...Param) *Params {
 // clientPage : default 1
 // everyPage : default 10
 func (c *DBCrud) GetBySearch(params map[string][]string) (pager result.Pager, err error) {
-
-	return c.dbTool.GetDataBySearch(c.param.Model, c.param.ModelData, c.param.Table, params)
+	//c.param.Model, c.param.ModelData, c.param.Table, params
+	return c.dbTool.GetDataBySearch(&GT{
+		Table:     c.param.Table,
+		Model:     c.param.Model,
+		ModelData: c.param.ModelData,
+		Params:    params,
+	})
 }
 
 // by id
@@ -53,7 +58,13 @@ func (c *DBCrud) GetByID(id string) error {
 // more tables
 func (c *DBCrud) GetMoreBySearch(params map[string][]string) (pager result.Pager, err error) {
 
-	return c.dbTool.GetMoreDataBySearch(c.param.Model, c.param.ModelData, params, c.param.InnerTable, c.param.LeftTable)
+	return c.dbTool.GetMoreDataBySearch(&GT{
+		InnerTable: c.param.InnerTable,
+		LeftTable:  c.param.LeftTable,
+		Model:      c.param.Model,
+		ModelData:  c.param.ModelData,
+		Params:     params,
+	})
 }
 
 // common sql

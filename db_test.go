@@ -133,11 +133,22 @@ func TestValidateData(t *testing.T) {
 // 分页搜索中key测试
 func TestGetSearchSql(t *testing.T) {
 
+	type UserDe struct {
+		User
+		Num int64 `json:"num" gt:"sub_sql"`
+	}
+
 	var args = make(map[string][]string)
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
 	//args["key"] = append(args["key"], "梦 嘿,伙计")
-	sqlNt, sql, _, _, _ := GetSearchSQL(User{}, "user", args)
+	sub_sql := ",(select aa.name from shop aa where aa.user_id = a.id) as shop_name"
+	sqlNt, sql, _, _, _ := GetSearchSQL(&GT{
+		Params: args,
+		Table:  "user",
+		Model:  UserDe{},
+		SubSQL: sub_sql,
+	})
 	log.Println("SQLNOLIMIT:", sqlNt, "\nSQL:", sql)
 
 	// 两张表，待重新测试
@@ -165,7 +176,12 @@ func TestGetDataBySearch(t *testing.T) {
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
 	var user []*User
-	_, _ = crud.DB().GetDataBySearch(User{}, &user, "user", args)
+	_, _ = crud.DB().GetDataBySearch(&GT{
+		Params:    args,
+		Table:     "user",
+		Model:     User{},
+		ModelData: &user,
+	})
 	t.Log(user[0])
 }
 
@@ -275,6 +291,7 @@ func TestCreateMoreData(t *testing.T) {
 	crud := NewCrud(
 		Table("user"),
 		Model(User{}),
+		//SubSQL("(asdf) as a","(asdfa) as b"),
 	)
 
 	err := crud.CreateMoreData(user)
@@ -282,22 +299,22 @@ func TestCreateMoreData(t *testing.T) {
 }
 
 // 继承tag解析测试
-func TestExtends(t *testing.T)  {
+func TestExtends(t *testing.T) {
 	type UserDe struct {
 		User
 		Other string `json:"other"`
 	}
 
 	type UserDeX struct {
+		a []string
 		UserDe
 		OtherX string `json:"other_x"`
 	}
 
 	type UserMore struct {
-		UserDeX
 		ShopName string `json:"shop_name"`
+		UserDeX
 	}
 	t.Log(GetColSQL(UserDeX{}))
-	t.Log(GetMoreTableColumnSQL(UserMore{}, []string{"user","shop"}[:]...))
+	t.Log(GetMoreTableColumnSQL(UserMore{}, []string{"user", "shop"}[:]...))
 }
-

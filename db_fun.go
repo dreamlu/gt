@@ -24,37 +24,8 @@ import (
 func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 	var buf bytes.Buffer
 
-	typ := reflect.TypeOf(model)
-	for i := 0; i < typ.NumField(); i++ {
-		tag := typ.Field(i).Tag.Get("json")
-		if tag == "" {
-			GetReflectTagMore(typ.Field(i).Type, &buf, tables[:]...)
-			continue
-		}
-		// foreign tables column
-		for _, v := range tables {
-			// tables
-			switch {
-			case !strings.Contains(tag, v+"_id") && strings.Contains(tag, v+"_"):
-				//sql += "`" + v + "`.`" + string([]byte(tag)[len(v)+1:]) + "` as " + tag + ","
-				buf.WriteString("`")
-				buf.WriteString(v)
-				buf.WriteString("`.`")
-				buf.Write([]byte(tag)[len(v)+1:])
-				buf.WriteString("` as ")
-				buf.WriteString(tag)
-				buf.WriteString(",")
-				goto into
-			}
-		}
-		//sql += "`" + tables[0] + "`.`" + tag + "`,"
-		buf.WriteString("`")
-		buf.WriteString(tables[0])
-		buf.WriteString("`.`")
-		buf.WriteString(tag)
-		buf.WriteString("`,")
-	into:
-	}
+	//typ := reflect.TypeOf(model)
+	GetReflectTagMore(reflect.TypeOf(model), &buf, tables[:]...)
 	sql = string(buf.Bytes()[:buf.Len()-1]) //去点,
 	return sql
 }
@@ -62,10 +33,18 @@ func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 // 层级递增解析tag, more tables
 func GetReflectTagMore(reflectType reflect.Type, buf *bytes.Buffer, tables ...string) {
 
+	if reflectType.Kind() != reflect.Struct {
+		return
+	}
 	for i := 0; i < reflectType.NumField(); i++ {
 		tag := reflectType.Field(i).Tag.Get("json")
 		if tag == "" {
 			GetReflectTagMore(reflectType.Field(i).Type, buf, tables[:]...)
+			continue
+		}
+		// sub sql
+		gtTag := reflectType.Field(i).Tag.Get("gt")
+		if strings.Contains(gtTag, GtSubSQL) {
 			continue
 		}
 		// foreign tables column
@@ -94,58 +73,14 @@ func GetReflectTagMore(reflectType reflect.Type, buf *bytes.Buffer, tables ...st
 	}
 }
 
-//// select *替换
-//// 两张表
-//func GetDoubleTableColumnSQL(model interface{}, table1, table2 string) (sql string) {
-//	var buf bytes.Buffer
-//
-//	typ := reflect.TypeOf(model)
-//	for i := 0; i < typ.NumField(); i++ {
-//		tag := typ.Field(i).Tag.Get("json")
-//		// table2的数据处理,去除table2_id
-//		if strings.Contains(tag, table2+"_") && !strings.Contains(tag, table2+"_id") {
-//			// sql += table2 + ".`" + string([]byte(tag)[len(table2)+1:]) + "` as " + tag + ","
-//			buf.WriteString(table2)
-//			buf.WriteString(".`")
-//			buf.Write([]byte(tag)[len(table2)+1:])
-//			buf.WriteString("` as ")
-//			buf.WriteString(tag)
-//			buf.WriteString(",")
-//			continue
-//		}
-//		buf.WriteString(table1)
-//		buf.WriteString(".`")
-//		buf.WriteString(tag)
-//		buf.WriteString("`,")
-//		//sql += table1 + ".`" + tag + "`,"
-//	}
-//	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
-//	return sql
-//}
-
 // 根据model中表模型的json标签获取表字段
 // 将select* 中'*'变为对应的字段名
 // 增加别名,表连接问题
 func GetColSQLAlias(model interface{}, alias string) (sql string) {
 	var buf bytes.Buffer
 
-	typ := reflect.TypeOf(model)
-	for i := 0; i < typ.NumField(); i++ {
-		tag := typ.Field(i).Tag.Get("json")
-		if tag == "" {
-			GetReflectTagAlias(typ.Field(i).Type, &buf, alias)
-
-			//Logger().Println(reflectType.Field(i).Tag.Get("json"))
-			//Logger().Println(reflectType.NumField())
-			//Logger().Println(GetColSQL(reflectType))
-			continue
-		}
-		//sql += alias + ".`" + tag + "`,"
-		buf.WriteString(alias)
-		buf.WriteString(".`")
-		buf.WriteString(tag)
-		buf.WriteString("`,")
-	}
+	//typ := reflect.TypeOf(model)
+	GetReflectTagAlias(reflect.TypeOf(model), &buf, alias)
 	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
 	return sql
 }
@@ -153,28 +88,21 @@ func GetColSQLAlias(model interface{}, alias string) (sql string) {
 // 层级递增解析tag, 别名
 func GetReflectTagAlias(reflectType reflect.Type, buf *bytes.Buffer, alias string) {
 
+	if reflectType.Kind() != reflect.Struct {
+		return
+	}
 	for i := 0; i < reflectType.NumField(); i++ {
 		tag := reflectType.Field(i).Tag.Get("json")
 		if tag == "" {
 			GetReflectTagAlias(reflectType.Field(i).Type, buf, alias)
 			continue
 		}
-		buf.WriteString(alias)
-		buf.WriteString("`")
-		buf.WriteString(tag)
-		buf.WriteString("`,")
-	}
-}
-
-// 层级递增解析tag
-func GetReflectTag(reflectType reflect.Type, buf *bytes.Buffer) {
-
-	for i := 0; i < reflectType.NumField(); i++ {
-		tag := reflectType.Field(i).Tag.Get("json")
-		if tag == "" {
-			GetReflectTag(reflectType.Field(i).Type, buf)
+		// sub sql
+		gtTag := reflectType.Field(i).Tag.Get("gt")
+		if strings.Contains(gtTag, GtSubSQL) {
 			continue
 		}
+		buf.WriteString(alias)
 		buf.WriteString("`")
 		buf.WriteString(tag)
 		buf.WriteString("`,")
@@ -186,24 +114,33 @@ func GetReflectTag(reflectType reflect.Type, buf *bytes.Buffer) {
 func GetColSQL(model interface{}) (sql string) {
 	var buf bytes.Buffer
 
-	typ := reflect.TypeOf(model)
-	for i := 0; i < typ.NumField(); i++ {
-		tag := typ.Field(i).Tag.Get("json")
-		if tag == "" {
-			GetReflectTag(typ.Field(i).Type, &buf)
+	//typ := reflect.TypeOf(model)
+	GetReflectTag(reflect.TypeOf(model), &buf)
+	sql = string(buf.Bytes()[:buf.Len()-1]) // remove ,
+	return sql
+}
 
-			//Logger().Println(reflectType.Field(i).Tag.Get("json"))
-			//Logger().Println(reflectType.NumField())
-			//Logger().Println(GetColSQL(reflectType))
+// 层级递增解析tag
+func GetReflectTag(reflectType reflect.Type, buf *bytes.Buffer) {
+
+	if reflectType.Kind() != reflect.Struct {
+		return
+	}
+	for i := 0; i < reflectType.NumField(); i++ {
+		tag := reflectType.Field(i).Tag.Get("json")
+		if tag == "" {
+			GetReflectTag(reflectType.Field(i).Type, buf)
 			continue
 		}
-		// sql += "`" + tag + "`,"
+		// sub sql
+		gtTag := reflectType.Field(i).Tag.Get("gt")
+		if strings.Contains(gtTag, GtSubSQL) {
+			continue
+		}
 		buf.WriteString("`")
 		buf.WriteString(tag)
 		buf.WriteString("`,")
 	}
-	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
-	return sql
 }
 
 // get col ?
@@ -230,6 +167,25 @@ func GetParams(data interface{}) (params []interface{}) {
 	return
 }
 
+// GT SQL struct
+type GT struct {
+	// attributes
+	InnerTable []string    // inner join tables
+	LeftTable  []string    // left join tables
+	Table      string      // table name
+	Model      interface{} // table model, like User{}
+	ModelData  interface{} // table model data, like var user User{}, it is 'user'
+
+	// pager info
+	ClientPage int64 // page number
+	EveryPage  int64 // Number of pages per page
+
+	// count
+	SubSQL string // SubQuery SQL
+	// maybe future will use gt.params replace params
+	Params map[string][]string // params
+}
+
 //=======================================sql语句处理==========================================
 //===========================================================================================
 
@@ -238,16 +194,16 @@ func GetParams(data interface{}) (params []interface{}) {
 // params: leftTables is left join tables
 // return: select sql
 // table1 as main table, include other tables_id(foreign key)
-func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables []string, leftTables []string) (sqlNt, sql string, clientPage, everyPage int64, args []interface{}) {
+func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args []interface{}) {
 
 	var (
-		order               = innerTables[0] + ".id desc" // order by
-		key                 = ""                          // key like binary search
-		tables              = innerTables                 // all tables
-		bufNt, bufW, bufNtW bytes.Buffer                  // sql bytes connect
+		order               = gt.InnerTable[0] + ".id desc" // order by
+		key                 = ""                            // key like binary search
+		tables              = gt.InnerTable                 // all tables
+		bufNt, bufW, bufNtW bytes.Buffer                    // sql bytes connect
 	)
 
-	tables = append(tables, leftTables...)
+	tables = append(tables, gt.LeftTable...)
 	// sql and sqlCount
 	bufNt.WriteString("select ")
 	bufNt.WriteString("count(`")
@@ -258,28 +214,28 @@ func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables
 	bufNt.WriteString(tables[0])
 	bufNt.WriteString("`")
 	// inner join
-	for i := 1; i < len(innerTables); i++ {
+	for i := 1; i < len(gt.InnerTable); i++ {
 		bufNt.WriteString(" inner join `")
-		bufNt.WriteString(innerTables[i])
+		bufNt.WriteString(gt.InnerTable[i])
 		bufNt.WriteString("` on `")
 		bufNt.WriteString(tables[0])
 		bufNt.WriteString("`.")
-		bufNt.WriteString(innerTables[i])
+		bufNt.WriteString(gt.InnerTable[i])
 		bufNt.WriteString("_id=`")
-		bufNt.WriteString(innerTables[i])
+		bufNt.WriteString(gt.InnerTable[i])
 		bufNt.WriteString("`.id ")
 		//sql += " inner join ·" + innerTables[i] + "`"
 	}
 	// left join
-	for i := 0; i < len(leftTables); i++ {
+	for i := 0; i < len(gt.LeftTable); i++ {
 		bufNt.WriteString(" left join `")
-		bufNt.WriteString(leftTables[i])
+		bufNt.WriteString(gt.LeftTable[i])
 		bufNt.WriteString("` on `")
 		bufNt.WriteString(tables[0])
 		bufNt.WriteString("`.")
-		bufNt.WriteString(leftTables[i])
+		bufNt.WriteString(gt.LeftTable[i])
 		bufNt.WriteString("_id=`")
-		bufNt.WriteString(leftTables[i])
+		bufNt.WriteString(gt.LeftTable[i])
 		bufNt.WriteString("`.id ")
 		//sql += " inner join ·" + innerTables[i] + "`"
 	}
@@ -287,26 +243,26 @@ func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables
 
 	// select* 变为对应的字段名
 	sqlNt = bufNt.String()
-	sql = strings.Replace(bufNt.String(), "count(`"+tables[0]+"`.id) as total_num", GetMoreTableColumnSQL(model, tables[:]...), 1)
-	for k, v := range params {
+	sql = strings.Replace(bufNt.String(), "count(`"+tables[0]+"`.id) as total_num", GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
+	for k, v := range gt.Params {
 		switch k {
-		case "clientPage":
+		case GtClientPage:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case "everyPage":
+		case GtEveryPage:
 			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case "order":
+		case GtOrder:
 			order = v[0]
 			continue
-		case "key":
+		case GtKey:
 			key = v[0]
 			var tablens = append(tables, tables[:]...)
 			for k, v := range tablens {
 				tablens[k] += ":" + v
 			}
 			// more tables key search
-			sqlKey, sqlNtKey, argsKey := sq.GetMoreKeySQL(key, model, tablens[:]...)
+			sqlKey, sqlNtKey, argsKey := sq.GetMoreKeySQL(key, gt.Model, tablens[:]...)
 			bufW.WriteString(sqlKey)
 			bufNtW.WriteString(sqlNtKey)
 			args = append(args, argsKey[:]...)
@@ -344,7 +300,7 @@ func GetMoreSearchSQL(model interface{}, params map[string][]string, innerTables
 // 分页参数不传, 查询所有
 // 默认根据id倒序
 // 单张表
-func GetSearchSQL(model interface{}, table string, params map[string][]string) (sqlNt, sql string, clientPage, everyPage int64, args []interface{}) {
+func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args []interface{}) {
 
 	var (
 		order        = "id desc"  // default order by
@@ -353,22 +309,22 @@ func GetSearchSQL(model interface{}, table string, params map[string][]string) (
 	)
 
 	// select* replace
-	sql = fmt.Sprintf("select %s from `%s` ", GetColSQL(model), table)
-	sqlNt = fmt.Sprintf("select count(id) as total_num from `%s` ", table)
-	for k, v := range params {
+	sql = fmt.Sprintf("select %s%s from `%s`", GetColSQL(gt.Model), gt.SubSQL, gt.Table)
+	sqlNt = fmt.Sprintf("select count(id) as total_num from `%s`", gt.Table)
+	for k, v := range gt.Params {
 		switch k {
-		case "clientPage":
+		case GtClientPage:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case "everyPage":
+		case GtEveryPage:
 			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case "order":
+		case GtOrder:
 			order = v[0]
 			continue
-		case "key":
+		case GtKey:
 			key = v[0]
-			sqlKey, sqlNtKey, argsKey := sq.GetKeySQL(key, model, table)
+			sqlKey, sqlNtKey, argsKey := sq.GetKeySQL(key, gt.Model, gt.Table)
 			bufW.WriteString(sqlKey)
 			bufNtW.WriteString(sqlNtKey)
 			args = append(args, argsKey[:]...)
@@ -388,8 +344,8 @@ func GetSearchSQL(model interface{}, table string, params map[string][]string) (
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf("where %s order by %s ", bufW.Bytes()[:bufW.Len()-4], order)
-		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
+		sql += fmt.Sprintf(" where %s order by %s ", bufW.Bytes()[:bufW.Len()-4], order)
+		sqlNt += fmt.Sprintf(" where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
 	}
 
 	return
@@ -529,11 +485,11 @@ func (db *DBTool) GetDataByID(data interface{}, id string) (err error) {
 // params: leftTables is left join tables
 // return: search info
 // table1 as main table, include other tables_id(foreign key)
-func (db *DBTool) GetMoreDataBySearch(model, data interface{}, params map[string][]string, innerTables []string, leftTables []string, args ...interface{}) (pager result.Pager, err error) {
+func (db *DBTool) GetMoreDataBySearch(gt *GT) (pager result.Pager, err error) {
 	// more table search
-	sqlNt, sql, clientPage, everyPage, args := GetMoreSearchSQL(model, params, innerTables, leftTables)
+	sqlNt, sql, clientPage, everyPage, args := GetMoreSearchSQL(gt)
 
-	return db.GetDataBySQLSearch(data, sql, sqlNt, clientPage, everyPage, args[:]...)
+	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, clientPage, everyPage, args[:]...)
 }
 
 // 获得数据,根据sql语句,分页
@@ -568,11 +524,11 @@ func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, client
 }
 
 // 获得数据,分页/查询
-func (db *DBTool) GetDataBySearch(model, data interface{}, table string, params map[string][]string) (pager result.Pager, err error) {
+func (db *DBTool) GetDataBySearch(gt *GT) (pager result.Pager, err error) {
 
-	sqlNt, sql, clientPage, everyPage, args := GetSearchSQL(model, table, params)
+	sqlNt, sql, clientPage, everyPage, args := GetSearchSQL(gt)
 
-	return db.GetDataBySQLSearch(data, sql, sqlNt, clientPage, everyPage, args[:]...)
+	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, clientPage, everyPage, args[:]...)
 }
 
 // delete

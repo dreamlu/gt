@@ -26,4 +26,10 @@ const (
 	Prod = "prod"
 	// default config file dir
 	ConfDir = "conf/"
+	// db sql const
+	GtSubSQL     = "sub_sql"
+	GtClientPage = "clientPage"
+	GtEveryPage  = "everyPage"
+	GtOrder      = "order"
+	GtKey        = "key"
 )
