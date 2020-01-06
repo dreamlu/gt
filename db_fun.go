@@ -9,6 +9,7 @@ import (
 	"github.com/dreamlu/go-tool/tool/result"
 	sq "github.com/dreamlu/go-tool/tool/sql"
 	"github.com/dreamlu/go-tool/tool/type/te"
+	"github.com/dreamlu/go-tool/tool/util"
 	"reflect"
 	"strconv"
 	"strings"
@@ -49,9 +50,12 @@ func GetReflectTagMore(reflectType reflect.Type, buf *bytes.Buffer, tables ...st
 		}
 		// foreign tables column
 		for _, v := range tables {
+			if strings.Contains(tag, v+"_id") {
+				break
+			}
 			// tables
 			switch {
-			case !strings.Contains(tag, v+"_id") && strings.Contains(tag, v+"_"):
+			case strings.Contains(tag, v+"_"):
 				//sql += "`" + v + "`.`" + string([]byte(tag)[len(v)+1:]) + "` as " + tag + ","
 				buf.WriteString("`")
 				buf.WriteString(v)
@@ -190,7 +194,7 @@ type GT struct {
 //===========================================================================================
 
 // More Table
-// params: innerTables is inner join tables
+// params: innerTables is inner join tables, must even number
 // params: leftTables is left join tables
 // return: select sql
 // table1 as main table, include other tables_id(foreign key)
@@ -204,6 +208,7 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 	)
 
 	tables = append(tables, gt.LeftTable...)
+	tables = util.RemoveDuplicateString(tables)
 	// sql and sqlCount
 	bufNt.WriteString("select ")
 	bufNt.WriteString("count(`")
@@ -214,11 +219,11 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 	bufNt.WriteString(tables[0])
 	bufNt.WriteString("`")
 	// inner join
-	for i := 1; i < len(gt.InnerTable); i++ {
+	for i := 1; i < len(gt.InnerTable); i += 2 {
 		bufNt.WriteString(" inner join `")
 		bufNt.WriteString(gt.InnerTable[i])
 		bufNt.WriteString("` on `")
-		bufNt.WriteString(tables[0])
+		bufNt.WriteString(gt.InnerTable[i-1])
 		bufNt.WriteString("`.")
 		bufNt.WriteString(gt.InnerTable[i])
 		bufNt.WriteString("_id=`")
@@ -227,11 +232,11 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 		//sql += " inner join ·" + innerTables[i] + "`"
 	}
 	// left join
-	for i := 0; i < len(gt.LeftTable); i++ {
+	for i := 1; i < len(gt.LeftTable); i += 2 {
 		bufNt.WriteString(" left join `")
 		bufNt.WriteString(gt.LeftTable[i])
 		bufNt.WriteString("` on `")
-		bufNt.WriteString(tables[0])
+		bufNt.WriteString(gt.InnerTable[i-1])
 		bufNt.WriteString("`.")
 		bufNt.WriteString(gt.LeftTable[i])
 		bufNt.WriteString("_id=`")

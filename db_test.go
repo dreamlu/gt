@@ -264,8 +264,8 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	//	ModelData:  &or,
 	//}
 	crud := NewCrud(
-		InnerTable([]string{"order", "user"}),
-		LeftTable([]string{"service"}),
+		InnerTable([]string{"order", "user", "order", "service"}),
+		//LeftTable([]string{"order", "service"}),
 		Model(OrderD{}),
 		ModelData(&or),
 	)
@@ -274,6 +274,33 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		log.Println(err)
 	}
 	t.Log("\n[User Info]:", or[0])
+}
+
+func TestGetMoreSearchSQL(t *testing.T) {
+	type ClientVipBehavior struct {
+		ID          int64      `gorm:"type:bigint(20)" json:"id"`
+		ClientVipID int64      `gorm:"type:bigint(20)" json:"client_vip_id"`
+		ShopId      int64      `gorm:"type:bigint(20)" json:"shop_id"`
+		StaffId     int64      `gorm:"type:bigint(20)" json:"staff_id"`
+		Status      int64      `gorm:"type:tinyint(2);DEFAULT:0" json:"status"`
+		Num         int64      `json:"num" gorm:"type:int(11)"` // 第几次参加
+		Createtime  time.CTime `gorm:"type:datetime" json:"createtime"`
+	}
+
+	// 客户行为详情
+	type ClientVipBehaviorDe struct {
+		ClientVipBehavior
+		ClientName    string `json:"client_name"`
+		ClientHeadimg string `json:"client_headimg"`
+		VipType       int64  `json:"vip_type" gt:"sub_sql"` // 0意向会员, 1会员
+		IsSp          int64  `json:"is_sp" gt:"sub_sql"`    // 是否代言人, 0不是, 1是
+	}
+	gt := &GT{
+		InnerTable: []string{"client_vip_behavior", "client_vip", "client_vip", "client"},
+		Model:      ClientVipBehaviorDe{},
+	}
+	_, sql, _, _, _ := GetMoreSearchSQL(gt)
+	log.Println(sql)
 }
 
 // 批量创建
