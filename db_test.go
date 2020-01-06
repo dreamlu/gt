@@ -215,8 +215,10 @@ func TestCrud(t *testing.T) {
 	//	ModelData: &users,
 	//}
 	//crud = NewCrud(param)
-	crud.Params().Model = User{}
-	crud.Params().ModelData = &users
+	crud.Params(
+		Model(User{}),
+		ModelData(&user),
+	)
 	args["name"][0] = "梦"
 	crud.GetBySearch(args)
 	log.Println("\n[User Info]:", users)
@@ -344,4 +346,21 @@ func TestExtends(t *testing.T) {
 	}
 	t.Log(GetColSQL(UserDeX{}))
 	t.Log(GetMoreTableColumnSQL(UserMore{}, []string{"user", "shop"}[:]...))
+}
+
+// select test
+func TestDBCrud_Select(t *testing.T) {
+	var user []*User
+	crud.Params(
+		ModelData(&user),
+		ClientPage(1),
+		EveryPage(2),
+	).
+		Select("select *from user").
+		Select("where id > 0")
+	if true {
+		crud.Select("and 1=1")
+	}
+	crud.Search()
+	crud.Single()
 }

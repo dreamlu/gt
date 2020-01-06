@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const Version = "1.3.x"
+const Version = "1.5.x"
 
 // crud is db driver extend
 type Crud interface {
@@ -21,12 +21,13 @@ type Crud interface {
 	DB() *DBTool
 	// new/replace param
 	// return param
-	Params(param ...Param) *Params
+	Params(param ...Param) Crud
 	// crud method
 
 	// get url params
 	// like form data
 	GetBySearch(params map[string][]string) (pager result.Pager, err error)     // search
+	GetByData(params map[string][]string) error                                 // get data no search
 	GetByID(id string) error                                                    // by id
 	GetMoreBySearch(params map[string][]string) (pager result.Pager, err error) // more search
 
@@ -54,6 +55,13 @@ type Crud interface {
 	Update(data interface{}) error         // update
 	Create(data interface{}) error         // create, include res insert id
 	CreateMoreData(data interface{}) error // create more
+
+	// select
+	Select(query string, args ...interface{}) Crud // select sql
+	//Where(query string, args ...interface{}) Crud  // where condition sql
+	Search() (pager result.Pager, err error) // search pager
+	Single() error                           // no search
+	//Where(query interface{}, args ...interface{}) Crud
 }
 
 // crud params

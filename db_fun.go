@@ -188,6 +188,10 @@ type GT struct {
 	SubSQL string // SubQuery SQL
 	// maybe future will use gt.params replace params
 	Params map[string][]string // params
+
+	// select sql
+	Select string // select sql
+	Args   []interface{}
 }
 
 //=======================================sql语句处理==========================================
@@ -356,6 +360,58 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 	return
 }
 
+// get data sql
+func GetDataSQL(gt *GT) (sql string, args []interface{}) {
+
+	var (
+		order        = "id desc"  // default order by
+		key          = ""         // key like binary search
+		bufW, bufNtW bytes.Buffer // where sql, sqlNt bytes sql
+	)
+
+	// select* replace
+	sql = fmt.Sprintf("select %s%s from `%s`", GetColSQL(gt.Model), gt.SubSQL, gt.Table)
+	for k, v := range gt.Params {
+		switch k {
+		case GtOrder:
+			order = v[0]
+			continue
+		case GtKey:
+			key = v[0]
+			sqlKey, sqlNtKey, argsKey := sq.GetKeySQL(key, gt.Model, gt.Table)
+			bufW.WriteString(sqlKey)
+			bufNtW.WriteString(sqlNtKey)
+			args = append(args, argsKey[:]...)
+			continue
+		case "":
+			continue
+		}
+
+		//v[0] = strings.Replace(v[0], "'", "\\'", -1) //转义
+		//sql += k + " = ? and "
+		//sqlNt += k + " = ? and "
+		bufW.WriteString(k)
+		bufW.WriteString(" = ? and ")
+		bufNtW.WriteString(k)
+		bufNtW.WriteString(" = ? and ")
+		args = append(args, v[0]) // args
+	}
+
+	if bufW.Len() != 0 {
+		sql += fmt.Sprintf(" where %s order by %s ", bufW.Bytes()[:bufW.Len()-4], order)
+	}
+
+	return
+}
+
+// select sql
+func GetSelectSearchSQL(gt *GT) (sqlNt, sql string) {
+
+	sql = gt.Select
+	sqlNt = strings.Replace(sql, strings.Split(sql, "from")[0], "select count(*) as total_num ", 1)
+	return
+}
+
 // 传入数据库表名
 // 更新语句拼接
 func GetUpdateSQL(table string, params map[string][]string) (sql string, args []interface{}) {
@@ -497,6 +553,30 @@ func (db *DBTool) GetMoreDataBySearch(gt *GT) (pager result.Pager, err error) {
 	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, clientPage, everyPage, args[:]...)
 }
 
+// 获得数据,分页/查询
+func (db *DBTool) GetDataBySearch(gt *GT) (pager result.Pager, err error) {
+
+	sqlNt, sql, clientPage, everyPage, args := GetSearchSQL(gt)
+
+	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, clientPage, everyPage, args[:]...)
+}
+
+// 获得数据, no search
+func (db *DBTool) GetData(gt *GT) (err error) {
+
+	sql, args := GetDataSQL(gt)
+
+	return db.GetDataBySQL(gt.ModelData, sql, args[:]...)
+}
+
+// select sql search
+func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager, err error) {
+
+	sqlNt, sql := GetSelectSearchSQL(gt)
+
+	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, gt.ClientPage, gt.EveryPage, gt.Args[:]...)
+}
+
 // 获得数据,根据sql语句,分页
 // args : sql参数'？'
 // sql, sqlNt args 相同, 共用args
@@ -526,14 +606,6 @@ func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, client
 		err = nil
 	}
 	return
-}
-
-// 获得数据,分页/查询
-func (db *DBTool) GetDataBySearch(gt *GT) (pager result.Pager, err error) {
-
-	sqlNt, sql, clientPage, everyPage, args := GetSearchSQL(gt)
-
-	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, clientPage, everyPage, args[:]...)
 }
 
 // delete

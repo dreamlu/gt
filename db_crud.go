@@ -11,6 +11,11 @@ type DBCrud struct {
 	dbTool *DBTool
 	// crud param
 	param *Params
+
+	// select
+	selectSQL string        // select/or if
+	whereSQL  string        // where
+	args      []interface{} // select args
 }
 
 // init DBTool tool
@@ -25,12 +30,12 @@ func (c *DBCrud) DB() *DBTool {
 	return c.dbTool
 }
 
-func (c *DBCrud) Params(params ...Param) *Params {
+func (c *DBCrud) Params(params ...Param) Crud {
 
 	for _, p := range params {
 		p(c.param)
 	}
-	return c.param
+	return c
 }
 
 // search
@@ -40,6 +45,17 @@ func (c *DBCrud) Params(params ...Param) *Params {
 func (c *DBCrud) GetBySearch(params map[string][]string) (pager result.Pager, err error) {
 	//c.param.Model, c.param.ModelData, c.param.Table, params
 	return c.dbTool.GetDataBySearch(&GT{
+		Table:     c.param.Table,
+		Model:     c.param.Model,
+		ModelData: c.param.ModelData,
+		Params:    params,
+		SubSQL:    c.param.SubSQL,
+	})
+}
+
+func (c *DBCrud) GetByData(params map[string][]string) error {
+	//c.param.Model, c.param.ModelData, c.param.Table, params
+	return c.dbTool.GetData(&GT{
 		Table:     c.param.Table,
 		Model:     c.param.Model,
 		ModelData: c.param.ModelData,
@@ -147,4 +163,35 @@ func (c *DBCrud) Update(data interface{}) error {
 func (c *DBCrud) Create(data interface{}) error {
 
 	return c.dbTool.CreateDataJ(data)
+}
+
+// create
+func (c *DBCrud) Select(query string, args ...interface{}) Crud {
+
+	c.selectSQL += query + " "
+	c.args = append(c.args, args...)
+	return c
+}
+
+//func (c *DBCrud) Where(query string, args ...interface{}) Crud {
+//
+//	c.selectSQL += " and " + query
+//	c.args = append(c.args, args...)
+//	return c
+//}
+
+func (c *DBCrud) Search() (pager result.Pager, err error) {
+
+	return c.dbTool.GetDataBySelectSQLSearch(&GT{
+		ModelData:  c.param.ModelData,
+		ClientPage: c.param.ClientPage,
+		EveryPage:  c.param.EveryPage,
+		Select:     c.selectSQL,
+		Args:       c.args,
+	})
+}
+
+func (c *DBCrud) Single() (err error) {
+
+	return c.dbTool.GetDataBySQL(c.param.ModelData, c.selectSQL, c.args...)
 }
