@@ -58,9 +58,9 @@ type Crud interface {
 
 	// select
 	Select(query string, args ...interface{}) Crud // select sql
-	//Where(query string, args ...interface{}) Crud  // where condition sql
-	Search() (pager result.Pager, err error) // search pager
-	Single() error                           // no search
+	From(query string) Crud                        // from sql, if use search, From must only once
+	Search() (pager result.Pager, err error)       // search pager
+	Single() error                                 // no search
 	//Where(query interface{}, args ...interface{}) Crud
 }
 

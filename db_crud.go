@@ -14,7 +14,7 @@ type DBCrud struct {
 
 	// select
 	selectSQL string        // select/or if
-	whereSQL  string        // where
+	from      string        // from sql
 	args      []interface{} // select args
 }
 
@@ -173,6 +173,14 @@ func (c *DBCrud) Select(query string, args ...interface{}) Crud {
 	return c
 }
 
+func (c *DBCrud) From(query string) Crud {
+
+	c.from = query
+	c.selectSQL += query + " "
+	c.args = append(c.args)
+	return c
+}
+
 //func (c *DBCrud) Where(query string, args ...interface{}) Crud {
 //
 //	c.selectSQL += " and " + query
@@ -188,6 +196,7 @@ func (c *DBCrud) Search() (pager result.Pager, err error) {
 		EveryPage:  c.param.EveryPage,
 		Select:     c.selectSQL,
 		Args:       c.args,
+		From:       c.from,
 	})
 }
 

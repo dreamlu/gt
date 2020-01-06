@@ -191,6 +191,7 @@ type GT struct {
 
 	// select sql
 	Select string // select sql
+	From   string // only once
 	Args   []interface{}
 }
 
@@ -408,7 +409,10 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 func GetSelectSearchSQL(gt *GT) (sqlNt, sql string) {
 
 	sql = gt.Select
-	sqlNt = strings.Replace(sql, strings.Split(sql, "from")[0], "select count(*) as total_num ", 1)
+	if gt.From == "" {
+		gt.From = "from"
+	}
+	sqlNt = "select count(*) as total_num " + gt.From + strings.Join(strings.Split(sql, gt.From)[1:], "")
 	return
 }
 
