@@ -44,6 +44,7 @@ func (c *DBCrud) GetBySearch(params map[string][]string) (pager result.Pager, er
 		Model:     c.param.Model,
 		ModelData: c.param.ModelData,
 		Params:    params,
+		SubSQL:    c.param.SubSQL,
 	})
 }
 
@@ -64,6 +65,7 @@ func (c *DBCrud) GetMoreBySearch(params map[string][]string) (pager result.Pager
 		Model:      c.param.Model,
 		ModelData:  c.param.ModelData,
 		Params:     params,
+		SubSQL:     c.param.SubSQL,
 	})
 }
 
