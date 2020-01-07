@@ -16,6 +16,8 @@ type DBCrud struct {
 	selectSQL string        // select/or if
 	from      string        // from sql
 	args      []interface{} // select args
+	argsNt    []interface{} // select nt args, related from
+	group     string        // the last group
 }
 
 // init DBTool tool
@@ -98,7 +100,7 @@ func (c *DBCrud) GetDataBySQL(sql string, args ...interface{}) error {
 // args is sql and sqlNt common params
 func (c *DBCrud) GetDataBySearchSQL(sql, sqlNt string, args ...interface{}) (pager result.Pager, err error) {
 
-	return c.dbTool.GetDataBySQLSearch(c.param.ModelData, sql, sqlNt, c.param.ClientPage, c.param.EveryPage, args)
+	return c.dbTool.GetDataBySQLSearch(c.param.ModelData, sql, sqlNt, c.param.ClientPage, c.param.EveryPage, args, args)
 }
 
 // delete by sql
@@ -170,6 +172,9 @@ func (c *DBCrud) Select(query string, args ...interface{}) Crud {
 
 	c.selectSQL += query + " "
 	c.args = append(c.args, args...)
+	if c.from != "" {
+		c.argsNt = append(c.argsNt, args...)
+	}
 	return c
 }
 
@@ -177,26 +182,29 @@ func (c *DBCrud) From(query string) Crud {
 
 	c.from = query
 	c.selectSQL += query + " "
-	c.args = append(c.args)
 	return c
 }
 
-//func (c *DBCrud) Where(query string, args ...interface{}) Crud {
-//
-//	c.selectSQL += " and " + query
-//	c.args = append(c.args, args...)
-//	return c
-//}
+func (c *DBCrud) Group(query string) Crud {
+
+	c.group = query
+	return c
+}
 
 func (c *DBCrud) Search() (pager result.Pager, err error) {
 
+	if c.argsNt == nil {
+		c.argsNt = c.args
+	}
 	return c.dbTool.GetDataBySelectSQLSearch(&GT{
 		ModelData:  c.param.ModelData,
 		ClientPage: c.param.ClientPage,
 		EveryPage:  c.param.EveryPage,
 		Select:     c.selectSQL,
 		Args:       c.args,
+		ArgsNt:     c.argsNt,
 		From:       c.from,
+		Group:      c.group,
 	})
 }
 

@@ -59,6 +59,7 @@ type Crud interface {
 	// select
 	Select(query string, args ...interface{}) Crud // select sql
 	From(query string) Crud                        // from sql, if use search, From must only once
+	Group(query string) Crud                       // the last group by
 	Search() (pager result.Pager, err error)       // search pager
 	Single() error                                 // no search
 	//Where(query interface{}, args ...interface{}) Crud

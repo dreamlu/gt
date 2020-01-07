@@ -192,7 +192,9 @@ type GT struct {
 	// select sql
 	Select string // select sql
 	From   string // only once
+	Group  string // the last group
 	Args   []interface{}
+	ArgsNt []interface{}
 }
 
 //=======================================sql语句处理==========================================
@@ -413,6 +415,9 @@ func GetSelectSearchSQL(gt *GT) (sqlNt, sql string) {
 		gt.From = "from"
 	}
 	sqlNt = "select count(*) as total_num " + gt.From + strings.Join(strings.Split(sql, gt.From)[1:], "")
+	if gt.Group != "" {
+		sql += gt.Group
+	}
 	return
 }
 
@@ -554,7 +559,7 @@ func (db *DBTool) GetMoreDataBySearch(gt *GT) (pager result.Pager, err error) {
 	// more table search
 	sqlNt, sql, clientPage, everyPage, args := GetMoreSearchSQL(gt)
 
-	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, clientPage, everyPage, args[:]...)
+	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, clientPage, everyPage, args, args)
 }
 
 // 获得数据,分页/查询
@@ -562,7 +567,7 @@ func (db *DBTool) GetDataBySearch(gt *GT) (pager result.Pager, err error) {
 
 	sqlNt, sql, clientPage, everyPage, args := GetSearchSQL(gt)
 
-	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, clientPage, everyPage, args[:]...)
+	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, clientPage, everyPage, args, args)
 }
 
 // 获得数据, no search
@@ -578,13 +583,13 @@ func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager, err erro
 
 	sqlNt, sql := GetSelectSearchSQL(gt)
 
-	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, gt.ClientPage, gt.EveryPage, gt.Args[:]...)
+	return db.GetDataBySQLSearch(gt.ModelData, sql, sqlNt, gt.ClientPage, gt.EveryPage, gt.Args, gt.ArgsNt)
 }
 
 // 获得数据,根据sql语句,分页
 // args : sql参数'？'
 // sql, sqlNt args 相同, 共用args
-func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args ...interface{}) (pager result.Pager, err error) {
+func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}, argsNt []interface{}) (pager result.Pager, err error) {
 
 	// if no clientPage or everyPage
 	// return all data
@@ -593,7 +598,7 @@ func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, client
 	}
 
 	// sqlNt += limit
-	dba := db.DB.Raw(sqlNt, args[:]...).Scan(&pager)
+	dba := db.DB.Raw(sqlNt, argsNt[:]...).Scan(&pager)
 	if dba.Error != nil {
 		err = sq.GetSQLError(dba.Error.Error())
 	} else {
