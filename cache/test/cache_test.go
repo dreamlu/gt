@@ -18,8 +18,8 @@ type User struct {
 
 var (
 	testConfDir = "../../conf/"
-	r = redis.RedisManager{}
-	ce, _ = cache.NewCache(new(redis.RedisManager), testConfDir)
+	r           = redis.RedisManager{}
+	ce, _       = cache.NewCache(new(redis.RedisManager), testConfDir)
 )
 
 func init() {

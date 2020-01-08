@@ -45,8 +45,6 @@ type OrderD struct {
 	Createtime  time.CTime `json:"createtime"`   // createtime
 }
 
-// 全局
-//var GOTool = NewDBTool()
 // 局部
 var crud = NewCrud()
 
@@ -57,13 +55,10 @@ func TestDB(t *testing.T) {
 		//Createtime:JsonDate(time.Now()),
 	}
 
-	//err := CreateDataJ(&user)
-	//log.Println(err)
-
 	// return create id
-	_ = crud.DB().CreateDataJ(&user)
-	log.Println("user: ", user)
-
+	_ = crud.DB().CreateData(&user)
+	t.Log("user: ", user)
+	t.Log(crud.DB().RowsAffected)
 	//user.ID = 8 //0
 	//ss = UpdateStructData(&user)
 	//log.Println(ss)
@@ -177,10 +172,10 @@ func TestGetDataBySearch(t *testing.T) {
 	args["everyPage"] = append(args["everyPage"], "2")
 	var user []*User
 	_, _ = crud.DB().GetDataBySearch(&GT{
-		Params:    args,
-		Table:     "user",
-		Model:     User{},
-		ModelData: &user,
+		Params: args,
+		Table:  "user",
+		Model:  User{},
+		Data:   &user,
 	})
 	t.Log(user[0])
 }
@@ -198,11 +193,11 @@ func TestCrud(t *testing.T) {
 	var user User
 	//param := &Params{
 	//	Table:     "user",
-	//	ModelData: &user,
+	//	Data: &user,
 	//}
 	crud = NewCrud(
 		Table("user"),
-		ModelData(&user),
+		Data(&user),
 	)
 	info := crud.GetByID("1")
 	log.Println(info, "\n[User Info]:", user)
@@ -212,12 +207,12 @@ func TestCrud(t *testing.T) {
 	//param = &Params{
 	//	Table:     "user",
 	//	Model:     User{},
-	//	ModelData: &users,
+	//	Data: &users,
 	//}
 	//crud = NewCrud(param)
 	crud.Params(
 		Model(User{}),
-		ModelData(&user),
+		Data(&user),
 	)
 	args["name"][0] = "梦"
 	crud.GetBySearch(args)
@@ -246,7 +241,8 @@ func TestCrud(t *testing.T) {
 func TestCrudSQL(t *testing.T) {
 	//var db = DbCrud{}
 	sql := "update `user` set name=? where id=?"
-	log.Println("[Info]:", crud.UpdateBySQL(sql, "梦sql", 1))
+	log.Println("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
+	log.Println("[Info]:", crud.DB().RowsAffected)
 }
 
 // 测试多表连接
@@ -263,13 +259,13 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	//	InnerTable: []string{"order", "user"},
 	//	LeftTable:  []string{"service"},
 	//	Model:      OrderD{},
-	//	ModelData:  &or,
+	//	Data:  &or,
 	//}
 	crud := NewCrud(
 		InnerTable([]string{"order", "user", "order", "service"}),
 		//LeftTable([]string{"order", "service"}),
 		Model(OrderD{}),
-		ModelData(&or),
+		Data(&or),
 	)
 	_, err := crud.GetMoreBySearch(params)
 	if err != nil {
@@ -352,7 +348,7 @@ func TestExtends(t *testing.T) {
 func TestDBCrud_Select(t *testing.T) {
 	var user []*User
 	crud.Params(
-		ModelData(&user),
+		Data(&user),
 		ClientPage(1),
 		EveryPage(2),
 	).
@@ -363,4 +359,18 @@ func TestDBCrud_Select(t *testing.T) {
 	}
 	crud.Search()
 	crud.Single()
+}
+
+// test update/delete
+func TestDBCrud_Update(t *testing.T) {
+
+	crud := crud.Params(
+		Table("user"),
+		Data(&User{
+			ID:   1,
+			Name: "梦S",
+		}),
+	)
+	crud.Update()
+	t.Log(crud.DB().RowsAffected)
 }

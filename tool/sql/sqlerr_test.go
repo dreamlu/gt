@@ -9,7 +9,7 @@ import (
 
 func TestGetSQLError(t *testing.T) {
 	msg := "record not found"
-	err:= GetSQLError(msg)
+	err := GetSQLError(msg)
 	///fmt.Println(errors.Unwrap(err))
 	fmt.Println(errors.As(err, &te.TextErr))
 }

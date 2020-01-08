@@ -8,10 +8,10 @@ import (
 )
 
 func TestStr(t *testing.T) {
-	//get defalult upload max size
-	//r := routers.SetRouter()
-	//MaxUploadMemory = r.MaxMultipartMemory
+	// get defalult upload max size
+	// r := routers.SetRouter()
+	// MaxUploadMemory = r.MaxMultipartMemory
 	t.Log("str :", MaxUploadMemory)
 
-	t.Log(result.GetMapData(0,"1").String())
+	t.Log(result.GetMapData(0, "1").String())
 }

@@ -64,7 +64,7 @@ func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationT
 
 	baseLogPath := path.Join(logPath, logFileName)
 	writer, err := rotatelogs.New(
-		baseLogPath+".%Y%m%d%H%M",
+		path.Join(logPath, "%Y%m%d%H%M-"+logFileName),
 		rotatelogs.WithLinkName(baseLogPath), // 生成软链，指向最新日志文件
 		//rotatelogs.WithMaxAge(maxAge),             // 文件最大保存时间
 		rotatelogs.WithRotationTime(rotationTime), // 日志切割时间间隔

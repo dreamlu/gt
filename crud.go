@@ -11,12 +11,12 @@ import (
 	"strings"
 )
 
-const Version = "1.5.x"
+const Version = "1.6.x"
 
 // crud is db driver extend
 type Crud interface {
 	// init crud
-	InitCrud(dbTool *DBTool, param *Params)
+	initCrud(dbTool *DBTool, param *Params)
 	// DB
 	DB() *DBTool
 	// new/replace param
@@ -31,30 +31,22 @@ type Crud interface {
 	GetByID(id string) error                                                    // by id
 	GetMoreBySearch(params map[string][]string) (pager result.Pager, err error) // more search
 
-	// common sql data
-	// through sql, get the data
-	GetDataBySQL(sql string, args ...interface{}) error // single data
-	// page limit ?,?
-	// args not include limit ?,?
-	GetDataBySearchSQL(sql, sqlNt string, args ...interface{}) (pager result.Pager, err error) // more data
-	DeleteBySQL(sql string, args ...interface{}) error
-	UpdateBySQL(sql string, args ...interface{}) error
-	CreateBySQL(sql string, args ...interface{}) error
-
-	// delete
+	// delete by id
 	Delete(id string) error // delete
 
 	// crud and search id
 	// form data
+	// [create/update] future all will use json replace form request
+	// form will not update
 	UpdateForm(params map[string][]string) error        // update
 	CreateForm(params map[string][]string) error        // create
 	CreateResID(params map[string][]string) (ID, error) // create res insert id
 
 	// crud and search id
 	// json data
-	Update(data interface{}) error         // update
-	Create(data interface{}) error         // create, include res insert id
-	CreateMoreData(data interface{}) error // create more
+	Update() error         // update
+	Create() error         // create, include res insert id
+	CreateMoreData() error // create more, data must array type, single table
 
 	// select
 	Select(query string, args ...interface{}) Crud // select sql
@@ -62,7 +54,7 @@ type Crud interface {
 	Group(query string) Crud                       // the last group by
 	Search() (pager result.Pager, err error)       // search pager
 	Single() error                                 // no search
-	//Where(query interface{}, args ...interface{}) Crud
+	Exec() error                                   // exec insert/update/delete select sql
 }
 
 // crud params
@@ -72,7 +64,7 @@ type Params struct {
 	LeftTable  []string    // left join tables
 	Table      string      // table name
 	Model      interface{} // table model, like User{}
-	ModelData  interface{} // table model data, like var user User{}, it is 'user'
+	Data       interface{} // table model data, like var user User{}, it is 'user', it store real data
 
 	// pager info
 	ClientPage int64 // page number
@@ -85,11 +77,11 @@ type Params struct {
 type Param func(*Params)
 
 // new crud
-func NewCrud(p ...Param) Crud {
+func NewCrud(params ...Param) Crud {
 
 	DBTooler()
 	crud := new(DBCrud)
-	crud.InitCrud(dbTool, newParam(p...))
+	crud.initCrud(dbTool, newParam(params...))
 	return crud
 }
 
@@ -130,10 +122,10 @@ func Model(Model interface{}) Param {
 	}
 }
 
-func ModelData(ModelData interface{}) Param {
+func Data(Data interface{}) Param {
 
 	return func(params *Params) {
-		params.ModelData = ModelData
+		params.Data = Data
 	}
 }
 
