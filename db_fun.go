@@ -623,10 +623,10 @@ func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, client
 // exec sql
 func (db *DBTool) ExecSQL(sql string, args ...interface{}) (err error) {
 
-	db.DB = db.Exec(sql, args...)
+	dba := db.Exec(sql, args...)
 	switch {
-	case db.Error != nil:
-		err = sq.GetSQLError(db.Error.Error())
+	case dba.Error != nil:
+		err = sq.GetSQLError(dba.Error.Error())
 	default:
 		err = nil
 	}
@@ -740,10 +740,10 @@ func (db *DBTool) ValidateSQL(sql string) (err error) {
 // create
 func (db *DBTool) CreateData(data interface{}) (err error) {
 
-	db.DB = db.Create(data)
+	dba := db.Create(data)
 	switch {
-	case db.Error != nil:
-		err = sq.GetSQLError(db.Error.Error())
+	case dba.Error != nil:
+		err = sq.GetSQLError(dba.Error.Error())
 	default:
 		err = nil
 	}
@@ -780,10 +780,10 @@ func (db *DBTool) CreateMoreData(table string, model interface{}, data interface
 // update
 func (db *DBTool) UpdateData(data interface{}) (err error) {
 
-	db.DB = db.DB.Model(data).Update(data)
+	dba := db.DB.Model(data).Update(data)
 	switch {
-	case db.Error != nil:
-		err = sq.GetSQLError(db.Error.Error())
+	case dba.Error != nil:
+		err = sq.GetSQLError(dba.Error.Error())
 	default:
 		err = nil
 	}

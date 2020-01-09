@@ -59,6 +59,10 @@ func TestDB(t *testing.T) {
 	_ = crud.DB().CreateData(&user)
 	t.Log("user: ", user)
 	t.Log(crud.DB().RowsAffected)
+	user.Name = "haha"
+	_ = crud.DB().CreateData(&user)
+	t.Log("user: ", user)
+	t.Log(crud.DB().RowsAffected)
 	//user.ID = 8 //0
 	//ss = UpdateStructData(&user)
 	//log.Println(ss)
@@ -316,10 +320,11 @@ func TestCreateMoreData(t *testing.T) {
 	crud := NewCrud(
 		Table("user"),
 		Model(User{}),
+		Data(user),
 		//SubSQL("(asdf) as a","(asdfa) as b"),
 	)
 
-	err := crud.CreateMoreData(user)
+	err := crud.CreateMoreData()
 	log.Println(err)
 }
 
@@ -373,4 +378,27 @@ func TestDBCrud_Update(t *testing.T) {
 	)
 	crud.Update()
 	t.Log(crud.DB().RowsAffected)
+	crud.Params(Data(&User{
+		ID:   1,
+		Name: "梦SSS",
+	}))
+	crud.Create()
+	t.Log(crud.DB().RowsAffected)
+}
+
+// test update/delete
+func TestDBCrud_Create(t *testing.T) {
+
+	crud.Params(
+		Table("user"),
+		Data(&User{
+			ID:1,
+			Name: "梦S",
+		}),
+	).Create()
+	t.Log(crud.DB().Error)
+	crud.Params(Data(&User{
+		Name: "梦SSS",
+	})).Create()
+	t.Log(crud.DB().Error)
 }
