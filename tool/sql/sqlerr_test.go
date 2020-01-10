@@ -3,7 +3,7 @@ package sql
 import (
 	"errors"
 	"fmt"
-	"github.com/dreamlu/go-tool/tool/type/te"
+	"github.com/dreamlu/gt/tool/type/te"
 	"testing"
 )
 

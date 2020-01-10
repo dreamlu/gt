@@ -3,7 +3,7 @@
 package gt
 
 import (
-	"github.com/dreamlu/go-tool/tool/result"
+	"github.com/dreamlu/gt/tool/result"
 	"testing"
 )
 

@@ -1,13 +1,13 @@
 // package gt
 
 /*
-	go-tool is a fast go tool, help you dev project
+	gt is a fast go tool, help you dev project
 */
 
 package gt
 
 import (
-	"github.com/dreamlu/go-tool/tool/result"
+	"github.com/dreamlu/gt/tool/result"
 	"strings"
 )
 

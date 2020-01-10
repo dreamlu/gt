@@ -2,8 +2,8 @@ package sql
 
 import (
 	"fmt"
-	"github.com/dreamlu/go-tool/tool/result"
-	"github.com/dreamlu/go-tool/tool/type/te"
+	"github.com/dreamlu/gt/tool/result"
+	"github.com/dreamlu/gt/tool/type/te"
 	"github.com/pkg/errors"
 	"strings"
 )

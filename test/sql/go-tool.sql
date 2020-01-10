@@ -5,7 +5,7 @@
  Source Server Type    : MySQL
  Source Server Version : 50724
  Source Host           : localhost:3306
- Source Schema         : go-tool
+ Source Schema         : gt
 
  Target Server Type    : MySQL
  Target Server Version : 50724

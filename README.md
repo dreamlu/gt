@@ -1,4 +1,5 @@
 #### Erwin Schrödinger's Cat  
 
 GT  
-introduction nothing  
+
+via orm/other tools to fast dev project

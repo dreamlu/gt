@@ -3,9 +3,9 @@ package validator
 import (
 	"errors"
 	"fmt"
-	myReflect "github.com/dreamlu/go-tool/tool/reflect"
-	"github.com/dreamlu/go-tool/tool/result"
-	"github.com/dreamlu/go-tool/tool/type/te"
+	myReflect "github.com/dreamlu/gt/tool/reflect"
+	"github.com/dreamlu/gt/tool/result"
+	"github.com/dreamlu/gt/tool/type/te"
 	"net/url"
 	"reflect"
 	"regexp"

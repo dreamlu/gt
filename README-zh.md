@@ -1,5 +1,5 @@
 #### Erwin Schrödinger's Cat  
-go-tool(gt) (old)  
+gt(gt) (old)  
 
 web快速开发工具库,模型生成  
 

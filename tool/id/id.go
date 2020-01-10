@@ -5,7 +5,7 @@ import (
 )
 
 // id generate
-// workId is >= 2, default 1 use by go-tool
+// workId is >= 2, default 1 use by gt
 func NewID(workId int64) (snowflake.ID, error) {
 
 	node, err := snowflake.NewNode(workId)

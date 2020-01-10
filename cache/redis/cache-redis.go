@@ -5,8 +5,8 @@ package redis
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/dreamlu/go-tool"
-	"github.com/dreamlu/go-tool/cache"
+	"github.com/dreamlu/gt"
+	"github.com/dreamlu/gt/cache"
 	"github.com/go-redis/redis"
 )
 

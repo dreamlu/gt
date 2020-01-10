@@ -4,8 +4,8 @@ package gt
 
 import (
 	"fmt"
-	"github.com/dreamlu/go-tool/tool/type/json"
-	"github.com/dreamlu/go-tool/tool/type/time"
+	"github.com/dreamlu/gt/tool/type/json"
+	"github.com/dreamlu/gt/tool/type/time"
 	"log"
 	"testing"
 	time2 "time"
@@ -84,7 +84,7 @@ func TestSqlSearch(t *testing.T) {
 
 	//可定制
 	//args map[string][]string
-	//look go-tool/demo
+	//look gt/demo
 	//args is url.values
 	//for k, v := range args {
 	//	if k == "clientPage" {

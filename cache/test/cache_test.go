@@ -3,9 +3,9 @@
 package test
 
 import (
-	"github.com/dreamlu/go-tool/cache"
-	"github.com/dreamlu/go-tool/cache/redis"
-	"github.com/dreamlu/go-tool/tool/type/time"
+	"github.com/dreamlu/gt/cache"
+	"github.com/dreamlu/gt/cache/redis"
+	"github.com/dreamlu/gt/tool/type/time"
 	"log"
 	"testing"
 )

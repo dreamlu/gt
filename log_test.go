@@ -11,7 +11,7 @@ var projectPath, _ = os.Getwd()
 //var myLog = Logger()
 
 func init() {
-	Logger().FileLog(projectPath+"/test/log/", "go-tool.log", 3, time.Minute)
+	Logger().FileLog(projectPath+"/test/log/", "gt.log", 3, time.Minute)
 }
 
 func TestNewFileLog(t *testing.T) {

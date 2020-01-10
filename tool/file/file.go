@@ -1,8 +1,8 @@
 package file
 
 import (
-	"github.com/dreamlu/go-tool"
-	"github.com/dreamlu/go-tool/tool/id"
+	"github.com/dreamlu/gt"
+	"github.com/dreamlu/gt/tool/id"
 	"github.com/dreamlu/resize"
 	"image"
 	"image/jpeg"

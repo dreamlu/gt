@@ -1,4 +1,4 @@
-module github.com/dreamlu/go-tool
+module github.com/dreamlu/gt
 
 go 1.13
 

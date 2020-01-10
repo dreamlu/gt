@@ -2,7 +2,7 @@
 
 package gt
 
-import "github.com/dreamlu/go-tool/tool/result"
+import "github.com/dreamlu/gt/tool/result"
 
 // implement DBCrud
 // form data
