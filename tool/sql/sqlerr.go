@@ -14,6 +14,8 @@ func GetSQLError(error string) (err error) {
 	switch {
 	case error == "record not found":
 		err = fmt.Errorf("%w", &te.TextError{Msg: result.MsgNoResult})
+	case strings.Contains(error, "PRIMARY"):
+		err = fmt.Errorf("%w", &te.TextError{Msg: "主键重复"})
 	case strings.Contains(error, "Duplicate entry"):
 		//error = strings.Replace(error, "Error 1062: Duplicate entry", "", -1)
 		errs := strings.Split(error, "for key ")

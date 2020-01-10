@@ -229,8 +229,8 @@ func TestCrud(t *testing.T) {
 	// update
 	args["id"] = append(args["id"], "4")
 	args["name"][0] = "梦4"
-	info2 = crud.UpdateForm(args)
-	log.Println(info2)
+	err := crud.UpdateForm(args)
+	log.Println(err)
 
 	// create
 	//var args2 = make(map[string][]string)
@@ -376,14 +376,8 @@ func TestDBCrud_Update(t *testing.T) {
 			Name: "梦S",
 		}),
 	)
-	crud.Update()
-	t.Log(crud.DB().RowsAffected)
-	crud.Params(Data(&User{
-		ID:   1,
-		Name: "梦SSS",
-	}))
-	crud.Create()
-	t.Log(crud.DB().RowsAffected)
+	t.Log(crud.Update().RowsAffected())
+	t.Log(crud.Error())
 }
 
 // test update/delete
@@ -396,9 +390,11 @@ func TestDBCrud_Create(t *testing.T) {
 			Name: "梦S",
 		}),
 	).Create()
-	t.Log(crud.DB().Error)
-	crud.Params(Data(&User{
+	t.Log(crud.Error())
+	t.Log(crud.Create().Error())
+	crud.Params(
+		Data(&User{
 		Name: "梦SSS",
 	})).Create()
-	t.Log(crud.DB().Error)
+	t.Log(crud.Error())
 }

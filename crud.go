@@ -32,7 +32,7 @@ type Crud interface {
 	GetMoreBySearch(params map[string][]string) (pager result.Pager, err error) // more search
 
 	// delete by id
-	Delete(id string) error // delete
+	Delete(id string) Crud // delete
 
 	// crud and search id
 	// form data
@@ -44,8 +44,8 @@ type Crud interface {
 
 	// crud and search id
 	// json data
-	Update() error         // update
-	Create() error         // create, include res insert id
+	Update() Crud          // update
+	Create() Crud          // create, include res insert id
 	CreateMoreData() error // create more, data must array type, single table
 
 	// select
@@ -54,7 +54,9 @@ type Crud interface {
 	Group(query string) Crud                       // the last group by
 	Search() (pager result.Pager, err error)       // search pager
 	Single() error                                 // no search
-	Exec() error                                   // exec insert/update/delete select sql
+	Exec() Crud                                    // exec insert/update/delete select sql
+	Error() error                                  // crud error
+	RowsAffected() int64                           // inflect rows
 }
 
 // crud params

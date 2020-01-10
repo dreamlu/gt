@@ -2,7 +2,10 @@
 
 package gt
 
-import "github.com/dreamlu/gt/tool/result"
+import (
+	"github.com/dreamlu/gt/tool/result"
+	sq "github.com/dreamlu/gt/tool/sql"
+)
 
 // implement DBCrud
 // form data
@@ -83,9 +86,11 @@ func (c *DBCrud) GetMoreBySearch(params map[string][]string) (pager result.Pager
 }
 
 // delete
-func (c *DBCrud) Delete(id string) (err error) {
+func (c *DBCrud) Delete(id string) Crud {
 
-	return c.dbTool.Delete(c.param.Table, id)
+	clone := c.clone()
+	clone.dbTool.Delete(c.param.Table, id)
+	return clone
 }
 
 // === form data ===
@@ -117,15 +122,17 @@ func (c *DBCrud) CreateMoreData() error {
 }
 
 // update
-func (c *DBCrud) Update() (err error) {
-
-	return c.dbTool.UpdateData(c.param.Data)
+func (c *DBCrud) Update() Crud {
+	clone := c.clone()
+	clone.dbTool.UpdateData(c.param.Data)
+	return clone
 }
 
 // create
-func (c *DBCrud) Create() error {
-
-	return c.dbTool.CreateData(c.param.Data)
+func (c *DBCrud) Create() Crud {
+	clone := c.clone()
+	clone.dbTool.CreateData(c.param.Data)
+	return clone
 }
 
 // create
@@ -175,7 +182,36 @@ func (c *DBCrud) Single() (err error) {
 	return c.dbTool.GetDataBySQL(c.param.Data, c.selectSQL, c.args...)
 }
 
-func (c *DBCrud) Exec() (err error) {
+func (c *DBCrud) Exec() Crud {
 
-	return c.dbTool.ExecSQL(c.selectSQL, c.args...)
+	clone := c.clone()
+	clone.dbTool.ExecSQL(c.selectSQL, c.args...)
+	return clone
+}
+
+func (c *DBCrud) Error() error {
+
+	if c.dbTool.Error != nil {
+		c.dbTool.Error = sq.GetSQLError(c.dbTool.Error.Error())
+	}
+	return c.dbTool.Error
+}
+
+func (c *DBCrud) RowsAffected() int64 {
+
+	return c.dbTool.RowsAffected
+}
+
+func (c *DBCrud) clone() *DBCrud {
+
+	dbCrud := &DBCrud{
+		dbTool:    c.dbTool.clone(),
+		param:     c.param,
+		selectSQL: c.selectSQL,
+		from:      c.from,
+		args:      c.args,
+		argsNt:    c.argsNt,
+		group:     c.group,
+	}
+	return dbCrud
 }

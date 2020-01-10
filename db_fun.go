@@ -621,25 +621,19 @@ func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, client
 ////////////////////
 
 // exec sql
-func (db *DBTool) ExecSQL(sql string, args ...interface{}) (err error) {
+func (db *DBTool) ExecSQL(sql string, args ...interface{}) {
 
-	dba := db.Exec(sql, args...)
-	switch {
-	case dba.Error != nil:
-		err = sq.GetSQLError(dba.Error.Error())
-	default:
-		err = nil
-	}
-	return
+	db.DB = db.Exec(sql, args...)
+	//return db
 }
 
 // delete
 ///////////////////
 
 // delete
-func (db *DBTool) Delete(table string, id string) error {
-	sql := fmt.Sprintf("delete from `%s` where id=?", table)
-	return db.ExecSQL(sql, id)
+func (db *DBTool) Delete(table string, id string) {
+	// sql := fmt.Sprintf("delete from `%s` where id=?", table)
+	db.ExecSQL(fmt.Sprintf("delete from `%s` where id=?", table), id)
 }
 
 // update
@@ -649,7 +643,8 @@ func (db *DBTool) Delete(table string, id string) error {
 func (db *DBTool) UpdateFormData(table string, params map[string][]string) (err error) {
 
 	sql, args := GetUpdateSQL(table, params)
-	return db.ExecSQL(sql, args...)
+	db.ExecSQL(sql, args...)
+	return db.Error
 }
 
 // 结合struct修改
@@ -676,7 +671,8 @@ func (db *DBTool) UpdateStructData(data interface{}) (err error) {
 func (db *DBTool) CreateFormData(table string, params map[string][]string) error {
 
 	sql, args := GetInsertSQL(table, params)
-	return db.ExecSQL(sql, args...)
+	db.ExecSQL(sql, args...)
+	return db.Error
 }
 
 // map[string][]string 形式批量创建问题: 顺序对应, 使用json形式批量创建
@@ -738,16 +734,10 @@ func (db *DBTool) ValidateSQL(sql string) (err error) {
 //==============================================================
 
 // create
-func (db *DBTool) CreateData(data interface{}) (err error) {
+func (db *DBTool) CreateData(data interface{}) *DBTool {
 
-	dba := db.Create(data)
-	switch {
-	case dba.Error != nil:
-		err = sq.GetSQLError(dba.Error.Error())
-	default:
-		err = nil
-	}
-	return err
+	db.DB = db.Create(data)
+	return db
 }
 
 // data must array type
@@ -778,14 +768,8 @@ func (db *DBTool) CreateMoreData(table string, model interface{}, data interface
 }
 
 // update
-func (db *DBTool) UpdateData(data interface{}) (err error) {
+func (db *DBTool) UpdateData(data interface{}) *DBTool {
 
-	dba := db.DB.Model(data).Update(data)
-	switch {
-	case dba.Error != nil:
-		err = sq.GetSQLError(dba.Error.Error())
-	default:
-		err = nil
-	}
-	return
+	db.DB = db.DB.Model(data).Update(data)
+	return db
 }

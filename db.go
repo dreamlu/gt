@@ -110,3 +110,10 @@ func DBTooler() *DBTool {
 
 	return dbTool
 }
+
+func (db *DBTool) clone() *DBTool {
+
+	return &DBTool{
+		DB: db.DB,
+	}
+}
