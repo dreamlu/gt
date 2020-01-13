@@ -358,6 +358,7 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 
 	if bufW.Len() != 0 {
 		sql += fmt.Sprintf(" where %s ", bufW.Bytes()[:bufW.Len()-4])
+		sqlNt += fmt.Sprintf(" where %s", bufW.Bytes()[:bufW.Len()-4])
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 	return
