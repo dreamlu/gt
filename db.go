@@ -37,7 +37,7 @@ func (db *DBTool) NewDB() *gorm.DB {
 	dbS := &dba{}
 	Configger().GetStruct("app.db", dbS)
 	var (
-		sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
+		sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
 	)
 
 	db.once.Do(func() {
