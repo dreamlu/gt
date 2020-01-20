@@ -49,7 +49,7 @@ type DefaultRule struct {
 
 // 创建校验器对象
 // 针对form表单/json数据两种
-func Valid(data, model interface{}) result.MapData {
+func Valid(data, model interface{}) *result.MapData {
 
 	v := &Validator{
 		data:  data,
@@ -82,7 +82,7 @@ func Valid(data, model interface{}) result.MapData {
 
 // 执行检查后返回信息
 // trans 翻译后的字段名
-func (v *Validator) CheckInfo() result.MapData {
+func (v *Validator) CheckInfo() *result.MapData {
 	if err := v.Check(); err != nil {
 		// 检查不通过，处理错误
 		// fmt.Println(err)

@@ -161,7 +161,7 @@ func TestGetDataBySql(t *testing.T) {
 	var sql = "select id,name,createtime from `user` where id = ?"
 
 	var user User
-	_ = crud.DB().GetDataBySQL(&user, sql, "1")
+	crud.DB().GetDataBySQL(&user, sql, "1")
 	log.Println(user)
 
 	//GOTool.Raw(sql, []interface{}{1, "梦"}[:]...).Scan(&user)
@@ -175,7 +175,7 @@ func TestGetDataBySearch(t *testing.T) {
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
 	var user []*User
-	_, _ = crud.DB().GetDataBySearch(&GT{
+	crud.DB().GetDataBySearch(&GT{
 		Params: args,
 		Table:  "user",
 		Model:  User{},
@@ -271,7 +271,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		Model(OrderD{}),
 		Data(&or),
 	)
-	_, err := crud.GetMoreBySearch(params)
+	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {
 		log.Println(err)
 	}

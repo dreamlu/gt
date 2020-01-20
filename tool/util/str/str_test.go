@@ -1,6 +1,6 @@
 // package gt
 
-package gt
+package str
 
 import (
 	"github.com/dreamlu/gt/tool/result"

@@ -4,6 +4,7 @@ package gt
 
 import (
 	"fmt"
+	"github.com/dreamlu/gt/tool/util/str"
 	"log"
 	"sync"
 )
@@ -36,7 +37,7 @@ func Configger(params ...string) *Config {
 func NewConfig(params ...string) *Config {
 
 	// default param
-	confDir := ConfDir
+	confDir := str.ConfDir
 	if len(params) > 0 {
 		confDir = params[0]
 	}

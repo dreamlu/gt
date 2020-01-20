@@ -61,7 +61,7 @@ var (
 
 // 分页数据信息
 type GetInfoPager struct {
-	GetInfo
+	*GetInfo
 	Pager Pager `json:"pager"`
 }
 
@@ -75,7 +75,7 @@ type Pager struct {
 // 无分页数据信息
 // 分页数据信息
 type GetInfo struct {
-	MapData
+	*MapData
 	Data interface{} `json:"data"` // 数据存储
 }
 
@@ -86,62 +86,76 @@ type MapData struct {
 }
 
 // 信息通用,状态码及信息提示
-func GetMapData(status int64, msg interface{}) MapData {
+func GetMapData(status int64, msg interface{}) *MapData {
 
-	return MapData{
+	return &MapData{
 		Status: status,
 		Msg:    msg,
 	}
 }
 
 // 后端提示
-func GetText(Msg interface{}) MapData {
+func GetText(Msg interface{}) *MapData {
 
 	return GetMapData(CodeText, Msg)
 }
 
 // 信息成功通用(成功通用, 无分页)
-func GetSuccess(data interface{}) GetInfo {
+func GetSuccess(data interface{}) *GetInfo {
 
-	return GetInfo{
+	return &GetInfo{
 		MapData: MapSuccess,
 		Data:    data,
 	}
 }
 
 // 信息分页通用(成功通用, 分页)
-func GetSuccessPager(data interface{}, pager Pager) GetInfoPager {
+func GetSuccessPager(data interface{}, pager Pager) *GetInfoPager {
 
-	return GetInfoPager{
+	return &GetInfoPager{
 		GetInfo: GetSuccess(data),
 		Pager:   pager,
 	}
 }
 
 // 信息失败通用
-func GetError(data interface{}) GetInfo {
+func GetError(data interface{}) *GetInfo {
 
-	return GetInfo{
+	return &GetInfo{
 		MapData: MapError,
 		Data:    data,
 	}
 }
 
 // 无分页通用
-func GetData(data interface{}, mapData MapData) GetInfo {
+func GetData(data interface{}, mapData *MapData) *GetInfo {
 
-	return GetInfo{
+	return &GetInfo{
 		MapData: mapData,
 		Data:    data,
 	}
 }
 
 // 分页通用
-func GetDataPager(data interface{}, mapData MapData, pager Pager) GetInfoPager {
+func GetDataPager(data interface{}, mapData *MapData, pager Pager) *GetInfoPager {
 
-	return GetInfoPager{
+	return &GetInfoPager{
 		GetInfo: GetData(data, mapData),
 		Pager:   pager,
+	}
+}
+
+// 转化
+func (m *GetInfo) Parent() *MapData {
+
+	return m.MapData
+}
+
+func (m *GetInfoPager) Parent() *GetInfo {
+
+	return &GetInfo{
+		MapData: m.MapData,
+		Data:    m.Data,
 	}
 }
 

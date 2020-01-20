@@ -8,6 +8,7 @@ package gt
 
 import (
 	"github.com/dreamlu/gt/tool/result"
+	"github.com/dreamlu/gt/tool/util/str"
 	"strings"
 )
 
@@ -26,10 +27,10 @@ type Crud interface {
 
 	// get url params
 	// like form data
-	GetBySearch(params map[string][]string) (pager result.Pager, err error)     // search
-	GetByData(params map[string][]string) error                                 // get data no search
-	GetByID(id string) error                                                    // by id
-	GetMoreBySearch(params map[string][]string) (pager result.Pager, err error) // more search
+	GetBySearch(params map[string][]string) Crud     // search
+	GetByData(params map[string][]string) Crud       // get data no search
+	GetByID(id string) Crud                          // by id
+	GetMoreBySearch(params map[string][]string) Crud // more search
 
 	// delete by id
 	Delete(id string) Crud // delete
@@ -38,9 +39,9 @@ type Crud interface {
 	// form data
 	// [create/update] future all will use json replace form request
 	// form will not update
-	UpdateForm(params map[string][]string) error        // update
-	CreateForm(params map[string][]string) error        // create
-	CreateResID(params map[string][]string) (ID, error) // create res insert id
+	UpdateForm(params map[string][]string) error            // update
+	CreateForm(params map[string][]string) error            // create
+	CreateResID(params map[string][]string) (str.ID, error) // create res insert id
 
 	// crud and search id
 	// json data
@@ -52,11 +53,12 @@ type Crud interface {
 	Select(query string, args ...interface{}) Crud // select sql
 	From(query string) Crud                        // from sql, if use search, From must only once
 	Group(query string) Crud                       // the last group by
-	Search() (pager result.Pager, err error)       // search pager
-	Single() error                                 // no search
+	Search() Crud                                  // search pager
+	Single() Crud                                  // no search
 	Exec() Crud                                    // exec insert/update/delete select sql
 	Error() error                                  // crud error
 	RowsAffected() int64                           // inflect rows
+	Pager() result.Pager                           // search pager
 }
 
 // crud params

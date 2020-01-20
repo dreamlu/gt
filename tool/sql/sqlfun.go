@@ -1,20 +1,36 @@
 package sql
 
 import (
+	"github.com/dreamlu/gt/tool/util/str"
 	"reflect"
 	"strings"
 )
 
-// 根据model中表模型的json标签获取表字段
-// 将select* 变为对应的字段名
-func GetTags(model interface{}) (tags []string) {
-	typ := reflect.TypeOf(model)
-	//var buffer bytes.Buffer
-	for i := 0; i < typ.NumField(); i++ {
-		tag := typ.Field(i).Tag.Get("json")
+// 层级递增解析tag
+func GetReflectTags(reflectType reflect.Type) (tags []string) {
+	if reflectType.Kind() != reflect.Struct {
+		return
+	}
+	for i := 0; i < reflectType.NumField(); i++ {
+		tag := reflectType.Field(i).Tag.Get("json")
+		if tag == "" {
+			tags = append(tags, GetReflectTags(reflectType.Field(i).Type)...)
+			continue
+		}
+		// sub sql
+		gtTag := reflectType.Field(i).Tag.Get("gt")
+		if strings.Contains(gtTag, str.GtSubSQL) {
+			continue
+		}
 		tags = append(tags, tag)
 	}
 	return tags
+}
+
+// 根据model中表模型的json标签获取表字段
+// 将select* 变为对应的字段名
+func GetTags(model interface{}) []string {
+	return GetReflectTags(reflect.TypeOf(model))
 }
 
 // key search sql

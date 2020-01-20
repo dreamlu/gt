@@ -10,6 +10,7 @@ import (
 	sq "github.com/dreamlu/gt/tool/sql"
 	"github.com/dreamlu/gt/tool/type/te"
 	"github.com/dreamlu/gt/tool/util"
+	"github.com/dreamlu/gt/tool/util/str"
 	"reflect"
 	"strconv"
 	"strings"
@@ -21,7 +22,7 @@ import (
 // select * replace
 // select more tables
 // tables : table name / table alias name
-// 主表放在tables中第一个，紧接着为主表关联的外键表名(无顺序)
+// 主表放在tables中第一个, 紧接着为主表关联的外键表名(无顺序)
 func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 	var buf bytes.Buffer
 
@@ -45,7 +46,7 @@ func GetReflectTagMore(reflectType reflect.Type, buf *bytes.Buffer, tables ...st
 		}
 		// sub sql
 		gtTag := reflectType.Field(i).Tag.Get("gt")
-		if strings.Contains(gtTag, GtSubSQL) {
+		if strings.Contains(gtTag, str.GtSubSQL) {
 			continue
 		}
 		// foreign tables column
@@ -103,7 +104,7 @@ func GetReflectTagAlias(reflectType reflect.Type, buf *bytes.Buffer, alias strin
 		}
 		// sub sql
 		gtTag := reflectType.Field(i).Tag.Get("gt")
-		if strings.Contains(gtTag, GtSubSQL) {
+		if strings.Contains(gtTag, str.GtSubSQL) {
 			continue
 		}
 		buf.WriteString(alias)
@@ -138,7 +139,7 @@ func GetReflectTag(reflectType reflect.Type, buf *bytes.Buffer) {
 		}
 		// sub sql
 		gtTag := reflectType.Field(i).Tag.Get("gt")
-		if strings.Contains(gtTag, GtSubSQL) {
+		if strings.Contains(gtTag, str.GtSubSQL) {
 			continue
 		}
 		buf.WriteString("`")
@@ -258,16 +259,16 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 	sql = strings.Replace(bufNt.String(), "count(`"+tables[0]+"`.id) as total_num", GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
 	for k, v := range gt.Params {
 		switch k {
-		case GtClientPage:
+		case str.GtClientPage:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case GtEveryPage:
+		case str.GtEveryPage:
 			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case GtOrder:
+		case str.GtOrder:
 			order = v[0]
 			continue
-		case GtKey:
+		case str.GtKey:
 			key = v[0]
 			var tablens = append(tables, tables[:]...)
 			for k, v := range tablens {
@@ -326,16 +327,16 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 	sqlNt = fmt.Sprintf("select count(id) as total_num from `%s`", gt.Table)
 	for k, v := range gt.Params {
 		switch k {
-		case GtClientPage:
+		case str.GtClientPage:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case GtEveryPage:
+		case str.GtEveryPage:
 			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case GtOrder:
+		case str.GtOrder:
 			order = v[0]
 			continue
-		case GtKey:
+		case str.GtKey:
 			key = v[0]
 			sqlKey, sqlNtKey, argsKey := sq.GetKeySQL(key, gt.Model, gt.Table)
 			bufW.WriteString(sqlKey)
@@ -345,10 +346,6 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 		case "":
 			continue
 		}
-
-		//v[0] = strings.Replace(v[0], "'", "\\'", -1) //转义
-		//sql += k + " = ? and "
-		//sqlNt += k + " = ? and "
 		bufW.WriteString(k)
 		bufW.WriteString(" = ? and ")
 		bufNtW.WriteString(k)
@@ -377,10 +374,10 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 	sql = fmt.Sprintf("select %s%s from `%s`", GetColSQL(gt.Model), gt.SubSQL, gt.Table)
 	for k, v := range gt.Params {
 		switch k {
-		case GtOrder:
+		case str.GtOrder:
 			order = v[0]
 			continue
-		case GtKey:
+		case str.GtKey:
 			key = v[0]
 			sqlKey, sqlNtKey, argsKey := sq.GetKeySQL(key, gt.Model, gt.Table)
 			bufW.WriteString(sqlKey)
@@ -488,17 +485,9 @@ func GetInsertSQL(table string, params map[string][]string) (sql string, args []
 ////////////////
 
 // 获得数据,根据sql语句,无分页
-func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}) (err error) {
+func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}) {
 
-	dba := db.DB.Raw(sql, args[:]...).Scan(data)
-	// 有数据是返回相应信息
-	if dba.Error != nil {
-		err = sq.GetSQLError(dba.Error.Error())
-	} else {
-		// get data
-		err = nil
-	}
-	return
+	db.DB = db.DB.Raw(sql, args[:]...).Scan(data)
 }
 
 // 获得数据,根据name条件
@@ -537,18 +526,9 @@ func (db *DBTool) GetDataByName(data interface{}, name, value string) (err error
 //}
 
 // 获得数据,根据id
-func (db *DBTool) GetDataByID(data interface{}, id string) (err error) {
+func (db *DBTool) GetDataByID(data interface{}, id string) {
 
-	dba := db.DB.First(data, id) //只要一行数据时使用 LIMIT 1,增加查询性能
-
-	//有数据是返回相应信息
-	if dba.Error != nil {
-		err = sq.GetSQLError(dba.Error.Error())
-	} else {
-		// get data
-		err = nil
-	}
-	return
+	db.DB = db.DB.First(data, id) // limit 1
 }
 
 // More Table
@@ -556,7 +536,7 @@ func (db *DBTool) GetDataByID(data interface{}, id string) (err error) {
 // params: leftTables is left join tables
 // return: search info
 // table1 as main table, include other tables_id(foreign key)
-func (db *DBTool) GetMoreDataBySearch(gt *GT) (pager result.Pager, err error) {
+func (db *DBTool) GetMoreDataBySearch(gt *GT) (pager result.Pager) {
 	// more table search
 	sqlNt, sql, clientPage, everyPage, args := GetMoreSearchSQL(gt)
 
@@ -564,7 +544,7 @@ func (db *DBTool) GetMoreDataBySearch(gt *GT) (pager result.Pager, err error) {
 }
 
 // 获得数据,分页/查询
-func (db *DBTool) GetDataBySearch(gt *GT) (pager result.Pager, err error) {
+func (db *DBTool) GetDataBySearch(gt *GT) (pager result.Pager) {
 
 	sqlNt, sql, clientPage, everyPage, args := GetSearchSQL(gt)
 
@@ -572,15 +552,14 @@ func (db *DBTool) GetDataBySearch(gt *GT) (pager result.Pager, err error) {
 }
 
 // 获得数据, no search
-func (db *DBTool) GetData(gt *GT) (err error) {
+func (db *DBTool) GetData(gt *GT) {
 
 	sql, args := GetDataSQL(gt)
-
-	return db.GetDataBySQL(gt.Data, sql, args[:]...)
+	db.GetDataBySQL(gt.Data, sql, args[:]...)
 }
 
 // select sql search
-func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager, err error) {
+func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
 
 	sqlNt, sql := GetSelectSearchSQL(gt)
 
@@ -590,31 +569,23 @@ func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager, err erro
 // 获得数据,根据sql语句,分页
 // args : sql参数'？'
 // sql, sqlNt args 相同, 共用args
-func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}, argsNt []interface{}) (pager result.Pager, err error) {
+func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}, argsNt []interface{}) (pager result.Pager) {
 
 	// if no clientPage or everyPage
 	// return all data
 	if clientPage != 0 && everyPage != 0 {
 		sql += fmt.Sprintf("limit %d, %d", (clientPage-1)*everyPage, everyPage)
 	}
-
 	// sqlNt += limit
 	dba := db.DB.Raw(sqlNt, argsNt[:]...).Scan(&pager)
-	if dba.Error != nil {
-		err = sq.GetSQLError(dba.Error.Error())
-	} else {
-		// DB.Debug().Find(&dest)
-		dba = db.DB.Raw(sql, args[:]...).Scan(data)
-
-		if dba.Error != nil {
-			err = sq.GetSQLError(dba.Error.Error())
-			return pager, err
-		}
+	if db.Error == nil {
+		db.DB = db.DB.Raw(sql, args[:]...).Scan(data)
 		// pager data
 		pager.ClientPage = clientPage
 		pager.EveryPage = everyPage
-		err = nil
+		return
 	}
+	db.DB = dba
 	return
 }
 
@@ -681,7 +652,7 @@ func (db *DBTool) CreateFormData(table string, params map[string][]string) error
 // 创建数据,通用
 // 返回id,事务,慎用
 // 业务少可用
-func (db *DBTool) CreateDataResID(table string, params map[string][]string) (id ID, err error) {
+func (db *DBTool) CreateDataResID(table string, params map[string][]string) (id str.ID, err error) {
 
 	//开启事务
 	tx := db.DB.Begin()
@@ -716,7 +687,7 @@ func (db *DBTool) CreateDataResID(table string, params map[string][]string) (id 
 func (db *DBTool) ValidateSQL(sql string) (err error) {
 	var num int64 //返回影响的行数
 
-	var ve Value
+	var ve str.Value
 	dba := db.DB.Raw(sql).Scan(&ve)
 	num = dba.RowsAffected
 	switch {

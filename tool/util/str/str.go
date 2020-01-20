@@ -1,6 +1,6 @@
 // package gt
 
-package gt
+package str
 
 // max upload file size
 var MaxUploadMemory int64
