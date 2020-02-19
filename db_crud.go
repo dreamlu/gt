@@ -44,21 +44,23 @@ func (c *DBCrud) Params(params ...Param) Crud {
 // pager info
 func (c *DBCrud) GetBySearch(params map[string][]string) (pager result.Pager, err error) {
 	return c.dbTool.GetDataBySearch(&GT{
-		Table:  c.param.Table,
-		Model:  c.param.Model,
-		Data:   c.param.Data,
-		Params: params,
-		SubSQL: c.param.SubSQL,
+		Table:       c.param.Table,
+		Model:       c.param.Model,
+		Data:        c.param.Data,
+		Params:      params,
+		SubSQL:      c.param.SubSQL,
+		SubWhereSQL: c.param.SubWhereSQL,
 	})
 }
 
 func (c *DBCrud) GetByData(params map[string][]string) error {
 	return c.dbTool.GetData(&GT{
-		Table:  c.param.Table,
-		Model:  c.param.Model,
-		Data:   c.param.Data,
-		Params: params,
-		SubSQL: c.param.SubSQL,
+		Table:       c.param.Table,
+		Model:       c.param.Model,
+		Data:        c.param.Data,
+		Params:      params,
+		SubSQL:      c.param.SubSQL,
+		SubWhereSQL: c.param.SubWhereSQL,
 	})
 }
 
@@ -73,12 +75,13 @@ func (c *DBCrud) GetByID(id string) error {
 func (c *DBCrud) GetMoreBySearch(params map[string][]string) (pager result.Pager, err error) {
 
 	return c.dbTool.GetMoreDataBySearch(&GT{
-		InnerTable: c.param.InnerTable,
-		LeftTable:  c.param.LeftTable,
-		Model:      c.param.Model,
-		Data:       c.param.Data,
-		Params:     params,
-		SubSQL:     c.param.SubSQL,
+		InnerTable:  c.param.InnerTable,
+		LeftTable:   c.param.LeftTable,
+		Model:       c.param.Model,
+		Data:        c.param.Data,
+		Params:      params,
+		SubSQL:      c.param.SubSQL,
+		SubWhereSQL: c.param.SubWhereSQL,
 	})
 }
 

@@ -186,6 +186,8 @@ type GT struct {
 
 	// count
 	SubSQL string // SubQuery SQL
+	// where
+	SubWhereSQL string // SubWhere SQL
 	// maybe future will use gt.params replace params
 	Params map[string][]string // params
 
@@ -302,8 +304,8 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf("where %s ", bufW.Bytes()[:bufW.Len()-4])
-		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
+		sql += fmt.Sprintf("where %s%s ", bufW.Bytes()[:bufW.Len()-4], gt.SubWhereSQL)
+		sqlNt += fmt.Sprintf("where %s%s", bufNtW.Bytes()[:bufNtW.Len()-4], gt.SubWhereSQL)
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 
@@ -357,8 +359,8 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf(" where %s ", bufW.Bytes()[:bufW.Len()-4])
-		sqlNt += fmt.Sprintf(" where %s", bufW.Bytes()[:bufW.Len()-4])
+		sql += fmt.Sprintf(" where %s%s ", bufW.Bytes()[:bufW.Len()-4], gt.SubWhereSQL)
+		sqlNt += fmt.Sprintf(" where %s%s", bufW.Bytes()[:bufW.Len()-4], gt.SubWhereSQL)
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 	return
@@ -402,7 +404,7 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf(" where %s ", bufW.Bytes()[:bufW.Len()-4])
+		sql += fmt.Sprintf(" where %s%s ", bufW.Bytes()[:bufW.Len()-4],gt.SubWhereSQL)
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 	return

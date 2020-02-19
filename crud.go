@@ -72,6 +72,8 @@ type Params struct {
 
 	// count
 	SubSQL string // SubQuery SQL
+	// where
+	SubWhereSQL string // SubWhere SQL
 }
 
 type Param func(*Params)
@@ -147,5 +149,12 @@ func SubSQL(SubSQL ...string) Param {
 
 	return func(params *Params) {
 		params.SubSQL = "," + strings.Join(SubSQL[:], ",")
+	}
+}
+
+func SubWhereSQL(SubWhereSQL ...string) Param {
+
+	return func(params *Params) {
+		params.SubWhereSQL = " and " + strings.Join(SubWhereSQL[:], " and ")
 	}
 }
