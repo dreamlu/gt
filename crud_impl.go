@@ -56,6 +56,7 @@ func (c *DBCrud) GetBySearch(params map[string][]string) Crud {
 		Data:   c.param.Data,
 		Params: params,
 		SubSQL: c.param.SubSQL,
+		SubWhereSQL: c.param.SubWhereSQL,
 	})
 	return clone
 }
@@ -68,6 +69,7 @@ func (c *DBCrud) GetByData(params map[string][]string) Crud {
 		Data:   c.param.Data,
 		Params: params,
 		SubSQL: c.param.SubSQL,
+		SubWhereSQL: c.param.SubWhereSQL,
 	})
 	return clone
 }
