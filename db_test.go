@@ -270,7 +270,8 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		//LeftTable([]string{"order", "service"}),
 		Model(OrderD{}),
 		Data(&or),
-		SubWhereSQL("clientId = 1", "test = 1"),
+		//SubWhereSQL("clientId = 1", "test = 1"),
+		OtherTableSQL("inner join b on a.id = b.client_id"),
 	)
 	_, err := crud.GetMoreBySearch(params)
 	if err != nil {

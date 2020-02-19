@@ -60,11 +60,12 @@ type Crud interface {
 // crud params
 type Params struct {
 	// attributes
-	InnerTable []string    // inner join tables
-	LeftTable  []string    // left join tables
-	Table      string      // table name
-	Model      interface{} // table model, like User{}
-	Data       interface{} // table model data, like var user User{}, it is 'user', it store real data
+	InnerTable    []string    // inner join tables
+	LeftTable     []string    // left join tables
+	OtherTableSQL string      // other join tables sql
+	Table         string      // table name
+	Model         interface{} // table model, like User{}
+	Data          interface{} // table model data, like var user User{}, it is 'user', it store real data
 
 	// pager info
 	ClientPage int64 // page number
@@ -156,5 +157,12 @@ func SubWhereSQL(SubWhereSQL ...string) Param {
 
 	return func(params *Params) {
 		params.SubWhereSQL = " and " + strings.Join(SubWhereSQL[:], " and ")
+	}
+}
+
+func OtherTableSQL(OtherTableSQL ...string) Param {
+
+	return func(params *Params) {
+		params.OtherTableSQL = " " + strings.Join(OtherTableSQL[:], " ")
 	}
 }

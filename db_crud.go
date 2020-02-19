@@ -75,13 +75,14 @@ func (c *DBCrud) GetByID(id string) error {
 func (c *DBCrud) GetMoreBySearch(params map[string][]string) (pager result.Pager, err error) {
 
 	return c.dbTool.GetMoreDataBySearch(&GT{
-		InnerTable:  c.param.InnerTable,
-		LeftTable:   c.param.LeftTable,
-		Model:       c.param.Model,
-		Data:        c.param.Data,
-		Params:      params,
-		SubSQL:      c.param.SubSQL,
-		SubWhereSQL: c.param.SubWhereSQL,
+		InnerTable:    c.param.InnerTable,
+		LeftTable:     c.param.LeftTable,
+		Model:         c.param.Model,
+		Data:          c.param.Data,
+		Params:        params,
+		SubSQL:        c.param.SubSQL,
+		SubWhereSQL:   c.param.SubWhereSQL,
+		OtherTableSQL: c.param.OtherTableSQL,
 	})
 }
 

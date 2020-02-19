@@ -174,11 +174,12 @@ func GetParams(data interface{}) (params []interface{}) {
 // GT SQL struct
 type GT struct {
 	// attributes
-	InnerTable []string    // inner join tables
-	LeftTable  []string    // left join tables
-	Table      string      // table name
-	Model      interface{} // table model, like User{}
-	Data       interface{} // table model data, like var user User{}, it is 'user'
+	InnerTable    []string    // inner join tables
+	LeftTable     []string    // left join tables
+	OtherTableSQL string      // other join tables sql
+	Table         string      // table name
+	Model         interface{} // table model, like User{}
+	Data          interface{} // table model data, like var user User{}, it is 'user'
 
 	// pager info
 	ClientPage int64 // page number
@@ -253,6 +254,7 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 		bufNt.WriteString("`.id ")
 		//sql += " inner join ·" + innerTables[i] + "`"
 	}
+	bufNt.WriteString(gt.OtherTableSQL + " ")
 	// bufNt.WriteString(" where 1=1 and ")
 
 	// select* 变为对应的字段名
@@ -404,7 +406,7 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf(" where %s%s ", bufW.Bytes()[:bufW.Len()-4],gt.SubWhereSQL)
+		sql += fmt.Sprintf(" where %s%s ", bufW.Bytes()[:bufW.Len()-4], gt.SubWhereSQL)
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 	return
