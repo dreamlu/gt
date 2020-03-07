@@ -179,7 +179,7 @@ func (c *DBCrud) Search() Crud {
 		c.argsNt = c.args
 	}
 	clone := c.clone()
-	clone.dbTool.GetDataBySelectSQLSearch(&GT{
+	clone.pager = clone.dbTool.GetDataBySelectSQLSearch(&GT{
 		Data:       c.param.Data,
 		ClientPage: c.param.ClientPage,
 		EveryPage:  c.param.EveryPage,

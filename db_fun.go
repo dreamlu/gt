@@ -49,7 +49,7 @@ func GetReflectTagMore(reflectType reflect.Type, buf *bytes.Buffer, tables ...st
 		gtFields := strings.Split(gtTag, ";")
 		for _, v := range gtFields {
 			if v == str.GtSubSQL {
-				continue
+				goto into
 			}
 			if tag == "-" && strings.Contains(v, "field") {
 				tagTmp := strings.Split(v, ":")
