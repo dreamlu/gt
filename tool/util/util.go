@@ -9,7 +9,7 @@ import (
 	"encoding/base64"
 )
 
-var AesKey = "github.com/dreamlu/gt lu123"
+var AesKey = "github.com/dreamlu/gt dreamlu123"
 
 // aes加密,返回16进制数据
 func AesEn(data string) string {

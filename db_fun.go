@@ -46,9 +46,17 @@ func GetReflectTagMore(reflectType reflect.Type, buf *bytes.Buffer, tables ...st
 		}
 		// sub sql
 		gtTag := reflectType.Field(i).Tag.Get("gt")
-		if strings.Contains(gtTag, str.GtSubSQL) {
-			continue
+		gtFields := strings.Split(gtTag, ";")
+		for _, v := range gtFields {
+			if v == str.GtSubSQL {
+				continue
+			}
+			if tag == "-" && strings.Contains(v, "field") {
+				tagTmp := strings.Split(v, ":")
+				tag = tagTmp[1]
+			}
 		}
+
 		// foreign tables column
 		for _, v := range tables {
 			if strings.Contains(tag, v+"_id") {
@@ -401,7 +409,7 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf(" where %s%s ", bufW.Bytes()[:bufW.Len()-4],gt.SubWhereSQL)
+		sql += fmt.Sprintf(" where %s%s ", bufW.Bytes()[:bufW.Len()-4], gt.SubWhereSQL)
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 	return
