@@ -1,6 +1,10 @@
 package result
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"errors"
+	"github.com/dreamlu/gt/tool/type/te"
+)
 
 // status and msg
 const (
@@ -185,4 +189,15 @@ func StructToString(st interface{}) (string, error) {
 
 func StringToStruct(str string, st interface{}) error {
 	return json.Unmarshal([]byte(str), st)
+}
+
+// result sugar
+func CError(err error) interface{} {
+	if errors.As(err, &te.TextErr) {
+		if err.Error() == MsgNoResult {
+			return MapNoResult
+		}
+		return GetText(err.Error())
+	}
+	return GetError(err.Error())
 }

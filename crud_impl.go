@@ -95,6 +95,7 @@ func (c *DBCrud) GetMoreBySearch(params map[string][]string) Crud {
 		Data:       c.param.Data,
 		Params:     params,
 		SubSQL:     c.param.SubSQL,
+		SubWhereSQL: c.param.SubWhereSQL,
 	})
 	return clone
 }

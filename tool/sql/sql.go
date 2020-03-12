@@ -25,7 +25,7 @@ func GetSQLError(error string) (err error) {
 	case strings.Contains(error, "Data too long"):
 		err = fmt.Errorf("%w", &te.TextError{Msg: "存在字段范围过长"})
 	default:
-		err = fmt.Errorf("%w", errors.New(error))
+		err = fmt.Errorf("%v", errors.New(error))
 	}
 
 	return err

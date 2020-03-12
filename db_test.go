@@ -296,7 +296,7 @@ func TestGetMoreSearchSQL(t *testing.T) {
 		ClientName    string `json:"client_name"`
 		ClientHeadimg string `json:"client_headimg"`
 		VipType       int64  `json:"vip_type" gt:"sub_sql"` // 0意向会员, 1会员
-		IsSp          int64  `json:"is_sp" gt:"sub_sql"`    // 是否代言人, 0不是, 1是
+		IsSp          int64  `json:"-" gt:"field:is_sp"`    // 是否代言人, 0不是, 1是
 	}
 	gt := &GT{
 		InnerTable: []string{"client_vip_behavior", "client_vip", "client_vip", "client"},
