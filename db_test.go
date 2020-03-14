@@ -270,7 +270,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		//LeftTable([]string{"order", "service"}),
 		Model(OrderD{}),
 		Data(&or),
-		SubWhereSQL("clientId = 1", "test = 1"),
+		SubWhereSQL("clientId = 1", "test = 1", ""),
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {
@@ -319,7 +319,7 @@ func TestCreateMoreData(t *testing.T) {
 	//	Model: User{},
 	//}
 	crud := NewCrud(
-		Table("user"),
+		//Table("user"),
 		Model(User{}),
 		Data(user),
 		//SubSQL("(asdf) as a","(asdfa) as b"),

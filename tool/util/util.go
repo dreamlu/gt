@@ -68,6 +68,7 @@ func PKCS7UnPadding(origData []byte) []byte {
 	return origData[:(length - unpadding)]
 }
 
+// remove duplicate string
 func RemoveDuplicateString(languages []string) []string {
 	var result []string
 	temp := map[string]struct{}{}
@@ -79,4 +80,14 @@ func RemoveDuplicateString(languages []string) []string {
 		}
 	}
 	return result
+}
+
+// remove sep in strS
+func RemoveStrings(strS []string, sep string) (res []string) {
+	for _, v := range strS {
+		if v != sep {
+			res = append(res, v)
+		}
+	}
+	return
 }

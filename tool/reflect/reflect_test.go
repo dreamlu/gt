@@ -19,3 +19,10 @@ func TestGetDataID(t *testing.T) {
 	id, _ := GetDataByFieldName(or, "ID")
 	log.Println("id value is ", id)
 }
+
+func TestStructToString(t *testing.T) {
+	type TestDA struct {
+
+	}
+	t.Log(StructToString(TestDA{}))
+}

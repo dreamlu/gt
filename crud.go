@@ -8,6 +8,7 @@ package gt
 
 import (
 	"github.com/dreamlu/gt/tool/result"
+	"github.com/dreamlu/gt/tool/util"
 	"github.com/dreamlu/gt/tool/util/str"
 	"strings"
 )
@@ -45,9 +46,9 @@ type Crud interface {
 
 	// crud and search id
 	// json data
-	Update() Crud          // update
-	Create() Crud          // create, include res insert id
-	CreateMoreData() error // create more, data must array type, single table
+	Update() Crud         // update
+	Create() Crud         // create, include res insert id
+	CreateMoreData() Crud // create more, data must array type, single table
 
 	// select
 	Select(query string, args ...interface{}) Crud // select sql
@@ -152,6 +153,7 @@ func EveryPage(EveryPage int64) Param {
 func SubSQL(SubSQL ...string) Param {
 
 	return func(params *Params) {
+		SubSQL = util.RemoveStrings(SubSQL, "")
 		params.SubSQL = "," + strings.Join(SubSQL[:], ",")
 	}
 }
@@ -159,6 +161,7 @@ func SubSQL(SubSQL ...string) Param {
 func SubWhereSQL(SubWhereSQL ...string) Param {
 
 	return func(params *Params) {
+		SubWhereSQL = util.RemoveStrings(SubWhereSQL, "")
 		params.SubWhereSQL = " and " + strings.Join(SubWhereSQL[:], " and ")
 	}
 }

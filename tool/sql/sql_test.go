@@ -8,8 +8,9 @@ import (
 )
 
 func TestGetSQLError(t *testing.T) {
-	msg := "record not found"
+	msg := "Duplicate entry for key 'user.openid 唯一'"
 	err := GetSQLError(msg)
+	t.Log(err)
 	///fmt.Println(errors.Unwrap(err))
 	fmt.Println(errors.As(err, &te.TextErr))
 }

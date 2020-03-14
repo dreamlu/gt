@@ -3,8 +3,10 @@
 package gt
 
 import (
+	"github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/result"
 	sq "github.com/dreamlu/gt/tool/sql"
+	"github.com/dreamlu/gt/tool/util/hump"
 	"github.com/dreamlu/gt/tool/util/str"
 )
 
@@ -51,12 +53,12 @@ func (c *DBCrud) Params(params ...Param) Crud {
 func (c *DBCrud) GetBySearch(params map[string][]string) Crud {
 	clone := c.clone()
 	clone.pager = clone.dbTool.GetDataBySearch(&GT{
-		Table:       c.param.Table,
-		Model:       c.param.Model,
-		Data:        c.param.Data,
+		Table:       clone.param.Table,
+		Model:       clone.param.Model,
+		Data:        clone.param.Data,
 		Params:      params,
-		SubSQL:      c.param.SubSQL,
-		SubWhereSQL: c.param.SubWhereSQL,
+		SubSQL:      clone.param.SubSQL,
+		SubWhereSQL: clone.param.SubWhereSQL,
 	})
 
 	return clone
@@ -65,12 +67,12 @@ func (c *DBCrud) GetBySearch(params map[string][]string) Crud {
 func (c *DBCrud) GetByData(params map[string][]string) Crud {
 	clone := c.clone()
 	clone.dbTool.GetData(&GT{
-		Table:       c.param.Table,
-		Model:       c.param.Model,
-		Data:        c.param.Data,
+		Table:       clone.param.Table,
+		Model:       clone.param.Model,
+		Data:        clone.param.Data,
 		Params:      params,
-		SubSQL:      c.param.SubSQL,
-		SubWhereSQL: c.param.SubWhereSQL,
+		SubSQL:      clone.param.SubSQL,
+		SubWhereSQL: clone.param.SubWhereSQL,
 	})
 	return clone
 }
@@ -79,7 +81,7 @@ func (c *DBCrud) GetByData(params map[string][]string) Crud {
 func (c *DBCrud) GetByID(id string) Crud {
 
 	clone := c.clone()
-	clone.dbTool.GetDataByID(c.param.Data, id)
+	clone.dbTool.GetDataByID(clone.param.Data, id)
 	return clone
 }
 
@@ -89,13 +91,13 @@ func (c *DBCrud) GetMoreBySearch(params map[string][]string) Crud {
 
 	clone := c.clone()
 	clone.pager = clone.dbTool.GetMoreDataBySearch(&GT{
-		InnerTable: c.param.InnerTable,
-		LeftTable:  c.param.LeftTable,
-		Model:      c.param.Model,
-		Data:       c.param.Data,
-		Params:     params,
-		SubSQL:     c.param.SubSQL,
-		SubWhereSQL: c.param.SubWhereSQL,
+		InnerTable:  clone.param.InnerTable,
+		LeftTable:   clone.param.LeftTable,
+		Model:       clone.param.Model,
+		Data:        clone.param.Data,
+		Params:      params,
+		SubSQL:      clone.param.SubSQL,
+		SubWhereSQL: clone.param.SubWhereSQL,
 	})
 	return clone
 }
@@ -104,7 +106,7 @@ func (c *DBCrud) GetMoreBySearch(params map[string][]string) Crud {
 func (c *DBCrud) Delete(id string) Crud {
 
 	clone := c.clone()
-	clone.dbTool.Delete(c.param.Table, id)
+	clone.dbTool.Delete(clone.param.Table, id)
 	return clone
 }
 
@@ -131,22 +133,24 @@ func (c *DBCrud) CreateResID(params map[string][]string) (str.ID, error) {
 // == json data ==
 
 // create
-func (c *DBCrud) CreateMoreData() error {
+func (c *DBCrud) CreateMoreData() Crud {
 
-	return c.dbTool.CreateMoreData(c.param.Table, c.param.Model, c.param.Data)
+	clone := c.clone()
+	clone.dbTool.CreateMoreData(clone.param.Table, clone.param.Model, clone.param.Data)
+	return clone
 }
 
 // update
 func (c *DBCrud) Update() Crud {
 	clone := c.clone()
-	clone.dbTool.UpdateData(c.param.Data)
+	clone.dbTool.UpdateData(clone.param.Data)
 	return clone
 }
 
 // create
 func (c *DBCrud) Create() Crud {
 	clone := c.clone()
-	clone.dbTool.CreateData(c.param.Data)
+	clone.dbTool.CreateData(clone.param.Data)
 	return clone
 }
 
@@ -181,9 +185,9 @@ func (c *DBCrud) Search() Crud {
 	}
 	clone := c.clone()
 	clone.pager = clone.dbTool.GetDataBySelectSQLSearch(&GT{
-		Data:       c.param.Data,
-		ClientPage: c.param.ClientPage,
-		EveryPage:  c.param.EveryPage,
+		Data:       clone.param.Data,
+		ClientPage: clone.param.ClientPage,
+		EveryPage:  clone.param.EveryPage,
 		Select:     c.selectSQL,
 		Args:       c.args,
 		ArgsNt:     c.argsNt,
@@ -198,7 +202,7 @@ func (c *DBCrud) Single() Crud {
 	c.Select(c.group)
 
 	clone := c.clone()
-	clone.dbTool.GetDataBySQL(c.param.Data, c.selectSQL, c.args...)
+	clone.dbTool.GetDataBySQL(clone.param.Data, c.selectSQL, c.args...)
 	return clone
 }
 
@@ -228,6 +232,11 @@ func (c *DBCrud) Pager() result.Pager {
 }
 
 func (c *DBCrud) clone() *DBCrud {
+
+	// default table
+	if c.param.Table == "" {
+		c.param.Table = hump.HumpToLine(reflect.StructToString(c.param.Model))
+	}
 
 	dbCrud := &DBCrud{
 		dbTool:    c.dbTool.clone(),

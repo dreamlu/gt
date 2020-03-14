@@ -725,7 +725,7 @@ func (db *DBTool) CreateData(data interface{}) *DBTool {
 // data must array type
 // more data create
 // single table
-func (db *DBTool) CreateMoreData(table string, model interface{}, data interface{}) error {
+func (db *DBTool) CreateMoreData(table string, model interface{}, data interface{}) {
 	var (
 		buf    bytes.Buffer
 		params []interface{}
@@ -745,8 +745,7 @@ func (db *DBTool) CreateMoreData(table string, model interface{}, data interface
 	values := string(buf.Bytes()[:buf.Len()-1])
 
 	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", table, GetColSQL(model), values)
-	err := db.DB.Exec(sql, params[:]...).Error
-	return err
+	db.DB = db.DB.Exec(sql, params[:]...)
 }
 
 // update

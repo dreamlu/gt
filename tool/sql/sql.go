@@ -19,8 +19,10 @@ func GetSQLError(error string) (err error) {
 	case strings.Contains(error, "Duplicate entry"):
 		//error = strings.Replace(error, "Error 1062: Duplicate entry", "", -1)
 		errs := strings.Split(error, "for key ")
-		//error = "已存在相同数据:" + errors[0]
-		error = strings.Trim(errs[1], "'") //自定义数据库唯一约束名
+		error = strings.Trim(errs[1], "'")
+		if strings.Contains(error, ".") {
+			error = strings.Split(error,".")[1]
+		}
 		err = fmt.Errorf("%w", &te.TextError{Msg: error})
 	case strings.Contains(error, "Data too long"):
 		err = fmt.Errorf("%w", &te.TextError{Msg: "存在字段范围过长"})
