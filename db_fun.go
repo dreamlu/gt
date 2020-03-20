@@ -64,7 +64,10 @@ func GetReflectTagMore(reflectType reflect.Type, buf *bytes.Buffer, tables ...st
 			}
 			// tables
 			switch {
-			case strings.Contains(tag, v+"_"):
+			case strings.Contains(tag, v+"_") &&
+				// 下面两种条件参考db_test.go==>TestGetReflectTagMore()
+				!strings.Contains(tag, "_id") &&
+				!strings.EqualFold(v, tables[0]):
 				//sql += "`" + v + "`.`" + string([]byte(tag)[len(v)+1:]) + "` as " + tag + ","
 				buf.WriteString("`")
 				buf.WriteString(v)
@@ -116,7 +119,7 @@ func GetReflectTagAlias(reflectType reflect.Type, buf *bytes.Buffer, alias strin
 			continue
 		}
 		buf.WriteString(alias)
-		buf.WriteString("`")
+		buf.WriteString(".`")
 		buf.WriteString(tag)
 		buf.WriteString("`,")
 	}

@@ -60,6 +60,8 @@ type Crud interface {
 	Error() error                                  // crud error
 	RowsAffected() int64                           // inflect rows
 	Pager() result.Pager                           // search pager
+	Begin() Crud                                   // start a transaction
+	Commit() Crud                                  // commit a transaction
 }
 
 // crud params

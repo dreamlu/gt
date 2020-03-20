@@ -246,6 +246,7 @@ func TestCrudSQL(t *testing.T) {
 	//var db = DbCrud{}
 	sql := "update `user` set name=? where id=?"
 	log.Println("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
+	log.Println("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
 	log.Println("[Info]:", crud.DB().RowsAffected)
 }
 
@@ -384,10 +385,11 @@ func TestDBCrud_Update(t *testing.T) {
 // test update/delete
 func TestDBCrud_Create(t *testing.T) {
 
+	crud.Begin()
 	crud.Params(
 		Table("user"),
 		Data(&User{
-			ID:1,
+			ID:   11234,
 			Name: "梦S",
 		}),
 	).Create()
@@ -395,7 +397,35 @@ func TestDBCrud_Create(t *testing.T) {
 	t.Log(crud.Create().Error())
 	crud.Params(
 		Data(&User{
-		Name: "梦SSS",
-	})).Create()
+			Name: "梦SSS2",
+		})).Create()
 	t.Log(crud.Error())
+	crud.Commit()
+}
+
+func TestGetReflectTagMore(t *testing.T) {
+	//type GroupmealCategory struct {
+	//	ID   int64  `gorm:"type:bigint(20) AUTO_INCREMENT;PRIMARY_KEY;" json:"id"` //编号
+	//	Name string `gorm:"type:varchar(128);NOT NULL;" json:"name"`               //类型
+	//}
+	type Groupmeal struct {
+		ID                  int64  `gorm:"type:bigint(20);AUTO_INCREMENT;PRIMARY_KEY;" json:"id"`
+		GroupmealCategoryID string `gorm:"type:varchar(128);NOT NULL;" json:"groupmeal_category_id"`
+	}
+	type GroupmealModel struct {
+		Groupmeal
+		GroupmealCategoryName string `json:"groupmeal_category_name"`
+	}
+	var data []*GroupmealModel
+	crud.Params(
+		Data(&data),
+		Model(GroupmealModel{}),
+		InnerTable([]string{"groupmeal", "groupmeal_category"}))
+	var params = make(map[string][]string)
+	crud.GetMoreBySearch(params)
+}
+
+func TestGetColSQLAlias(t *testing.T) {
+	sql := GetColSQLAlias(User{}, "a")
+	t.Log(sql)
 }

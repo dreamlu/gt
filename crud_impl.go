@@ -26,6 +26,9 @@ type DBCrud struct {
 	group     string        // the last group
 	// pager
 	pager result.Pager
+
+	// transaction
+	isTrans int8 // open(0), close(1)
 }
 
 // init DBTool tool
@@ -157,12 +160,13 @@ func (c *DBCrud) Create() Crud {
 // create
 func (c *DBCrud) Select(query string, args ...interface{}) Crud {
 
-	c.selectSQL += query + " "
-	c.args = append(c.args, args...)
-	if c.from != "" {
-		c.argsNt = append(c.argsNt, args...)
+	clone := c.clone()
+	clone.selectSQL += query + " "
+	clone.args = append(clone.args, args...)
+	if clone.from != "" {
+		clone.argsNt = append(clone.argsNt, args...)
 	}
-	return c
+	return clone
 }
 
 func (c *DBCrud) From(query string) Crud {
@@ -231,10 +235,32 @@ func (c *DBCrud) Pager() result.Pager {
 	return c.pager
 }
 
+func (c *DBCrud) Begin() Crud {
+	// TODO there is a bug
+	clone := c.clone()
+	clone.dbTool.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			clone.dbTool.Rollback()
+		}
+	}()
+	return clone
+}
+
+func (c *DBCrud) Commit() Crud {
+	// TODO there is a bug
+	if c.dbTool.Error != nil {
+		c.dbTool.Rollback()
+	}
+	c.dbTool.Commit()
+	return c
+}
+
 func (c *DBCrud) clone() *DBCrud {
 
 	// default table
-	if c.param.Table == "" {
+	if c.param.Table == "" &&
+		c.param.Model != nil {
 		c.param.Table = hump.HumpToLine(reflect.StructToString(c.param.Model))
 	}
 

@@ -39,7 +39,7 @@ const (
 	MsgNoResult   = "暂无数据"
 	MsgDelete     = "删除成功"
 	MsgUpdate     = "修改成功"
-	MsgError      = "未知错误"
+	MsgError      = "通用错误"
 	MsgExistOrNo  = "数据无变化"
 	MsgCountErr   = "用户账号或密码错误"
 	MsgNoCount    = "用户账号不存在"
@@ -177,6 +177,21 @@ func (m GetInfo) String() (string, error) {
 func (m GetInfoPager) String() (string, error) {
 
 	return StructToString(m)
+}
+
+func (m *GetInfoPager) Add(key string, value interface{}) (rmp ResultMap) {
+
+	return m.Parent().Add("pager", m.Pager).Add(key, value)
+}
+
+func (m *GetInfo) Add(key string, value interface{}) (rmp ResultMap) {
+
+	return m.Parent().Add("data", m.Data).Add(key, value)
+}
+
+func (m *MapData) Add(key string, value interface{}) (rmp ResultMap) {
+
+	return rmp.Add(Status, m.Status).Add(Msg, m.Msg).Add(key, value)
 }
 
 func StructToString(st interface{}) (string, error) {
