@@ -164,6 +164,6 @@ func SubWhereSQL(SubWhereSQL ...string) Param {
 
 	return func(params *Params) {
 		SubWhereSQL = util.RemoveStrings(SubWhereSQL, "")
-		params.SubWhereSQL = " and " + strings.Join(SubWhereSQL[:], " and ")
+		params.SubWhereSQL = strings.Join(SubWhereSQL[:], " and ")
 	}
 }

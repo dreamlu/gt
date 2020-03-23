@@ -56,11 +56,11 @@ func TestDB(t *testing.T) {
 	}
 
 	// return create id
-	_ = crud.DB().CreateData(&user)
+	crud.DB().CreateData(&user)
 	t.Log("user: ", user)
 	t.Log(crud.DB().RowsAffected)
 	user.Name = "haha"
-	_ = crud.DB().CreateData(&user)
+	crud.DB().CreateData(&user)
 	t.Log("user: ", user)
 	t.Log(crud.DB().RowsAffected)
 	//user.ID = 8 //0
@@ -217,6 +217,7 @@ func TestCrud(t *testing.T) {
 	crud.Params(
 		Model(User{}),
 		Data(&user),
+		SubWhereSQL("1=1"),
 	)
 	args["name"][0] = "梦"
 	crud.GetBySearch(args)
@@ -271,7 +272,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		//LeftTable([]string{"order", "service"}),
 		Model(OrderD{}),
 		Data(&or),
-		SubWhereSQL("clientId = 1", "test = 1", ""),
+		SubWhereSQL("1 = 1", "2 = 2", ""),
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {
@@ -373,6 +374,7 @@ func TestDBCrud_Update(t *testing.T) {
 
 	crud := crud.Params(
 		Table("user"),
+		Model(&User{}),
 		Data(&User{
 			ID:   1,
 			Name: "梦S",
@@ -385,14 +387,13 @@ func TestDBCrud_Update(t *testing.T) {
 // test update/delete
 func TestDBCrud_Create(t *testing.T) {
 
-	crud.Begin()
 	crud.Params(
 		Table("user"),
 		Data(&User{
 			ID:   11234,
 			Name: "梦S",
 		}),
-	).Create()
+	)
 	t.Log(crud.Error())
 	t.Log(crud.Create().Error())
 	crud.Params(
@@ -400,7 +401,28 @@ func TestDBCrud_Create(t *testing.T) {
 			Name: "梦SSS2",
 		})).Create()
 	t.Log(crud.Error())
-	crud.Commit()
+}
+
+// test Transcation
+func TestTranscation(t *testing.T) {
+
+	cd := crud.Begin()
+	cd.Params(
+		Table("user"),
+		Data(&User{
+			ID:   11234,
+			Name: "梦S",
+		}),
+	)
+	t.Log(cd.Error())
+	t.Log(cd.Create().Error())
+	cd.Params(
+		Data(&User{
+			Name: "梦SSS2",
+		})).Create()
+	t.Log(cd.Error())
+	cd.Commit()
+	t.Log(cd.Error())
 }
 
 func TestGetReflectTagMore(t *testing.T) {

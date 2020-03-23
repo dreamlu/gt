@@ -146,7 +146,7 @@ func (c *DBCrud) CreateMoreData() Crud {
 // update
 func (c *DBCrud) Update() Crud {
 	clone := c.clone()
-	clone.dbTool.UpdateData(clone.param.Data)
+	clone.dbTool.UpdateData(clone.param.Model, clone.param.Data)
 	return clone
 }
 
@@ -236,9 +236,9 @@ func (c *DBCrud) Pager() result.Pager {
 }
 
 func (c *DBCrud) Begin() Crud {
-	// TODO there is a bug
 	clone := c.clone()
-	clone.dbTool.Begin()
+	clone.isTrans = 1
+	clone.dbTool.DB = clone.dbTool.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			clone.dbTool.Rollback()
@@ -248,11 +248,11 @@ func (c *DBCrud) Begin() Crud {
 }
 
 func (c *DBCrud) Commit() Crud {
-	// TODO there is a bug
 	if c.dbTool.Error != nil {
 		c.dbTool.Rollback()
 	}
 	c.dbTool.Commit()
+	c.isTrans = 0
 	return c
 }
 
@@ -262,6 +262,11 @@ func (c *DBCrud) clone() *DBCrud {
 	if c.param.Table == "" &&
 		c.param.Model != nil {
 		c.param.Table = hump.HumpToLine(reflect.StructToString(c.param.Model))
+	}
+
+	// isTrans
+	if c.isTrans == 1 {
+		return c
 	}
 
 	dbCrud := &DBCrud{
