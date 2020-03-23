@@ -316,8 +316,15 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf("where %s%s ", bufW.Bytes()[:bufW.Len()-4], gt.SubWhereSQL)
-		sqlNt += fmt.Sprintf("where %s%s", bufNtW.Bytes()[:bufNtW.Len()-4], gt.SubWhereSQL)
+		sql += fmt.Sprintf("where %s ", bufW.Bytes()[:bufW.Len()-4])
+		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
+		if gt.SubWhereSQL != "" {
+			sql += fmt.Sprintf("and %s ", gt.SubWhereSQL)
+			sqlNt += fmt.Sprintf("and %s", gt.SubWhereSQL)
+		}
+	} else if gt.SubWhereSQL != "" {
+		sql += fmt.Sprintf("where %s ", gt.SubWhereSQL)
+		sqlNt += fmt.Sprintf("where %s", gt.SubWhereSQL)
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 
@@ -367,8 +374,15 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf(" where %s%s ", bufW.Bytes()[:bufW.Len()-4], gt.SubWhereSQL)
-		sqlNt += fmt.Sprintf(" where %s%s", bufW.Bytes()[:bufW.Len()-4], gt.SubWhereSQL)
+		sql += fmt.Sprintf("where %s ", bufW.Bytes()[:bufW.Len()-4])
+		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
+		if gt.SubWhereSQL != "" {
+			sql += fmt.Sprintf("and %s ", gt.SubWhereSQL)
+			sqlNt += fmt.Sprintf("and %s", gt.SubWhereSQL)
+		}
+	} else if gt.SubWhereSQL != "" {
+		sql += fmt.Sprintf(" where %s ", gt.SubWhereSQL)
+		sqlNt += fmt.Sprintf(" where %s", gt.SubWhereSQL)
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 	return
@@ -412,7 +426,12 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf(" where %s%s ", bufW.Bytes()[:bufW.Len()-4], gt.SubWhereSQL)
+		sql += fmt.Sprintf(" where %s ", bufW.Bytes()[:bufW.Len()-4])
+		if gt.SubWhereSQL != "" {
+			sql += fmt.Sprintf("and %s ", gt.SubWhereSQL)
+		}
+	} else if gt.SubWhereSQL != "" {
+		sql += fmt.Sprintf(" where %s ", gt.SubWhereSQL)
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 	return
@@ -719,10 +738,9 @@ func (db *DBTool) ValidateSQL(sql string) (err error) {
 //==============================================================
 
 // create
-func (db *DBTool) CreateData(data interface{}) *DBTool {
+func (db *DBTool) CreateData(data interface{}) {
 
 	db.DB = db.Create(data)
-	return db
 }
 
 // data must array type
@@ -752,8 +770,10 @@ func (db *DBTool) CreateMoreData(table string, model interface{}, data interface
 }
 
 // update
-func (db *DBTool) UpdateData(data interface{}) *DBTool {
+func (db *DBTool) UpdateData(model interface{}, data interface{}) {
 
-	db.DB = db.DB.Model(data).Update(data)
-	return db
+	if model == nil {
+		model = data
+	}
+	db.DB = db.DB.Model(model).Update(data)
 }
