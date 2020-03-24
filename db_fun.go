@@ -770,10 +770,7 @@ func (db *DBTool) CreateMoreData(table string, model interface{}, data interface
 }
 
 // update
-func (db *DBTool) UpdateData(model interface{}, data interface{}) {
+func (db *DBTool) UpdateData(data interface{}) {
 
-	if model == nil {
-		model = data
-	}
-	db.DB = db.DB.Model(model).Update(data)
+	db.DB = db.DB.Model(data).Update(data)
 }

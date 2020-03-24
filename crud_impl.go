@@ -146,7 +146,7 @@ func (c *DBCrud) CreateMoreData() Crud {
 // update
 func (c *DBCrud) Update() Crud {
 	clone := c.clone()
-	clone.dbTool.UpdateData(clone.param.Model, clone.param.Data)
+	clone.dbTool.UpdateData(clone.param.Data)
 	return clone
 }
 
