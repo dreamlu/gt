@@ -176,6 +176,9 @@ func GetColParamSQL(model interface{}) (sql string) {
 func GetParams(data interface{}) (params []interface{}) {
 
 	typ := reflect.ValueOf(data)
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
 	for i := 0; i < typ.NumField(); i++ {
 		value := typ.Field(i).Interface() //.Tag.Get("json")
 		params = append(params, value)
@@ -558,7 +561,7 @@ func (db *DBTool) GetDataByName(data interface{}, name, value string) (err error
 //}
 
 // 获得数据,根据id
-func (db *DBTool) GetDataByID(data interface{}, id string) {
+func (db *DBTool) GetDataByID(data interface{}, id interface{}) {
 
 	db.DB = db.DB.First(data, id) // limit 1
 }
@@ -635,9 +638,9 @@ func (db *DBTool) ExecSQL(sql string, args ...interface{}) {
 ///////////////////
 
 // delete
-func (db *DBTool) Delete(table string, id string) {
+func (db *DBTool) Delete(table string, id interface{}) {
 	// sql := fmt.Sprintf("delete from `%s` where id=?", table)
-	db.ExecSQL(fmt.Sprintf("delete from `%s` where id=?", table), id)
+	db.ExecSQL(fmt.Sprintf("delete from `%s` where id = ?", table), id)
 }
 
 // update

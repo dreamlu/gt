@@ -123,11 +123,11 @@ func GetSuccessPager(data interface{}, pager Pager) *GetInfoPager {
 }
 
 // 信息失败通用
-func GetError(data interface{}) *GetInfo {
+func GetError(msg interface{}) *MapData {
 
-	return &GetInfo{
-		MapData: MapError,
-		Data:    data,
+	return &MapData{
+		Status: CodeError,
+		Msg:    msg,
 	}
 }
 
@@ -192,6 +192,21 @@ func (m *GetInfo) Add(key string, value interface{}) (rmp ResultMap) {
 func (m *MapData) Add(key string, value interface{}) (rmp ResultMap) {
 
 	return rmp.Add(Status, m.Status).Add(Msg, m.Msg).Add(key, value)
+}
+
+func (m *GetInfoPager) AddStruct(value interface{}) (rmp ResultMap) {
+
+	return m.Parent().Add("pager", m.Pager).AddStruct(value)
+}
+
+func (m *GetInfo) AddStruct(value interface{}) (rmp ResultMap) {
+
+	return m.Parent().Add("data", m.Data).AddStruct(value)
+}
+
+func (m *MapData) AddStruct(value interface{}) (rmp ResultMap) {
+
+	return rmp.Add(Status, m.Status).Add(Msg, m.Msg).AddStruct(value)
 }
 
 func StructToString(st interface{}) (string, error) {

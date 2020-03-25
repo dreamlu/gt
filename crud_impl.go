@@ -81,7 +81,7 @@ func (c *DBCrud) GetByData(params map[string][]string) Crud {
 }
 
 // by id
-func (c *DBCrud) GetByID(id string) Crud {
+func (c *DBCrud) GetByID(id interface{}) Crud {
 
 	clone := c.clone()
 	clone.dbTool.GetDataByID(clone.param.Data, id)
@@ -106,7 +106,7 @@ func (c *DBCrud) GetMoreBySearch(params map[string][]string) Crud {
 }
 
 // delete
-func (c *DBCrud) Delete(id string) Crud {
+func (c *DBCrud) Delete(id interface{}) Crud {
 
 	clone := c.clone()
 	clone.dbTool.Delete(clone.param.Table, id)
@@ -253,6 +253,11 @@ func (c *DBCrud) Commit() Crud {
 	}
 	c.dbTool.Commit()
 	c.isTrans = 0
+	return c
+}
+
+func (c *DBCrud) Rollback() Crud {
+	c.dbTool.Rollback()
 	return c
 }
 

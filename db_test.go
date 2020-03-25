@@ -7,6 +7,7 @@ import (
 	"github.com/dreamlu/gt/tool/type/json"
 	"github.com/dreamlu/gt/tool/type/time"
 	"log"
+	"net/url"
 	"testing"
 	time2 "time"
 )
@@ -185,9 +186,11 @@ func TestGetDataBySearch(t *testing.T) {
 }
 
 // 通用增删该查测试
+// 传参可使用url.Values替代map[string][]string操作方便
 func TestCrud(t *testing.T) {
-	var args = make(map[string][]string)
-	args["name"] = append(args["name"], "梦")
+	var args = url.Values{}
+	args.Add("name", "梦")
+	//args["name"] = append(args["name"], "梦")
 
 	// var crud DbCrud
 	// must use AutoMigrate
@@ -203,8 +206,8 @@ func TestCrud(t *testing.T) {
 		Table("user"),
 		Data(&user),
 	)
-	info := crud.GetByID("1")
-	log.Println(info, "\n[User Info]:", user)
+	info := crud.GetByID(1)
+	t.Log(info, "\n[GetByID]:", user)
 
 	// get by search
 	var users []*User
@@ -219,17 +222,20 @@ func TestCrud(t *testing.T) {
 		Data(&user),
 		SubWhereSQL("1=1"),
 	)
-	args["name"][0] = "梦"
+	//args["name"][0] = "梦"
 	crud.GetBySearch(args)
 	log.Println("\n[User Info]:", users)
 
 	// delete
-	info2 := crud.Delete("12")
-	log.Println(info2)
+	info2 := crud.Delete(12)
+	t.Log(info2.Error())
 
 	// update
-	args["id"] = append(args["id"], "4")
-	args["name"][0] = "梦4"
+	//args["id"] = append(args["id"], "4")
+	//args["name"][0] = "梦4"
+	// replace
+	args.Add("id", "4")
+	args.Set("name", "梦4")
 	err := crud.UpdateForm(args)
 	log.Println(err)
 

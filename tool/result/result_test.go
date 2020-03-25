@@ -22,3 +22,15 @@ func TestMapData_Add(t *testing.T) {
 	// pager
 	t.Log(pager.Add("id", 1).Add("test", 2))
 }
+
+func TestMapData_AddStruct(t *testing.T) {
+	type User struct {
+		ID   uint64
+		Name string `json:"name"`
+	}
+	var user = User{
+		ID:   0,
+		Name: "test",
+	}
+	t.Log(MapCreate.Add("id", 2).AddStruct(user))
+}

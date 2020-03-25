@@ -30,11 +30,11 @@ type Crud interface {
 	// like form data
 	GetBySearch(params map[string][]string) Crud     // search
 	GetByData(params map[string][]string) Crud       // get data no search
-	GetByID(id string) Crud                          // by id
+	GetByID(id interface{}) Crud                     // by id
 	GetMoreBySearch(params map[string][]string) Crud // more search
 
 	// delete by id
-	Delete(id string) Crud // delete
+	Delete(id interface{}) Crud // delete
 
 	// crud and search id
 	// form data
@@ -62,6 +62,7 @@ type Crud interface {
 	Pager() result.Pager                           // search pager
 	Begin() Crud                                   // start a transaction
 	Commit() Crud                                  // commit a transaction
+	Rollback() Crud                                // rollback a transaction
 }
 
 // crud params
