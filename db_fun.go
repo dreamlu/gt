@@ -11,6 +11,7 @@ import (
 	"github.com/dreamlu/gt/tool/type/te"
 	"github.com/dreamlu/gt/tool/util"
 	"github.com/dreamlu/gt/tool/util/str"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -19,17 +20,27 @@ import (
 //======================return tag=============================
 //=============================================================
 
+var coMap = url.Values{}
+
 // select * replace
 // select more tables
 // tables : table name / table alias name
 // 主表放在tables中第一个, 紧接着为主表关联的外键表名(无顺序)
 func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
+	typ := reflect.TypeOf(model)
+	key := typ.PkgPath() + typ.Name()
+	sql = coMap.Get(key)
+	if sql != "" {
+		//Logger().Info("[USE coMap GET ColumnSQL]")
+		return
+	}
 	var buf bytes.Buffer
-
 	//typ := reflect.TypeOf(model)
-	GetReflectTagMore(reflect.TypeOf(model), &buf, tables[:]...)
+	GetReflectTagMore(typ, &buf, tables[:]...)
 	sql = string(buf.Bytes()[:buf.Len()-1]) //去点,
-	return sql
+	coMap.Add(key, sql)
+	//Logger().Info("[ADD ColumnSQL TO coMap]")
+	return
 }
 
 // 层级递增解析tag, more tables
@@ -93,12 +104,19 @@ func GetReflectTagMore(reflectType reflect.Type, buf *bytes.Buffer, tables ...st
 // 将select* 中'*'变为对应的字段名
 // 增加别名,表连接问题
 func GetColSQLAlias(model interface{}, alias string) (sql string) {
+	typ := reflect.TypeOf(model)
+	key := typ.PkgPath() + typ.Name()
+	sql = coMap.Get(key)
+	if sql != "" {
+		//Logger().Info("[USE coMap GET ColumnSQL]")
+		return
+	}
 	var buf bytes.Buffer
-
 	//typ := reflect.TypeOf(model)
-	GetReflectTagAlias(reflect.TypeOf(model), &buf, alias)
+	GetReflectTagAlias(typ, &buf, alias)
 	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
-	return sql
+	coMap.Add(key, sql)
+	return
 }
 
 // 层级递增解析tag, 别名
@@ -128,12 +146,19 @@ func GetReflectTagAlias(reflectType reflect.Type, buf *bytes.Buffer, alias strin
 // 根据model中表模型的json标签获取表字段
 // 将select* 变为对应的字段名
 func GetColSQL(model interface{}) (sql string) {
+	typ := reflect.TypeOf(model)
+	key := typ.PkgPath() + typ.Name()
+	sql = coMap.Get(key)
+	if sql != "" {
+		//Logger().Info("[USE coMap GET ColumnSQL]")
+		return
+	}
 	var buf bytes.Buffer
-
 	//typ := reflect.TypeOf(model)
 	GetReflectTag(reflect.TypeOf(model), &buf)
 	sql = string(buf.Bytes()[:buf.Len()-1]) // remove ,
-	return sql
+	coMap.Add(key, sql)
+	return
 }
 
 // 层级递增解析tag
@@ -234,12 +259,9 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 	tables = append(tables, gt.LeftTable...)
 	tables = util.RemoveDuplicateString(tables)
 	// sql and sqlCount
-	bufNt.WriteString("select ")
-	bufNt.WriteString("count(`")
+	bufNt.WriteString("select count(`")
 	bufNt.WriteString(tables[0])
-	bufNt.WriteString("`.id) as total_num ")
-	// bufNt.WriteString(GetMoreTableColumnSQL(model, tables[:]...))
-	bufNt.WriteString("from `")
+	bufNt.WriteString("`.id) as total_num from `")
 	bufNt.WriteString(tables[0])
 	bufNt.WriteString("`")
 	// inner join
@@ -395,9 +417,9 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 
 	var (
-		order        = "id desc"  // default order by
-		key          = ""         // key like binary search
-		bufW, bufNtW bytes.Buffer // where sql, sqlNt bytes sql
+		order = "id desc"  // default order by
+		key   = ""         // key like binary search
+		bufW  bytes.Buffer // where sql, sqlNt bytes sql
 	)
 
 	// select* replace
@@ -409,22 +431,15 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 			continue
 		case str.GtKey:
 			key = v[0]
-			sqlKey, sqlNtKey, argsKey := sq.GetKeySQL(key, gt.Model, gt.Table)
+			sqlKey, _, argsKey := sq.GetKeySQL(key, gt.Model, gt.Table)
 			bufW.WriteString(sqlKey)
-			bufNtW.WriteString(sqlNtKey)
 			args = append(args, argsKey[:]...)
 			continue
 		case "":
 			continue
 		}
-
-		//v[0] = strings.Replace(v[0], "'", "\\'", -1) //转义
-		//sql += k + " = ? and "
-		//sqlNt += k + " = ? and "
 		bufW.WriteString(k)
 		bufW.WriteString(" = ? and ")
-		bufNtW.WriteString(k)
-		bufNtW.WriteString(" = ? and ")
 		args = append(args, v[0]) // args
 	}
 

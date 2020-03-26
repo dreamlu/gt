@@ -3,6 +3,7 @@ package result
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/dreamlu/gt/tool/type/te"
 )
 
@@ -26,7 +27,6 @@ const (
 	CodeValSuccess = 217 // 验证成功
 	CodeValError   = 218 // 验证失败
 	CodeExistOrNo  = 220 // 数据无变化
-	CodeSQL        = 222 // 数据库相关
 	CodeText       = 271 // 全局文字提示
 	CodeError      = 500 // 系统繁忙
 )
@@ -221,8 +221,9 @@ func StringToStruct(str string, st interface{}) error {
 	return json.Unmarshal([]byte(str), st)
 }
 
+// error sugar
 // result sugar
-func CError(err error) interface{} {
+func CError(err error) *MapData {
 	if errors.As(err, &te.TextErr) {
 		if err.Error() == MsgNoResult {
 			return MapNoResult
@@ -230,4 +231,8 @@ func CError(err error) interface{} {
 		return GetText(err.Error())
 	}
 	return GetError(err.Error())
+}
+
+func TextError(msg string) error {
+	return fmt.Errorf("%w", &te.TextError{Msg: msg})
 }

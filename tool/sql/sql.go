@@ -21,7 +21,7 @@ func GetSQLError(error string) (err error) {
 		errs := strings.Split(error, "for key ")
 		error = strings.Trim(errs[1], "'")
 		if strings.Contains(error, ".") {
-			error = strings.Split(error,".")[1]
+			error = strings.Split(error, ".")[1]
 		}
 		err = fmt.Errorf("%w", &te.TextError{Msg: error})
 	case strings.Contains(error, "Data too long"):

@@ -1,6 +1,6 @@
 TODO  
 1.~~gt.Table()默认结构体驼峰小写值~~  
-2.解析好的sql放入内存,加快解析效率  
+2.~~解析好的sql放入内存,加快解析效率~~  
 3.map[string][]string转结构体  
 4.~~模型解析增加连接自身功能User->User(弃:业务极少见)~~  
 5.~~添加gt:like支持(弃,用key替代)~~  
@@ -17,4 +17,6 @@ TODO
 16.~~result mapdata和map整合(弃)~~  
 17.~~批量创建支持指针数组~~  
 18.使用url.Values替代map[string][]string  
+19.update()id默认不为空限制  
+20.多文件上传,返回文件名数组  
 n.xxx  

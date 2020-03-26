@@ -310,8 +310,9 @@ func TestGetMoreSearchSQL(t *testing.T) {
 		InnerTable: []string{"client_vip_behavior", "client_vip", "client_vip", "client"},
 		Model:      ClientVipBehaviorDe{},
 	}
-	_, sql, _, _, _ := GetMoreSearchSQL(gt)
-	log.Println(sql)
+	sqlNt, sql, _, _, _ := GetMoreSearchSQL(gt)
+	t.Log(sqlNt)
+	t.Log(sql)
 }
 
 // 批量创建
@@ -354,8 +355,10 @@ func TestExtends(t *testing.T) {
 		ShopName string `json:"shop_name"`
 		UserDeX
 	}
-	t.Log(GetColSQL(UserDeX{}))
-	t.Log(GetMoreTableColumnSQL(UserMore{}, []string{"user", "shop"}[:]...))
+	for i := 0; i < 3; i++ {
+		t.Log(GetColSQL(UserDeX{}))
+		t.Log(GetMoreTableColumnSQL(UserMore{}, []string{"user", "shop"}[:]...))
+	}
 }
 
 // select test
