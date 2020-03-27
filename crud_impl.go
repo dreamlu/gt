@@ -6,6 +6,7 @@ import (
 	"github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/result"
 	sq "github.com/dreamlu/gt/tool/sql"
+	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/hump"
 	"github.com/dreamlu/gt/tool/util/str"
 )
@@ -53,7 +54,7 @@ func (c *DBCrud) Params(params ...Param) Crud {
 
 // search
 // pager info
-func (c *DBCrud) GetBySearch(params map[string][]string) Crud {
+func (c *DBCrud) GetBySearch(params cmap.CMap) Crud {
 	clone := c.clone()
 	clone.pager = clone.dbTool.GetDataBySearch(&GT{
 		Table:       clone.param.Table,
@@ -67,7 +68,7 @@ func (c *DBCrud) GetBySearch(params map[string][]string) Crud {
 	return clone
 }
 
-func (c *DBCrud) GetByData(params map[string][]string) Crud {
+func (c *DBCrud) GetByData(params cmap.CMap) Crud {
 	clone := c.clone()
 	clone.dbTool.GetData(&GT{
 		Table:       clone.param.Table,
@@ -90,7 +91,7 @@ func (c *DBCrud) GetByID(id interface{}) Crud {
 
 // the same as search
 // more tables
-func (c *DBCrud) GetMoreBySearch(params map[string][]string) Crud {
+func (c *DBCrud) GetMoreBySearch(params cmap.CMap) Crud {
 
 	clone := c.clone()
 	clone.pager = clone.dbTool.GetMoreDataBySearch(&GT{
@@ -116,19 +117,19 @@ func (c *DBCrud) Delete(id interface{}) Crud {
 // === form data ===
 
 // update
-func (c *DBCrud) UpdateForm(params map[string][]string) error {
+func (c *DBCrud) UpdateForm(params cmap.CMap) error {
 
 	return c.dbTool.UpdateFormData(c.param.Table, params)
 }
 
 // create
-func (c *DBCrud) CreateForm(params map[string][]string) error {
+func (c *DBCrud) CreateForm(params cmap.CMap) error {
 
 	return c.dbTool.CreateFormData(c.param.Table, params)
 }
 
 // create res insert id
-func (c *DBCrud) CreateResID(params map[string][]string) (str.ID, error) {
+func (c *DBCrud) CreateResID(params cmap.CMap) (str.ID, error) {
 
 	return c.dbTool.CreateDataResID(c.param.Table, params)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	myReflect "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/result"
+	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/te"
 	"net/url"
 	"reflect"
@@ -117,7 +118,7 @@ func (v *Validator) Check() (errs map[string]error) {
 				errs[k] = err
 			}
 		}
-	case map[string][]string:
+	case cmap.CMap:
 		for k, r := range v.rule {
 			// 数据
 			data, _ := d[k]
@@ -215,7 +216,7 @@ func (n *DefaultRule) Check(data interface{}) (err error) {
 			}
 		case "email":
 
-			if b, _ := regexp.MatchString(`^([\w\.\_]{2,10})@(\w+).([a-z]{2,4})$`, data.(string)); !b {
+			if b, _ := regexp.MatchString(`^([\w._]{2,10})@(\w+).([a-z]{2,4})$`, data.(string)); !b {
 				return &te.TextError{Msg: fmt.Sprintln("邮箱格式非法")}
 			}
 		default:

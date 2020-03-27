@@ -1,4 +1,9 @@
-package param
+package cmap
+
+import (
+	"encoding/json"
+	"net/url"
+)
 
 type CMap map[string][]string
 
@@ -32,4 +37,31 @@ func (v CMap) Add(key, value string) {
 // Del deletes the values associated with key.
 func (v CMap) Del(key string) {
 	delete(v, key)
+}
+
+// CMap to struct data
+// value like
+// type Te struct {
+//		Name string `json:"name"` // must string type
+//		ID   string `json:"id"` // must string type
+//	}
+func (v CMap) Struct(value interface{}) error {
+	var m = map[string]interface{}{}
+	for k, v := range v {
+		m[k] = v[0]
+	}
+	b, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(b, value)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// url.Values to CMap
+func (v CMap) CMap(values url.Values) CMap {
+	return CMap(values)
 }

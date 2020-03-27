@@ -8,10 +8,10 @@ import (
 	reflect2 "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/result"
 	sq "github.com/dreamlu/gt/tool/sql"
+	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/te"
 	"github.com/dreamlu/gt/tool/util"
 	"github.com/dreamlu/gt/tool/util/str"
-	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -20,7 +20,7 @@ import (
 //======================return tag=============================
 //=============================================================
 
-var coMap = url.Values{}
+var coMap = cmap.CMap{}
 
 // select * replace
 // select more tables
@@ -229,7 +229,7 @@ type GT struct {
 	// where
 	SubWhereSQL string // SubWhere SQL
 	// maybe future will use gt.params replace params
-	Params map[string][]string // params
+	Params cmap.CMap // params
 
 	// select sql
 	Select string // select sql
@@ -471,7 +471,7 @@ func GetSelectSearchSQL(gt *GT) (sqlNt, sql string) {
 
 // 传入数据库表名
 // 更新语句拼接
-func GetUpdateSQL(table string, params map[string][]string) (sql string, args []interface{}) {
+func GetUpdateSQL(table string, params cmap.CMap) (sql string, args []interface{}) {
 
 	// sql connect
 	var (
@@ -498,7 +498,7 @@ func GetUpdateSQL(table string, params map[string][]string) (sql string, args []
 
 // 传入数据库表名
 // 插入语句拼接
-func GetInsertSQL(table string, params map[string][]string) (sql string, args []interface{}) {
+func GetInsertSQL(table string, params cmap.CMap) (sql string, args []interface{}) {
 
 	// sql connect
 	var (
@@ -662,7 +662,7 @@ func (db *DBTool) Delete(table string, id interface{}) {
 ///////////////////
 
 // via form data update
-func (db *DBTool) UpdateFormData(table string, params map[string][]string) (err error) {
+func (db *DBTool) UpdateFormData(table string, params cmap.CMap) (err error) {
 
 	sql, args := GetUpdateSQL(table, params)
 	db.ExecSQL(sql, args...)
@@ -690,19 +690,19 @@ func (db *DBTool) UpdateStructData(data interface{}) (err error) {
 ////////////////////
 
 // via form data create
-func (db *DBTool) CreateFormData(table string, params map[string][]string) error {
+func (db *DBTool) CreateFormData(table string, params cmap.CMap) error {
 
 	sql, args := GetInsertSQL(table, params)
 	db.ExecSQL(sql, args...)
 	return db.Error
 }
 
-// map[string][]string 形式批量创建问题: 顺序对应, 使用json形式批量创建
+// param.CMap 形式批量创建问题: 顺序对应, 使用json形式批量创建
 
 // 创建数据,通用
 // 返回id,事务,慎用
 // 业务少可用
-func (db *DBTool) CreateDataResID(table string, params map[string][]string) (id str.ID, err error) {
+func (db *DBTool) CreateDataResID(table string, params cmap.CMap) (id str.ID, err error) {
 
 	//开启事务
 	tx := db.DB.Begin()

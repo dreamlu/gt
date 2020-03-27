@@ -1,7 +1,7 @@
 TODO  
 1.~~gt.Table()默认结构体驼峰小写值~~  
 2.~~解析好的sql放入内存,加快解析效率~~  
-3.map[string][]string转结构体  
+3.~~map[string][]string转结构体(使用别名类型CMap)~~  
 4.~~模型解析增加连接自身功能User->User(弃:业务极少见)~~  
 5.~~添加gt:like支持(弃,用key替代)~~  
 6.表关联通过其他字段(待定)  

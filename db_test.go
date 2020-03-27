@@ -4,6 +4,7 @@ package gt
 
 import (
 	"fmt"
+	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/json"
 	"github.com/dreamlu/gt/tool/type/time"
 	"log"
@@ -12,7 +13,7 @@ import (
 	time2 "time"
 )
 
-// params map[string][]string is web request GET params
+// params param.CMap is web request GET params
 // in golang, it was url.values
 
 type User struct {
@@ -38,12 +39,9 @@ type Order struct {
 
 // order detail
 type OrderD struct {
-	ID          int64      `json:"id"`
-	UserID      int64      `json:"user_id"`      // user id
-	UserName    string     `json:"user_name"`    // user table column name
-	ServiceID   int64      `json:"service_id"`   // service table id
-	ServiceName string     `json:"service_name"` // service table column `name`
-	Createtime  time.CTime `json:"createtime"`   // createtime
+	Order
+	UserName    string `json:"user_name"`    // user table column name
+	ServiceName string `json:"service_name"` // service table column `name`
 }
 
 // 局部
@@ -84,7 +82,7 @@ func TestSqlSearch(t *testing.T) {
 	everyPage := int64(10) //默认10页
 
 	//可定制
-	//args map[string][]string
+	//args param.CMap
 	//look gt/demo
 	//args is url.values
 	//for k, v := range args {
@@ -116,7 +114,7 @@ func TestSqlSearch(t *testing.T) {
 func TestSqlSearchV2(t *testing.T) {
 	//var ui []UserInfo
 	//
-	////args map[string][]string
+	////args param.CMap
 	////look github.com/dreamlu/deercoder-gin
 	////args is url.values
 	//log.Println(GetDoubleTableDataBySearch(UserInfo{},&ui, "userinfo", "user", args))
@@ -138,7 +136,7 @@ func TestGetSearchSql(t *testing.T) {
 		Num int64 `json:"num" gt:"sub_sql"`
 	}
 
-	var args = make(map[string][]string)
+	var args = make(cmap.CMap)
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
 	//args["key"] = append(args["key"], "梦 嘿,伙计")
@@ -170,7 +168,7 @@ func TestGetDataBySql(t *testing.T) {
 }
 
 func TestGetDataBySearch(t *testing.T) {
-	var args = make(map[string][]string)
+	var args = make(cmap.CMap)
 	args["name"] = append(args["name"], "梦")
 	args["key"] = append(args["key"], "梦")
 	args["clientPage"] = append(args["clientPage"], "1")
@@ -186,7 +184,7 @@ func TestGetDataBySearch(t *testing.T) {
 }
 
 // 通用增删该查测试
-// 传参可使用url.Values替代map[string][]string操作方便
+// 传参可使用url.Values替代param.CMap操作方便
 func TestCrud(t *testing.T) {
 	var args = url.Values{}
 	args.Add("name", "梦")
@@ -223,8 +221,10 @@ func TestCrud(t *testing.T) {
 		SubWhereSQL("1=1"),
 	)
 	//args["name"][0] = "梦"
-	crud.GetBySearch(args)
-	log.Println("\n[User Info]:", users)
+	var params cmap.CMap
+	params = params.CMap(args)
+	crud.GetBySearch(params)
+	t.Log("\n[User Info]:", users)
 
 	// delete
 	info2 := crud.Delete(12)
@@ -236,11 +236,11 @@ func TestCrud(t *testing.T) {
 	// replace
 	args.Add("id", "4")
 	args.Set("name", "梦4")
-	err := crud.UpdateForm(args)
+	err := crud.UpdateForm(cmap.CMap(args))
 	log.Println(err)
 
 	// create
-	//var args2 = make(map[string][]string)
+	//var args2 = make(param.CMap)
 	//args2["name"] = append(args2["name"],"梦c")
 	////db  = DbCrud{"user", nil,&user}
 	//info = db.Create(args2)
@@ -261,7 +261,7 @@ func TestCrudSQL(t *testing.T) {
 func TestGetMoreDataBySearch(t *testing.T) {
 	// 多表查询
 	// get more search
-	var params = make(map[string][]string)
+	var params = make(cmap.CMap)
 	params["user_id"] = append(params["user_id"], "1")
 	params["key"] = append(params["key"], "梦")
 	params["clientPage"] = append(params["clientPage"], "1")
@@ -452,7 +452,7 @@ func TestGetReflectTagMore(t *testing.T) {
 		Data(&data),
 		Model(GroupmealModel{}),
 		InnerTable([]string{"groupmeal", "groupmeal_category"}))
-	var params = make(map[string][]string)
+	var params = make(cmap.CMap)
 	crud.GetMoreBySearch(params)
 }
 
