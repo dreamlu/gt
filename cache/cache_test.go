@@ -1,10 +1,8 @@
 // package gt
 
-package test
+package cache
 
 import (
-	"github.com/dreamlu/gt/cache"
-	"github.com/dreamlu/gt/cache/redis"
 	"github.com/dreamlu/gt/tool/type/time"
 	"log"
 	"testing"
@@ -17,9 +15,9 @@ type User struct {
 }
 
 var (
-	testConfDir = "../../conf/"
-	r           = redis.RedisManager{}
-	ce, _       = cache.NewCache(new(redis.RedisManager), testConfDir)
+	testConfDir = "../conf/"
+	r           = RedisManager{}
+	ce          = NewCache(new(RedisManager), testConfDir)
 )
 
 func init() {
@@ -49,20 +47,20 @@ var user = User{
 // set and get interface value
 func TestCacheRedis(t *testing.T) {
 	// data
-	data := cache.CacheModel{
-		Time: 50 * cache.CacheMinute,
+	data := CacheModel{
+		Time: 50 * CacheMinute,
 		Data: user,
 	}
 
 	// key can use user.ID,user.Name,user
 	// because it can be interface
 	// set
-	err := ce.Set(user, data)
-	log.Println("set err: ", err)
+	err := NewCache().Set(user, data)
+	t.Log("set err: ", err)
 
 	// get
 	reply, _ := ce.Get(user)
-	log.Println("user data :", reply.Data)
+	t.Log("user data :", reply.Data)
 
 }
 

@@ -193,11 +193,11 @@ func (c *DBCrud) Search() Crud {
 		Data:       clone.param.Data,
 		ClientPage: clone.param.ClientPage,
 		EveryPage:  clone.param.EveryPage,
-		Select:     c.selectSQL,
-		Args:       c.args,
-		ArgsNt:     c.argsNt,
-		From:       c.from,
-		Group:      c.group,
+		Select:     clone.selectSQL,
+		Args:       clone.args,
+		ArgsNt:     clone.argsNt,
+		From:       clone.from,
+		Group:      clone.group,
 	})
 	return clone
 }

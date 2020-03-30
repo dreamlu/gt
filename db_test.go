@@ -62,9 +62,64 @@ func TestDB(t *testing.T) {
 	crud.DB().CreateData(&user)
 	t.Log("user: ", user)
 	t.Log(crud.DB().RowsAffected)
-	//user.ID = 8 //0
-	//ss = UpdateStructData(&user)
-	//log.Println(ss)
+}
+
+// 通用增删该查测试
+// 传参可使用url.Values替代param.CMap操作方便
+func TestCrud(t *testing.T) {
+
+	// add
+	var user = User{
+		Name: "new name",
+	}
+	crud = NewCrud(
+		Model(User{}),
+		//Table("user"),
+		Data(&user),
+	).Create()
+
+	// update
+	user.ID = 2
+	crud.Update()
+
+	// get by id
+	info := crud.GetByID(1)
+	t.Log(info, "\n[GetByID]:", user)
+
+	// get by search
+	var args = url.Values{}
+	args.Add("name", "梦")
+	// get by search
+	var users []*User
+	crud.Params(
+		Model(User{}),
+		Data(&user),
+		SubWhereSQL("1=1"),
+	)
+	//args["name"][0] = "梦"
+	var params cmap.CMap
+	params = params.CMap(args)
+	crud.GetBySearch(params)
+	t.Log("\n[User Info]:", users)
+
+	// delete
+	info2 := crud.Delete(12)
+	t.Log(info2.Error())
+
+	// update by form request
+	args.Add("id", "4")
+	args.Set("name", "梦4")
+	err := crud.UpdateForm(cmap.CMap(args))
+	log.Println(err)
+}
+
+// 通用增删改查sql测试
+func TestCrudSQL(t *testing.T) {
+	//var db = DbCrud{}
+	sql := "update `user` set name=? where id=?"
+	log.Println("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
+	log.Println("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
+	log.Println("[Info]:", crud.DB().RowsAffected)
 }
 
 // 通用分页测试
@@ -81,44 +136,11 @@ func TestSqlSearch(t *testing.T) {
 	clientPage := int64(1) //默认第1页
 	everyPage := int64(10) //默认10页
 
-	//可定制
-	//args param.CMap
-	//look gt/demo
-	//args is url.values
-	//for k, v := range args {
-	//	if k == "clientPage" {
-	//		clientPageStr = v[0]
-	//		continue
-	//	}
-	//	if k == "everyPage" {
-	//		everyPageStr = v[0]
-	//		continue
-	//	}
-	//	if v[0] == "" { //条件值为空,舍弃
-	//		continue
-	//	}
-	//	v[0] = strings.Replace(v[0], "'", "\\'", -1) //转义
-	//	sql += "a." + k + " = '" + v[0] + "' and "
-	//	sqlNt += "a." + k + " = '" + v[0] + "' and "
-	//}
-
 	sql = string([]byte(sql)[:len(sql)-4]) //去and
 	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
 	sql += "order by a.id "
 	log.Println(crud.DB().GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage, nil, nil))
 	log.Println(ui[0].Userinfo.String())
-}
-
-// 常用分页测试(两张表)
-// 如:
-func TestSqlSearchV2(t *testing.T) {
-	//var ui []UserInfo
-	//
-	////args param.CMap
-	////look github.com/dreamlu/deercoder-gin
-	////args is url.values
-	//log.Println(GetDoubleTableDataBySearch(UserInfo{},&ui, "userinfo", "user", args))
-	//log.Println(ui)
 }
 
 // select 数据存在验证
@@ -161,15 +183,13 @@ func TestGetDataBySql(t *testing.T) {
 
 	var user User
 	crud.DB().GetDataBySQL(&user, sql, "1")
-	log.Println(user)
-
-	//GOTool.Raw(sql, []interface{}{1, "梦"}[:]...).Scan(&user)
-	//log.Println(user)
+	t.Log(user)
 }
 
 func TestGetDataBySearch(t *testing.T) {
 	var args = make(cmap.CMap)
-	args["name"] = append(args["name"], "梦")
+	args.Add("name", "梦")
+	//args["name"] = append(args["name"], "梦")
 	args["key"] = append(args["key"], "梦")
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
@@ -181,80 +201,6 @@ func TestGetDataBySearch(t *testing.T) {
 		Data:   &user,
 	})
 	t.Log(user[0])
-}
-
-// 通用增删该查测试
-// 传参可使用url.Values替代param.CMap操作方便
-func TestCrud(t *testing.T) {
-	var args = url.Values{}
-	args.Add("name", "梦")
-	//args["name"] = append(args["name"], "梦")
-
-	// var crud DbCrud
-	// must use AutoMigrate
-	// get by id
-	//GOTool.DB.AutoMigrate(&User{})
-	//crud.DB().DB.AutoMigrate(&User{})
-	var user User
-	//param := &Params{
-	//	Table:     "user",
-	//	Data: &user,
-	//}
-	crud = NewCrud(
-		Table("user"),
-		Data(&user),
-	)
-	info := crud.GetByID(1)
-	t.Log(info, "\n[GetByID]:", user)
-
-	// get by search
-	var users []*User
-	//param = &Params{
-	//	Table:     "user",
-	//	Model:     User{},
-	//	Data: &users,
-	//}
-	//crud = NewCrud(param)
-	crud.Params(
-		Model(User{}),
-		Data(&user),
-		SubWhereSQL("1=1"),
-	)
-	//args["name"][0] = "梦"
-	var params cmap.CMap
-	params = params.CMap(args)
-	crud.GetBySearch(params)
-	t.Log("\n[User Info]:", users)
-
-	// delete
-	info2 := crud.Delete(12)
-	t.Log(info2.Error())
-
-	// update
-	//args["id"] = append(args["id"], "4")
-	//args["name"][0] = "梦4"
-	// replace
-	args.Add("id", "4")
-	args.Set("name", "梦4")
-	err := crud.UpdateForm(cmap.CMap(args))
-	log.Println(err)
-
-	// create
-	//var args2 = make(param.CMap)
-	//args2["name"] = append(args2["name"],"梦c")
-	////db  = DbCrud{"user", nil,&user}
-	//info = db.Create(args2)
-	//log.Println(info)
-
-}
-
-// 通用增删改查sql测试
-func TestCrudSQL(t *testing.T) {
-	//var db = DbCrud{}
-	sql := "update `user` set name=? where id=?"
-	log.Println("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
-	log.Println("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
-	log.Println("[Info]:", crud.DB().RowsAffected)
 }
 
 // 测试多表连接

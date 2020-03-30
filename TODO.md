@@ -16,7 +16,7 @@ TODO
 15.~~result add()支持结构体~~  
 16.~~result mapdata和map整合(弃)~~  
 17.~~批量创建支持指针数组~~  
-18.使用url.Values替代map[string][]string  
+18.~~使用CMap替代map[string][]string~~  
 19.update()id默认不为空限制  
-20.多文件上传,返回文件名数组  
+20.~~多文件上传,返回文件名数组~~(参考demo:[deercoder-gin](https://github.com/dreamlu/deercoder-gin))  
 n.xxx  

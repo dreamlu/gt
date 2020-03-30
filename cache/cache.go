@@ -2,6 +2,10 @@
 
 package cache
 
+import (
+	"github.com/dreamlu/gt"
+)
+
 // data model
 type CacheModel struct {
 	// seconds
@@ -11,7 +15,7 @@ type CacheModel struct {
 }
 
 // cache manager
-type CacheManager interface {
+type Cache interface {
 	// init cache
 	NewCache(params ...interface{}) error
 	// operate method
@@ -33,6 +37,7 @@ type CacheManager interface {
 // time for cache unit
 // unit: second
 const (
+	CacheSecond = 1
 	CacheMinute = 60
 	CacheHour   = 60 * CacheMinute
 	CacheDay    = 24 * CacheHour
@@ -40,7 +45,24 @@ const (
 )
 
 // cache sugar
-func NewCache(cache CacheManager, params ...interface{}) (CacheManager, error) {
-	err := cache.NewCache(params[:]...)
-	return cache, err
+// the first param is Cache
+// the second param is confiDir
+func NewCache(params ...interface{}) (cache Cache) {
+
+	// default set
+	if len(params) == 0 {
+		cache = new(RedisManager)
+		err := cache.NewCache()
+		if err != nil {
+			gt.Logger().Error(err.Error())
+		}
+		return
+	}
+	// init
+	cache = params[0].(Cache)
+	err := cache.NewCache(params[1:]...)
+	if err != nil {
+		gt.Logger().Error(err.Error())
+	}
+	return
 }

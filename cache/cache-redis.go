@@ -1,12 +1,12 @@
 // package gt
 
-package redis
+package cache
 
 import (
 	"bytes"
 	"encoding/json"
 	"github.com/dreamlu/gt"
-	"github.com/dreamlu/gt/cache"
+	redis2 "github.com/dreamlu/gt/cache/redis"
 	"github.com/go-redis/redis"
 )
 
@@ -15,7 +15,7 @@ import (
 // interface key, interface value
 type RedisManager struct {
 	// do nothing else
-	Rc *ConnPool
+	Rc *redis2.ConnPool
 }
 
 // new cache by redis
@@ -30,14 +30,14 @@ func (r *RedisManager) NewCache(params ...interface{}) error {
 	}
 
 	// read config
-	r.Rc = InitRedisPool(
+	r.Rc = redis2.InitRedisPool(
 		func(options *redis.Options) {
 			config.GetStruct("app.redis", options)
 		})
 	return nil
 }
 
-func (r *RedisManager) Set(key interface{}, value cache.CacheModel) error {
+func (r *RedisManager) Set(key interface{}, value CacheModel) error {
 
 	// change key to string
 	keyS, err := json.Marshal(key)
@@ -66,9 +66,9 @@ func (r *RedisManager) Set(key interface{}, value cache.CacheModel) error {
 	return nil
 }
 
-func (r *RedisManager) Get(key interface{}) (cache.CacheModel, error) {
+func (r *RedisManager) Get(key interface{}) (CacheModel, error) {
 
-	var reply cache.CacheModel
+	var reply CacheModel
 
 	// change key to string
 	keyS, err := json.Marshal(key)
@@ -130,7 +130,7 @@ func (r *RedisManager) DeleteMore(key interface{}) error {
 
 func (r *RedisManager) Check(key interface{}) error {
 
-	var reply cache.CacheModel
+	var reply CacheModel
 
 	// change key to string
 	keyS, err := json.Marshal(key)

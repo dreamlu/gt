@@ -3,6 +3,7 @@ package json
 import (
 	"bytes"
 	"database/sql/driver"
+	"encoding/json"
 	"errors"
 )
 
@@ -45,9 +46,21 @@ func (j *CJSON) UnmarshalJSON(data []byte) error {
 }
 
 func (j CJSON) Equals(j1 CJSON) bool {
-	return bytes.Equal([]byte(j), []byte(j1))
+	return bytes.Equal(j, j1)
 }
 
 func (j CJSON) String() string {
 	return string(j)
+}
+
+func (j CJSON) Struct(value interface{}) error {
+	b, err := json.Marshal(j)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(b, value)
+	if err != nil {
+		return err
+	}
+	return nil
 }
