@@ -3,8 +3,7 @@ gt(gt) (v1.7.0)
 
 web快速开发工具库,模型生成  
 
-##### demo  
-[deercoder-gin](https://github.com/dreamlu/deercoder-gin)  
+##### demo: [deercoder-gin](https://github.com/dreamlu/deercoder-gin)  
 
 ##### API
 - [API 使用](#api-examples)
@@ -18,6 +17,8 @@ web快速开发工具库,模型生成
     - [字段验证](#validator)  
     - [日志支持](#customlog)
     - [snowflake ID](#snowflakeid)
+- [扩展 使用](#extend-examples)
+    - [crud原生SQL](#Crud-selectsql)
     
 
 ### API Examples  
@@ -226,6 +227,13 @@ func TestId(t *testing.T) {
 	}
 	t.Log(id.String())
 }
+```
+
+### Extend Examples  
+
+#### Crud Selectsql
+```go
+
 ```
 
 

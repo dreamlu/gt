@@ -21,6 +21,7 @@ type String interface {
 }
 
 // devMode const
+// key words
 const (
 	Dev  = "dev"
 	Prod = "prod"
@@ -32,4 +33,6 @@ const (
 	GtEveryPage  = "everyPage"
 	GtOrder      = "order"
 	GtKey        = "key"
+	// gt tag
+	GtField = "field"
 )

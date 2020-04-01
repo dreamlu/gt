@@ -12,11 +12,13 @@ TODO
 11.~~驼峰解析替代json字段(弃)~~  
 12.~~result返回动态添加参数~~  
 13.多数据库支持  
-14.优化缓存使用,提供默认set()值  
+14.~~优化缓存使用,提供默认set()值~~  
 15.~~result add()支持结构体~~  
 16.~~result mapdata和map整合(弃)~~  
 17.~~批量创建支持指针数组~~  
 18.~~使用CMap替代map[string][]string~~  
 19.update()id默认不为空限制  
 20.~~多文件上传,返回文件名数组~~(参考demo:[deercoder-gin](https://github.com/dreamlu/deercoder-gin))  
+21.多表连接支持设置不同表名  
+22.更进一步解析sql放入内存,加快解析效率  
 n.xxx  

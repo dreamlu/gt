@@ -44,60 +44,88 @@ func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 }
 
 // 层级递增解析tag, more tables
-func GetReflectTagMore(reflectType reflect.Type, buf *bytes.Buffer, tables ...string) {
+func GetReflectTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 
-	if reflectType.Kind() != reflect.Struct {
+	var (
+		oTag, tag string
+		b         bool
+	)
+	if ref.Kind() != reflect.Struct {
 		return
 	}
-	for i := 0; i < reflectType.NumField(); i++ {
-		tag := reflectType.Field(i).Tag.Get("json")
+	for i := 0; i < ref.NumField(); i++ {
+		tag = ref.Field(i).Tag.Get("json")
 		if tag == "" {
-			GetReflectTagMore(reflectType.Field(i).Type, buf, tables[:]...)
+			GetReflectTagMore(ref.Field(i).Type, buf, tables[:]...)
 			continue
 		}
-		// sub sql
-		gtTag := reflectType.Field(i).Tag.Get("gt")
-		gtFields := strings.Split(gtTag, ";")
-		for _, v := range gtFields {
-			if v == str.GtSubSQL {
-				goto into
-			}
-			if tag == "-" && strings.Contains(v, "field") {
-				tagTmp := strings.Split(v, ":")
-				tag = tagTmp[1]
-			}
+		if oTag, tag, b = gtTag(ref.Field(i).Tag, tag); b == true {
+			return
 		}
-
-		// foreign tables column
-		for _, v := range tables {
-			if strings.Contains(tag, v+"_id") {
-				break
-			}
-			// tables
-			switch {
-			case strings.Contains(tag, v+"_") &&
-				// 下面两种条件参考db_test.go==>TestGetReflectTagMore()
-				!strings.Contains(tag, "_id") &&
-				!strings.EqualFold(v, tables[0]):
-				//sql += "`" + v + "`.`" + string([]byte(tag)[len(v)+1:]) + "` as " + tag + ","
-				buf.WriteString("`")
-				buf.WriteString(v)
-				buf.WriteString("`.`")
-				buf.Write([]byte(tag)[len(v)+1:])
-				buf.WriteString("` as ")
-				buf.WriteString(tag)
-				buf.WriteString(",")
-				goto into
-			}
+		if b = otherTableTagSQL(oTag, tag, buf, tables...); b == false {
+			buf.WriteString("`")
+			buf.WriteString(tables[0])
+			buf.WriteString("`.`")
+			buf.WriteString(tag)
+			buf.WriteString("`,")
 		}
-		//sql += "`" + tables[0] + "`.`" + tag + "`,"
-		buf.WriteString("`")
-		buf.WriteString(tables[0])
-		buf.WriteString("`.`")
-		buf.WriteString(tag)
-		buf.WriteString("`,")
-	into:
 	}
+}
+
+// get tag
+func gtTag(structTag reflect.StructTag, curTag string) (oTag, tag string, b bool) {
+	gtTag := structTag.Get("gt")
+	tag = curTag
+	if gtTag == "" {
+		return
+	}
+	gtFields := strings.Split(gtTag, ";")
+	for _, v := range gtFields {
+		// gt:"sub_sql"
+		if v == str.GtSubSQL {
+			b = true
+			return
+		}
+		// gt:"field:xx"
+		oTag = curTag
+		if strings.Contains(v, str.GtField) {
+			tagTmp := strings.Split(v, ":")
+			tag = tagTmp[1]
+			return
+		}
+	}
+	return
+}
+
+// if there is tag gt and json, select json tag first
+// 多表的其他表解析处理
+func otherTableTagSQL(oTag, tag string, buf *bytes.Buffer, tables ...string) bool {
+	// foreign tables column
+	for _, v := range tables {
+		if strings.Contains(tag, v+"_id") {
+			break
+		}
+		// tables
+		switch {
+		case strings.Contains(tag, v+"_") &&
+			// 下面两种条件参考db_test.go==>TestGetReflectTagMore()
+			!strings.Contains(tag, "_id") &&
+			!strings.EqualFold(v, tables[0]):
+			buf.WriteString("`")
+			buf.WriteString(v)
+			buf.WriteString("`.`")
+			buf.Write([]byte(tag)[len(v)+1:])
+			buf.WriteString("` as ")
+			if oTag != "" && oTag != "-" {
+				buf.WriteString(oTag)
+			} else {
+				buf.WriteString(tag)
+			}
+			buf.WriteString(",")
+			return true
+		}
+	}
+	return false
 }
 
 // 根据model中表模型的json标签获取表字段
@@ -112,7 +140,6 @@ func GetColSQLAlias(model interface{}, alias string) (sql string) {
 		return
 	}
 	var buf bytes.Buffer
-	//typ := reflect.TypeOf(model)
 	GetReflectTagAlias(typ, &buf, alias)
 	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
 	coMap.Add(key, sql)
@@ -120,19 +147,19 @@ func GetColSQLAlias(model interface{}, alias string) (sql string) {
 }
 
 // 层级递增解析tag, 别名
-func GetReflectTagAlias(reflectType reflect.Type, buf *bytes.Buffer, alias string) {
+func GetReflectTagAlias(ref reflect.Type, buf *bytes.Buffer, alias string) {
 
-	if reflectType.Kind() != reflect.Struct {
+	if ref.Kind() != reflect.Struct {
 		return
 	}
-	for i := 0; i < reflectType.NumField(); i++ {
-		tag := reflectType.Field(i).Tag.Get("json")
+	for i := 0; i < ref.NumField(); i++ {
+		tag := ref.Field(i).Tag.Get("json")
 		if tag == "" {
-			GetReflectTagAlias(reflectType.Field(i).Type, buf, alias)
+			GetReflectTagAlias(ref.Field(i).Type, buf, alias)
 			continue
 		}
 		// sub sql
-		gtTag := reflectType.Field(i).Tag.Get("gt")
+		gtTag := ref.Field(i).Tag.Get("gt")
 		if strings.Contains(gtTag, str.GtSubSQL) {
 			continue
 		}
@@ -249,52 +276,14 @@ type GT struct {
 // table1 as main table, include other tables_id(foreign key)
 func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args []interface{}) {
 
-	var (
-		order               = gt.InnerTable[0] + ".id desc" // order by
-		key                 = ""                            // key like binary search
-		tables              = gt.InnerTable                 // all tables
-		bufNt, bufW, bufNtW bytes.Buffer                    // sql bytes connect
-	)
-
-	tables = append(tables, gt.LeftTable...)
-	tables = util.RemoveDuplicateString(tables)
-	// sql and sqlCount
-	bufNt.WriteString("select count(`")
-	bufNt.WriteString(tables[0])
-	bufNt.WriteString("`.id) as total_num from `")
-	bufNt.WriteString(tables[0])
-	bufNt.WriteString("`")
-	// inner join
-	for i := 1; i < len(gt.InnerTable); i += 2 {
-		bufNt.WriteString(" inner join `")
-		bufNt.WriteString(gt.InnerTable[i])
-		bufNt.WriteString("` on `")
-		bufNt.WriteString(gt.InnerTable[i-1])
-		bufNt.WriteString("`.")
-		bufNt.WriteString(gt.InnerTable[i])
-		bufNt.WriteString("_id=`")
-		bufNt.WriteString(gt.InnerTable[i])
-		bufNt.WriteString("`.id ")
-		//sql += " inner join ·" + innerTables[i] + "`"
-	}
-	// left join
-	for i := 1; i < len(gt.LeftTable); i += 2 {
-		bufNt.WriteString(" left join `")
-		bufNt.WriteString(gt.LeftTable[i])
-		bufNt.WriteString("` on `")
-		bufNt.WriteString(gt.InnerTable[i-1])
-		bufNt.WriteString("`.")
-		bufNt.WriteString(gt.LeftTable[i])
-		bufNt.WriteString("_id=`")
-		bufNt.WriteString(gt.LeftTable[i])
-		bufNt.WriteString("`.id ")
-		//sql += " inner join ·" + innerTables[i] + "`"
-	}
-	// bufNt.WriteString(" where 1=1 and ")
-
+	sqlNt, tables := moreSql(gt)
 	// select* 变为对应的字段名
-	sqlNt = bufNt.String()
-	sql = strings.Replace(bufNt.String(), "count(`"+tables[0]+"`.id) as total_num", GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
+	sql = strings.Replace(sqlNt, "count(`"+tables[0]+"`.id) as total_num", GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
+	var (
+		order        = "`" + tables[0] + "`.id desc" // order by
+		key          = ""                            // key like binary search
+		bufW, bufNtW bytes.Buffer                    // sql bytes connect
+	)
 	for k, v := range gt.Params {
 		switch k {
 		case str.GtClientPage:
@@ -353,6 +342,98 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 
+	return
+}
+
+// more sql
+func moreSql(gt *GT) (sqlNt string, tables []string) {
+	innerTables, leftTables, innerField, leftField := moreTables(gt)
+	tables = append(tables, innerTables...)
+	tables = append(tables, leftTables...)
+	tables = util.RemoveDuplicateString(tables)
+
+	// 内存读取
+	typ := reflect.TypeOf(gt.Model)
+	key := typ.PkgPath() + "/sqlNt/" + typ.Name()
+	sqlNt = coMap.Get(key)
+	if sqlNt != "" {
+		//Logger().Info("[USE coMap GET ColumnSQL]")
+		return
+	}
+
+	var (
+		//tables = innerTables // all tables
+		bufNt bytes.Buffer // sql bytes connect
+	)
+	// sql and sqlCount
+	bufNt.WriteString("select count(`")
+	bufNt.WriteString(tables[0])
+	bufNt.WriteString("`.id) as total_num from `")
+	bufNt.WriteString(tables[0])
+	bufNt.WriteString("`")
+	// inner join
+	for i := 1; i < len(innerTables); i += 2 {
+		bufNt.WriteString(" inner join `")
+		bufNt.WriteString(innerTables[i])
+		bufNt.WriteString("` on `")
+		bufNt.WriteString(innerTables[i-1])
+		bufNt.WriteString("`.`")
+		bufNt.WriteString(innerField[i-1])
+		bufNt.WriteString("`=`")
+		bufNt.WriteString(innerTables[i])
+		bufNt.WriteString("`.`")
+		bufNt.WriteString(innerField[i])
+		bufNt.WriteString("` ")
+	}
+	// left join
+	for i := 1; i < len(leftTables); i += 2 {
+		bufNt.WriteString(" left join `")
+		bufNt.WriteString(leftTables[i])
+		bufNt.WriteString("` on `")
+		bufNt.WriteString(innerTables[i-1])
+		bufNt.WriteString("`.`")
+		bufNt.WriteString(leftField[i-1])
+		bufNt.WriteString("`=`")
+		bufNt.WriteString(leftTables[i])
+		bufNt.WriteString("`.`")
+		bufNt.WriteString(leftField[i])
+		bufNt.WriteString("` ")
+	}
+	sqlNt = bufNt.String()
+	coMap.Add(key, sqlNt)
+	return
+}
+
+// more sql tables
+func moreTables(gt *GT) (innerTables, leftTables, innerField, leftField []string) {
+	for k, v := range gt.InnerTable {
+		st := strings.Split(v, ":")
+
+		innerTables = append(innerTables, st[0])
+		if len(st) == 1 { // default
+			field := "id"
+			if k%2 == 0 {
+				// default other table_id
+				field = strings.Split(gt.InnerTable[k+1], ":")[0] + "_id"
+			}
+			innerField = append(innerField, field)
+		} else {
+			innerField = append(innerField, st[1])
+		}
+	}
+	for k, v := range gt.LeftTable {
+		st := strings.Split(v, ":")
+		leftTables = append(leftTables, st[0])
+		if len(st) == 1 {
+			field := "id"
+			if k%2 == 0 {
+				field = strings.Split(gt.LeftTable[k+1], ":")[0] + "_id"
+			}
+			leftField = append(leftField, field)
+		} else {
+			leftField = append(leftField, st[1])
+		}
+	}
 	return
 }
 

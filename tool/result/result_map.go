@@ -1,6 +1,9 @@
 package result
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"log"
+)
 
 type ResultMap map[string]interface{}
 
@@ -26,4 +29,13 @@ func (c ResultMap) AddStruct(value interface{}) ResultMap {
 	}
 	//c[key] = value
 	return c
+}
+
+// impl String()
+func (c ResultMap) String() string {
+	b, err := json.Marshal(c)
+	if err != nil {
+		log.Println("[ResultMap ERROR]:", err)
+	}
+	return string(b)
 }

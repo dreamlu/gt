@@ -16,51 +16,41 @@ const (
 // 约定状态码
 // 或 通过GetMapData()自定义
 const (
-	CodeSuccess    = 200 // 请求成功
-	CodeCreate     = 201 // 创建成功
-	CodeNoAuth     = 203 // 请求非法
-	CodeNoResult   = 204 // 暂无数据
-	CodeUpdate     = 206 // 修改成功
-	CodeDelete     = 209 // 删除成功
-	CodeValidator  = 210 // 字段验证
-	CodeCount      = 211 // 账号相关
-	CodeValSuccess = 217 // 验证成功
-	CodeValError   = 218 // 验证失败
-	CodeExistOrNo  = 220 // 数据无变化
-	CodeText       = 271 // 全局文字提示
-	CodeError      = 500 // 系统繁忙
+	CodeSuccess   = 200 // 请求成功
+	CodeCreate    = 201 // 创建成功
+	CodeNoAuth    = 203 // 请求非法
+	CodeNoResult  = 204 // 暂无数据
+	CodeUpdate    = 206 // 修改成功
+	CodeDelete    = 209 // 删除成功
+	CodeValidator = 210 // 字段验证
+	CodeCount     = 211 // 账号相关
+	CodeText      = 271 // 全局文字提示
+	CodeError     = 500 // 系统繁忙
 )
 
 // 约定提示信息
 const (
-	MsgSuccess    = "请求成功"
-	MsgCreate     = "创建成功"
-	MsgNoAuth     = "请求非法"
-	MsgNoResult   = "暂无数据"
-	MsgDelete     = "删除成功"
-	MsgUpdate     = "修改成功"
-	MsgError      = "通用错误"
-	MsgExistOrNo  = "数据无变化"
-	MsgCountErr   = "用户账号或密码错误"
-	MsgNoCount    = "用户账号不存在"
-	MsgValSuccess = "验证成功"
-	MsgValError   = "验证失败"
+	MsgSuccess   = "请求成功"
+	MsgCreate    = "创建成功"
+	MsgNoAuth    = "请求非法"
+	MsgNoResult  = "暂无数据"
+	MsgDelete    = "删除成功"
+	MsgUpdate    = "修改成功"
+	MsgError     = "通用错误"
+	MsgExistOrNo = "数据无变化"
+	MsgCountErr  = "用户账号或密码错误"
 )
 
 // 约定提示信息
 var (
-	MapSuccess    = GetMapData(CodeSuccess, MsgSuccess)       // 请求成功
-	MapError      = GetMapData(CodeError, MsgError)           // 通用失败
-	MapUpdate     = GetMapData(CodeUpdate, MsgUpdate)         // 修改成功
-	MapDelete     = GetMapData(CodeDelete, MsgDelete)         // 删除成功
-	MapCreate     = GetMapData(CodeCreate, MsgCreate)         // 创建成功
-	MapNoResult   = GetMapData(CodeNoResult, MsgNoResult)     // 暂无数据
-	MapNoAuth     = GetMapData(CodeNoAuth, MsgNoAuth)         // 请求非法
-	MapExistOrNo  = GetMapData(CodeExistOrNo, MsgExistOrNo)   // 指数据修改没有变化 或者 给的条件值不存在
-	MapCountErr   = GetMapData(CodeCount, MsgCountErr)        // 用户账号密码错误
-	MapNoCount    = GetMapData(CodeCount, MsgNoCount)         // 用户账号不存在
-	MapValSuccess = GetMapData(CodeValSuccess, MsgValSuccess) // 验证成功
-	MapValError   = GetMapData(CodeValError, MsgValError)     // 验证失败
+	MapSuccess  = GetMapData(CodeSuccess, MsgSuccess)   // 请求成功
+	MapError    = GetMapData(CodeError, MsgError)       // 通用失败
+	MapUpdate   = GetMapData(CodeUpdate, MsgUpdate)     // 修改成功
+	MapDelete   = GetMapData(CodeDelete, MsgDelete)     // 删除成功
+	MapCreate   = GetMapData(CodeCreate, MsgCreate)     // 创建成功
+	MapNoResult = GetMapData(CodeNoResult, MsgNoResult) // 暂无数据
+	MapNoAuth   = GetMapData(CodeNoAuth, MsgNoAuth)     // 请求非法
+	MapCountErr = GetMapData(CodeCount, MsgCountErr)    // 用户账号密码错误
 )
 
 // 分页数据信息

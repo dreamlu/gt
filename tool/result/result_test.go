@@ -1,6 +1,9 @@
 package result
 
 import (
+	"fmt"
+	"log"
+	"net/http"
 	"testing"
 )
 
@@ -33,4 +36,29 @@ func TestMapData_AddStruct(t *testing.T) {
 		Name: "test",
 	}
 	t.Log(MapCreate.Add("id", 2).AddStruct(user))
+}
+
+func httpServerDemo(w http.ResponseWriter, r *http.Request) {
+	pager := GetInfoPager{
+		GetInfo: &GetInfo{
+			MapData: MapCreate,
+			Data:    "test",
+		},
+		Pager: Pager{
+			ClientPage: 2,
+			EveryPage:  3,
+			TotalNum:   5,
+		},
+	}
+	// pager
+	log.Println(pager.Add("id", 1).Add("test", 2))
+	fmt.Fprintf(w, pager.Add("id", 1).Add("test", 2).String())
+}
+
+func TestRequest(t *testing.T) {
+	http.HandleFunc("/", httpServerDemo)
+	err := http.ListenAndServe(":9090", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }

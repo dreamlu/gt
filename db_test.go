@@ -406,3 +406,34 @@ func TestGetColSQLAlias(t *testing.T) {
 	sql := GetColSQLAlias(User{}, "a")
 	t.Log(sql)
 }
+
+func TestGetMoreSQL(t *testing.T) {
+	// table: venuepricets
+	// related table: venue/venuehomestay
+	type Venuepricets struct {
+		ID      int `json:"id"`
+		VenueID int `json:"venue_id"` // different table
+		// type, related table: venue/venuehomestay
+		Type *int `json:"type" gorm:"type:tinyint(2);DEFAULT:0"`
+	}
+	// 后台 特价
+	type VpsInfo struct {
+		Venuepricets
+		VenueName string `json:"venue_name" gt:"field:venuehomestay_name"`
+	}
+	var vsi []VpsInfo
+
+	var param = cmap.CMap{}
+	//param.Add()
+	crud := NewCrud(
+		Model(VpsInfo{}),
+		Data(&vsi),
+		InnerTable([]string{"venuepricets:venue_id", "venuehomestay"}),
+	)
+	for i := 0; i < 3; i++ {
+		cd := crud.GetMoreBySearch(param)
+		if cd.Error() != nil {
+			t.Log(cd.Error())
+		}
+	}
+}
