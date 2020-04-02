@@ -59,7 +59,7 @@ func GetReflectTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 			GetReflectTagMore(ref.Field(i).Type, buf, tables[:]...)
 			continue
 		}
-		if oTag, tag, b = gtTag(ref.Field(i).Tag, tag); b == true {
+		if oTag, tag, b = sq.GtTag(ref.Field(i).Tag, tag); b == true {
 			return
 		}
 		if b = otherTableTagSQL(oTag, tag, buf, tables...); b == false {
@@ -70,31 +70,6 @@ func GetReflectTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 			buf.WriteString("`,")
 		}
 	}
-}
-
-// get tag
-func gtTag(structTag reflect.StructTag, curTag string) (oTag, tag string, b bool) {
-	gtTag := structTag.Get("gt")
-	tag = curTag
-	if gtTag == "" {
-		return
-	}
-	gtFields := strings.Split(gtTag, ";")
-	for _, v := range gtFields {
-		// gt:"sub_sql"
-		if v == str.GtSubSQL {
-			b = true
-			return
-		}
-		// gt:"field:xx"
-		oTag = curTag
-		if strings.Contains(v, str.GtField) {
-			tagTmp := strings.Split(v, ":")
-			tag = tagTmp[1]
-			return
-		}
-	}
-	return
 }
 
 // if there is tag gt and json, select json tag first
@@ -240,23 +215,9 @@ func GetParams(data interface{}) (params []interface{}) {
 
 // GT SQL struct
 type GT struct {
-	// attributes
-	InnerTable []string    // inner join tables
-	LeftTable  []string    // left join tables
-	Table      string      // table name
-	Model      interface{} // table model, like User{}
-	Data       interface{} // table model data, like var user User{}, it is 'user'
-
-	// pager info
-	ClientPage int64 // page number
-	EveryPage  int64 // Number of pages per page
-
-	// count
-	SubSQL string // SubQuery SQL
-	// where
-	SubWhereSQL string // SubWhere SQL
-	// maybe future will use gt.params replace params
-	Params cmap.CMap // params
+	*Params
+	// CMap
+	CMaps cmap.CMap // params
 
 	// select sql
 	Select string // select sql
@@ -284,7 +245,7 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 		key          = ""                            // key like binary search
 		bufW, bufNtW bytes.Buffer                    // sql bytes connect
 	)
-	for k, v := range gt.Params {
+	for k, v := range gt.CMaps {
 		switch k {
 		case str.GtClientPage:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
@@ -297,14 +258,17 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 			continue
 		case str.GtKey:
 			key = v[0]
+			if gt.KeyModel == nil {
+				gt.KeyModel = gt.Model
+			}
 			var tablens = append(tables, tables[:]...)
 			for k, v := range tablens {
 				tablens[k] += ":" + v
 			}
 			// more tables key search
-			sqlKey, sqlNtKey, argsKey := sq.GetMoreKeySQL(key, gt.Model, tablens[:]...)
+			sqlKey, argsKey := sq.GetMoreKeySQL(key, gt.KeyModel, tablens[:]...)
 			bufW.WriteString(sqlKey)
-			bufNtW.WriteString(sqlNtKey)
+			bufNtW.WriteString(sqlKey)
 			args = append(args, argsKey[:]...)
 			continue
 		case "":
@@ -451,7 +415,7 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 	// select* replace
 	sql = fmt.Sprintf("select %s%s from `%s`", GetColSQL(gt.Model), gt.SubSQL, gt.Table)
 	sqlNt = fmt.Sprintf("select count(id) as total_num from `%s`", gt.Table)
-	for k, v := range gt.Params {
+	for k, v := range gt.CMaps {
 		switch k {
 		case str.GtClientPage:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
@@ -464,9 +428,12 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 			continue
 		case str.GtKey:
 			key = v[0]
-			sqlKey, sqlNtKey, argsKey := sq.GetKeySQL(key, gt.Model, gt.Table)
+			if gt.KeyModel == nil {
+				gt.KeyModel = gt.Model
+			}
+			sqlKey, argsKey := sq.GetKeySQL(key, gt.KeyModel, gt.Table)
 			bufW.WriteString(sqlKey)
-			bufNtW.WriteString(sqlNtKey)
+			bufNtW.WriteString(sqlKey)
 			args = append(args, argsKey[:]...)
 			continue
 		case "":
@@ -505,14 +472,17 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 
 	// select* replace
 	sql = fmt.Sprintf("select %s%s from `%s`", GetColSQL(gt.Model), gt.SubSQL, gt.Table)
-	for k, v := range gt.Params {
+	for k, v := range gt.CMaps {
 		switch k {
 		case str.GtOrder:
 			order = v[0]
 			continue
 		case str.GtKey:
 			key = v[0]
-			sqlKey, _, argsKey := sq.GetKeySQL(key, gt.Model, gt.Table)
+			if gt.KeyModel == nil {
+				gt.KeyModel = gt.Model
+			}
+			sqlKey, argsKey := sq.GetKeySQL(key, gt.KeyModel, gt.Table)
 			bufW.WriteString(sqlKey)
 			args = append(args, argsKey[:]...)
 			continue

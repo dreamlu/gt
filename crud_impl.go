@@ -57,12 +57,8 @@ func (c *DBCrud) Params(params ...Param) Crud {
 func (c *DBCrud) GetBySearch(params cmap.CMap) Crud {
 	clone := c.clone()
 	clone.pager = clone.dbTool.GetDataBySearch(&GT{
-		Table:       clone.param.Table,
-		Model:       clone.param.Model,
-		Data:        clone.param.Data,
-		Params:      params,
-		SubSQL:      clone.param.SubSQL,
-		SubWhereSQL: clone.param.SubWhereSQL,
+		Params: clone.param,
+		CMaps:  params,
 	})
 
 	return clone
@@ -71,12 +67,8 @@ func (c *DBCrud) GetBySearch(params cmap.CMap) Crud {
 func (c *DBCrud) GetByData(params cmap.CMap) Crud {
 	clone := c.clone()
 	clone.dbTool.GetData(&GT{
-		Table:       clone.param.Table,
-		Model:       clone.param.Model,
-		Data:        clone.param.Data,
-		Params:      params,
-		SubSQL:      clone.param.SubSQL,
-		SubWhereSQL: clone.param.SubWhereSQL,
+		Params: clone.param,
+		CMaps:  params,
 	})
 	return clone
 }
@@ -95,13 +87,8 @@ func (c *DBCrud) GetMoreBySearch(params cmap.CMap) Crud {
 
 	clone := c.clone()
 	clone.pager = clone.dbTool.GetMoreDataBySearch(&GT{
-		InnerTable:  clone.param.InnerTable,
-		LeftTable:   clone.param.LeftTable,
-		Model:       clone.param.Model,
-		Data:        clone.param.Data,
-		Params:      params,
-		SubSQL:      clone.param.SubSQL,
-		SubWhereSQL: clone.param.SubWhereSQL,
+		CMaps:  params,
+		Params: clone.param,
 	})
 	return clone
 }
@@ -190,14 +177,12 @@ func (c *DBCrud) Search() Crud {
 	}
 	clone := c.clone()
 	clone.pager = clone.dbTool.GetDataBySelectSQLSearch(&GT{
-		Data:       clone.param.Data,
-		ClientPage: clone.param.ClientPage,
-		EveryPage:  clone.param.EveryPage,
-		Select:     clone.selectSQL,
-		Args:       clone.args,
-		ArgsNt:     clone.argsNt,
-		From:       clone.from,
-		Group:      clone.group,
+		Params: clone.param,
+		Select: clone.selectSQL,
+		Args:   clone.args,
+		ArgsNt: clone.argsNt,
+		From:   clone.from,
+		Group:  clone.group,
 	})
 	return clone
 }

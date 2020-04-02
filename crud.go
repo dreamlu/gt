@@ -57,7 +57,7 @@ type Crud interface {
 	Group(query string) Crud                       // the last group by
 	Search() Crud                                  // search pager
 	Single() Crud                                  // no search
-	Exec() Crud                                    // exec insert/update/delete select sql
+	Exec() Crud                                    // exec insert/update/delete sql
 	Error() error                                  // crud error
 	RowsAffected() int64                           // inflect rows
 	Pager() result.Pager                           // search pager
@@ -73,6 +73,7 @@ type Params struct {
 	LeftTable  []string    // left join tables
 	Table      string      // table name
 	Model      interface{} // table model, like User{}
+	KeyModel   interface{} // key like model
 	Data       interface{} // table model data, like var user User{}, it is 'user', it store real data
 
 	// pager info
@@ -130,6 +131,13 @@ func Model(Model interface{}) Param {
 
 	return func(params *Params) {
 		params.Model = Model
+	}
+}
+
+func KeyModel(KeyModel interface{}) Param {
+
+	return func(params *Params) {
+		params.KeyModel = KeyModel
 	}
 }
 

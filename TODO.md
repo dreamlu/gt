@@ -4,7 +4,7 @@ TODO
 3.~~map[string][]string转结构体(使用别名类型CMap)~~  
 4.~~模型解析增加连接自身功能User->User(弃:业务极少见)~~  
 5.~~添加gt:like支持(弃,用key替代)~~  
-6.表关联通过其他字段(待定)  
+6.~~表关联通过其他字段~~  
 7.~~crud.select()执行后sql clone问题~~  
 8.~~subWhereSQL()没where不执行和where and多余问题等~~  
 9.~~多表连接GetReflectTagMore()主题解析table[0]问题(非问题)~~  
@@ -19,6 +19,7 @@ TODO
 18.~~使用CMap替代map[string][]string~~  
 19.update()id默认不为空限制  
 20.~~多文件上传,返回文件名数组~~(参考demo:[deercoder-gin](https://github.com/dreamlu/deercoder-gin))  
-21.多表连接支持设置不同表名  
+21.~~多表连接支持设置不同表名~~  
 22.更进一步解析sql放入内存,加快解析效率  
+23.字符串解析buf与移除goto  
 n.xxx  

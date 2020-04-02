@@ -113,13 +113,12 @@ func TestCrud(t *testing.T) {
 	log.Println(err)
 }
 
-// 通用增删改查sql测试
+// select sql
 func TestCrudSQL(t *testing.T) {
-	//var db = DbCrud{}
 	sql := "update `user` set name=? where id=?"
-	log.Println("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
-	log.Println("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
-	log.Println("[Info]:", crud.DB().RowsAffected)
+	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
+	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
+	t.Log("[Info]:", crud.DB().RowsAffected)
 }
 
 // 通用分页测试
@@ -162,12 +161,15 @@ func TestGetSearchSql(t *testing.T) {
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
 	//args["key"] = append(args["key"], "梦 嘿,伙计")
-	sub_sql := ",(select aa.name from shop aa where aa.user_id = a.id) as shop_name"
+	//sub_sql := ",(select aa.name from shop aa where aa.user_id = a.id) as shop_name"
 	sqlNt, sql, _, _, _ := GetSearchSQL(&GT{
-		Params: args,
-		Table:  "user",
-		Model:  UserDe{},
-		SubSQL: sub_sql,
+		Params: nil,
+		CMaps:  args,
+		Select: "",
+		From:   "",
+		Group:  "",
+		Args:   nil,
+		ArgsNt: nil,
 	})
 	log.Println("SQLNOLIMIT:", sqlNt, "\nSQL:", sql)
 
@@ -195,10 +197,12 @@ func TestGetDataBySearch(t *testing.T) {
 	args["everyPage"] = append(args["everyPage"], "2")
 	var user []*User
 	crud.DB().GetDataBySearch(&GT{
-		Params: args,
-		Table:  "user",
-		Model:  User{},
-		Data:   &user,
+		CMaps: args,
+		Params: &Params{
+			Table: "user",
+			Model: User{},
+			Data:  &user,
+		},
 	})
 	t.Log(user[0])
 }
@@ -253,8 +257,10 @@ func TestGetMoreSearchSQL(t *testing.T) {
 		IsSp          int64  `json:"-" gt:"field:is_sp"`    // 是否代言人, 0不是, 1是
 	}
 	gt := &GT{
-		InnerTable: []string{"client_vip_behavior", "client_vip", "client_vip", "client"},
-		Model:      ClientVipBehaviorDe{},
+		Params: &Params{
+			InnerTable: []string{"client_vip_behavior", "client_vip", "client_vip", "client"},
+			Model:      ClientVipBehaviorDe{},
+		},
 	}
 	sqlNt, sql, _, _, _ := GetMoreSearchSQL(gt)
 	t.Log(sqlNt)
@@ -424,6 +430,7 @@ func TestGetMoreSQL(t *testing.T) {
 	var vsi []VpsInfo
 
 	var param = cmap.CMap{}
+	param.Add("key", "test")
 	//param.Add()
 	crud := NewCrud(
 		Model(VpsInfo{}),

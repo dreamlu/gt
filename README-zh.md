@@ -233,7 +233,21 @@ func TestId(t *testing.T) {
 
 #### Crud Selectsql
 ```go
-
+    sql := "update `user` set name=? where id=?"
+    t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
+    var user []*User
+	crud.Params(
+		Data(&user),
+		ClientPage(1),
+		EveryPage(2),
+	).
+		Select("select *from user").
+		Select("where id > 0")
+	if true {
+		crud.Select("and 1=1")
+	}
+	crud.Search() // 查询 + 分页
+	crud.Single() // 直接查询
 ```
 
 
