@@ -134,7 +134,11 @@ func (c *DBCrud) CreateMoreData() Crud {
 // update
 func (c *DBCrud) Update() Crud {
 	clone := c.clone()
-	clone.dbTool.UpdateData(clone.param.Data)
+	clone.dbTool.UpdateData(&GT{
+		Params: clone.param,
+		Select: clone.selectSQL,
+		Args:   clone.args,
+	})
 	return clone
 }
 
@@ -247,7 +251,7 @@ func (c *DBCrud) Rollback() Crud {
 	return c
 }
 
-func (c *DBCrud) clone() *DBCrud {
+func (c *DBCrud) clone() (dbCrud *DBCrud) {
 
 	// default table
 	if c.param.Table == "" &&
@@ -255,13 +259,8 @@ func (c *DBCrud) clone() *DBCrud {
 		c.param.Table = hump.HumpToLine(reflect.StructToString(c.param.Model))
 	}
 
-	// isTrans
-	if c.isTrans == 1 {
-		return c
-	}
-
-	dbCrud := &DBCrud{
-		dbTool:    c.dbTool.clone(),
+	dbCrud = &DBCrud{
+		dbTool:    c.dbTool,
 		param:     c.param,
 		selectSQL: c.selectSQL,
 		from:      c.from,
@@ -269,5 +268,11 @@ func (c *DBCrud) clone() *DBCrud {
 		argsNt:    c.argsNt,
 		group:     c.group,
 	}
-	return dbCrud
+
+	// isTrans
+	if c.isTrans == 1 {
+		return
+	}
+	dbCrud.dbTool = c.dbTool.clone()
+	return
 }

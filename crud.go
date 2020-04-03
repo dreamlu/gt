@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const Version = "1.6.x"
+const Version = "1.7.x"
 
 // crud is db driver extend
 type Crud interface {

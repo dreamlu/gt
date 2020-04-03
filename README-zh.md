@@ -1,12 +1,13 @@
 #### Erwin Schrödinger's Cat  
-gt(gt) (v1.7.0)  
+gt使用手册 (v1.7.0)  
 
-web快速开发工具库,模型生成  
+api快速开发工具库,模型生成  
 
 ##### demo: [deercoder-gin](https://github.com/dreamlu/deercoder-gin)  
 
 ##### API
 - [API 使用](#api-examples)
+    - [模型定义](#model)
     - [Crud](#Crud-request)
     - [批量创建](#createmore)
     - [配置文件模式](#getdevmode)
@@ -18,14 +19,73 @@ web快速开发工具库,模型生成
     - [日志支持](#customlog)
     - [snowflake ID](#snowflakeid)
 - [扩展 使用](#extend-examples)
-    - [crud原生SQL](#Crud-selectsql)
+    - [crud原生SQL](#crud-selectsql)
+    - [更新其他字段](#crud-update)
+    - [事务](#transcation)
     
 
 ### API Examples  
 
-#### Crud Request
+#### Model
+```go
+// user model
+type User struct {
+	ID         uint64     `json:"id"`
+	Name       string     `json:"name"`
+	Createtime time.CTime `json:"createtime"`
+}
 
-###### 如何使用
+// service model
+type Service struct {
+	ID   uint64 `json:"id"`
+	Name string `json:"name"`
+}
+
+// order model
+type Order struct {
+	ID         uint64     `json:"id"`
+	UserID     int64      `json:"user_id"`    // user id
+	ServiceID  int64      `json:"service_id"` // service table id
+	Createtime time.CTime `json:"createtime"` // createtime
+}
+
+// order detail
+type OrderD struct {
+	Order
+	UserName    string `json:"user_name"`    // user table column name
+	ServiceName string `json:"service_name"` // service table column `name`
+}
+
+    // select more
+    // 多表查询
+	// get more search
+	var params = make(cmap.CMap)
+	params.Add("user_id", "1")
+	//params.Add("key", "梦") // key word
+	params.Add("clientPage", "1") // 第一页
+	params.Add("everyPage", "2") // 每页2条
+	var or []*OrderD
+	crud := NewCrud(
+		InnerTable([]string{"order", "user", "order", "service"}),
+		//LeftTable([]string{"order", "service"}),
+		Model(OrderD{}),
+		Data(&or),
+		SubWhereSQL("1 = 1", "2 = 2", ""),
+	)
+	err := crud.GetMoreBySearch(params).Error()
+	if err != nil {
+		log.Println(err)
+	}
+	t.Log("\n[User Info]:", or[0])
+    
+// output:
+    TestGetMoreDataBySearch: db_test.go:243: 
+        [User Info]: &{{1 1 1 "2019-01-28 15:07:06"} 梦sql 服务名称}
+--- PASS: TestGetMoreDataBySearch (0.00s)
+PASS
+```
+
+#### Crud Request
 ```go
 // GET Request
 //func ToCMap(u *gin.Context) cmap.CMap {
@@ -97,19 +157,28 @@ func (c *Client) Create(data *Client) (*Client, error) {
 ```go
 // 批量创建
 func TestCreateMoreDataJ(t *testing.T) {
-
-	var user = []User{
+    type UserPar struct {
+		Name       string     `json:"name"`
+		Createtime time.CTime `json:"createtime"`
+	}
+	type User struct {
+		ID uint64 `json:"id"`
+		UserPar
+	}
+	
+	var up = []UserPar{
 		{Name: "测试1", Createtime: time.CTime(time2.Now())},
 		{Name: "测试2"},
 	}
+	crud := NewCrud(
+		//Table("user"),
+		Model(UserPar{}),
+		Data(up),
+		//SubSQL("(asdf) as a","(asdfa) as b"),
+	)
 
-	crud.Params = &Params{
-		Table: "user",
-		Model: User{},
-	}
-
-	err := crud.CreateMoreData(user)
-	log.Println(err)
+	err := crud.CreateMoreData()
+	t.Log(err)
 }
 
 ```
@@ -247,9 +316,59 @@ func TestId(t *testing.T) {
 		crud.Select("and 1=1")
 	}
 	crud.Search() // 查询 + 分页
+    t.Log(crud.Pager()) // Search()分页数据
 	crud.Single() // 直接查询
 ```
 
+#### Crud Update
+```go
+    type UserPar struct {
+		Name string `json:"name"`
+	}
+	crud := crud.Params(
+		//Table("user"),
+		Model(User{}),
+		Data(&UserPar{
+			//ID:   1,
+			Name: "梦S",
+		}),
+	)
+	t.Log(crud.Update().RowsAffected())
+	t.Log(crud.Select("`name` = ?", "梦").Update().RowsAffected())
+	t.Log(crud.Error())
+```
+
+#### Transcation
+```go
+    cd := crud.Begin()
+	cd.Params(
+		Table("user"),
+		Data(&User{
+			ID:   11234,
+			Name: "梦S",
+		}),
+	).Create()
+	if cd.Error() != nil {
+		cd.Rollback()
+	}
+	cd.Params(
+		Data(&User{
+			Name: "梦SSS2",
+		})).Create()
+	if cd.Error() != nil {
+		cd.Rollback()
+	}
+	// add select sql test
+	var u []User
+	cd.Params(Data(&u)).Select("select * from `user`").Select("where 1=1").Single()
+	cd.Params(Data(&u)).Select("select * from `user`").Select("where 1=1").Single()
+	//cd.DB().Raw("select * from `user`").Scan(&u)
+
+	cd.Commit()
+	if cd.Error() != nil {
+		cd.Rollback()
+	}
+```
 
 - 约定  
 1.模型结构体json 内容与表字段保持一致  

@@ -16,25 +16,25 @@ import (
 // params param.CMap is web request GET params
 // in golang, it was url.values
 
+// user model
 type User struct {
-	ID         int64      `json:"id"`
+	ID         uint64     `json:"id"`
 	Name       string     `json:"name"`
 	Createtime time.CTime `json:"createtime"`
 }
 
-type UserInfo struct {
-	ID       int64      `json:"id"`
-	UserID   int64      `json:"user_id"`   //用户id
-	UserName string     `json:"user_name"` //用户名
-	Userinfo json.CJSON `json:"userinfo"`
+// service model
+type Service struct {
+	ID   uint64 `json:"id"`
+	Name string `json:"name"`
 }
 
-// order
+// order model
 type Order struct {
-	ID         int64 `json:"id"`
-	UserID     int64 `json:"user_id"`     // user id
-	ServiceID  int64 `json:"service_id"`  // service table id
-	CreateTime int64 `json:"create_time"` // createtime
+	ID         uint64     `json:"id"`
+	UserID     int64      `json:"user_id"`    // user id
+	ServiceID  int64      `json:"service_id"` // service table id
+	Createtime time.CTime `json:"createtime"` // createtime
 }
 
 // order detail
@@ -116,14 +116,26 @@ func TestCrud(t *testing.T) {
 // select sql
 func TestCrudSQL(t *testing.T) {
 	sql := "update `user` set name=? where id=?"
-	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
+	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Select(" and 1=1").Exec())
 	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
 	t.Log("[Info]:", crud.DB().RowsAffected)
+	var user []User
+	sql = "select * from `user` where name=? and id=?"
+	cd := NewCrud()
+	t.Log("[Info]:", cd.Params(Data(&user)).Select(sql, "梦sql", 1).Select(" and 1=1").Exec())
+	t.Log("[Info]:", cd.Params(Data(&user)).Select(sql, "梦sql", 1).Exec())
 }
 
 // 通用分页测试
 // 如：
 func TestSqlSearch(t *testing.T) {
+
+	type UserInfo struct {
+		ID       uint64     `json:"id"`
+		UserID   int64      `json:"user_id"`   //用户id
+		UserName string     `json:"user_name"` //用户名
+		Userinfo json.CJSON `json:"userinfo"`
+	}
 	sql := fmt.Sprintf(`select a.id,a.user_id,a.userinfo,b.name as user_name from userinfo a inner join user b on a.user_id=b.id where 1=1 and `)
 	sqlNt := `select
 		count(distinct a.id) as total_num
@@ -212,17 +224,11 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	// 多表查询
 	// get more search
 	var params = make(cmap.CMap)
-	params["user_id"] = append(params["user_id"], "1")
-	params["key"] = append(params["key"], "梦")
-	params["clientPage"] = append(params["clientPage"], "1")
-	params["everyPage"] = append(params["everyPage"], "2")
+	params.Add("user_id", "1")
+	//params.Add("key", "梦") // key work
+	params.Add("clientPage", "1")
+	params.Add("everyPage", "2")
 	var or []*OrderD
-	//param := &Params{
-	//	InnerTable: []string{"order", "user"},
-	//	LeftTable:  []string{"service"},
-	//	Model:      OrderD{},
-	//	Data:  &or,
-	//}
 	crud := NewCrud(
 		InnerTable([]string{"order", "user", "order", "service"}),
 		//LeftTable([]string{"order", "service"}),
@@ -270,24 +276,28 @@ func TestGetMoreSearchSQL(t *testing.T) {
 // 批量创建
 func TestCreateMoreData(t *testing.T) {
 
-	var user = []User{
+	type UserPar struct {
+		Name       string     `json:"name"`
+		Createtime time.CTime `json:"createtime"`
+	}
+	type User struct {
+		ID uint64 `json:"id"`
+		UserPar
+	}
+
+	var up = []UserPar{
 		{Name: "测试1", Createtime: time.CTime(time2.Now())},
 		{Name: "测试2"},
 	}
-
-	//param := &Params{
-	//	Table: "user",
-	//	Model: User{},
-	//}
 	crud := NewCrud(
 		//Table("user"),
-		Model(User{}),
-		Data(user),
+		Model(UserPar{}),
+		Data(up),
 		//SubSQL("(asdf) as a","(asdfa) as b"),
 	)
 
 	err := crud.CreateMoreData()
-	log.Println(err)
+	t.Log(err)
 }
 
 // 继承tag解析测试
@@ -327,21 +337,26 @@ func TestDBCrud_Select(t *testing.T) {
 		crud.Select("and 1=1")
 	}
 	crud.Search()
+	t.Log(crud.Pager())
 	crud.Single()
 }
 
 // test update/delete
 func TestDBCrud_Update(t *testing.T) {
 
+	type UserPar struct {
+		Name string `json:"name"`
+	}
 	crud := crud.Params(
-		Table("user"),
-		Model(&User{}),
-		Data(&User{
-			ID:   1,
+		//Table("user"),
+		Model(User{}),
+		Data(&UserPar{
+			//ID:   1,
 			Name: "梦S",
 		}),
 	)
 	t.Log(crud.Update().RowsAffected())
+	t.Log(crud.Select("`name` = ?", "梦").Update().RowsAffected())
 	t.Log(crud.Error())
 }
 
@@ -374,16 +389,27 @@ func TestTranscation(t *testing.T) {
 			ID:   11234,
 			Name: "梦S",
 		}),
-	)
-	t.Log(cd.Error())
-	t.Log(cd.Create().Error())
+	).Create()
+	if cd.Error() != nil {
+		cd.Rollback()
+	}
 	cd.Params(
 		Data(&User{
 			Name: "梦SSS2",
 		})).Create()
-	t.Log(cd.Error())
+	if cd.Error() != nil {
+		cd.Rollback()
+	}
+	// add select sql test
+	var u []User
+	cd.Params(Data(&u)).Select("select * from `user`").Select("where 1=1").Single()
+	cd.Params(Data(&u)).Select("select * from `user`").Select("where 1=1").Single()
+	//cd.DB().Raw("select * from `user`").Scan(&u)
+
 	cd.Commit()
-	t.Log(cd.Error())
+	if cd.Error() != nil {
+		cd.Rollback()
+	}
 }
 
 func TestGetReflectTagMore(t *testing.T) {

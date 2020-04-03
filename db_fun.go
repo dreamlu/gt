@@ -839,7 +839,17 @@ func (db *DBTool) CreateMoreData(table string, model interface{}, data interface
 }
 
 // update
-func (db *DBTool) UpdateData(data interface{}) {
+func (db *DBTool) UpdateData(gt *GT) {
 
-	db.DB = db.DB.Model(data).Update(data)
+	if gt.Model == nil {
+		gt.Model = gt.Data
+	}
+
+	if gt.Select != "" {
+		db.DB = db.Model(gt.Model).Where(gt.Select, gt.Args)
+	} else {
+		db.DB = db.Model(gt.Model)
+	}
+
+	db.DB = db.Update(gt.Data)
 }

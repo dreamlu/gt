@@ -36,7 +36,6 @@ const (
 	MsgNoResult  = "暂无数据"
 	MsgDelete    = "删除成功"
 	MsgUpdate    = "修改成功"
-	MsgError     = "通用错误"
 	MsgExistOrNo = "数据无变化"
 	MsgCountErr  = "用户账号或密码错误"
 )
@@ -44,7 +43,6 @@ const (
 // 约定提示信息
 var (
 	MapSuccess  = GetMapData(CodeSuccess, MsgSuccess)   // 请求成功
-	MapError    = GetMapData(CodeError, MsgError)       // 通用失败
 	MapUpdate   = GetMapData(CodeUpdate, MsgUpdate)     // 修改成功
 	MapDelete   = GetMapData(CodeDelete, MsgDelete)     // 删除成功
 	MapCreate   = GetMapData(CodeCreate, MsgCreate)     // 创建成功
