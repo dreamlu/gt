@@ -254,6 +254,7 @@ func TestGetMoreSearchSQL(t *testing.T) {
 		Createtime  time.CTime `gorm:"type:datetime" json:"createtime"`
 	}
 
+	// TODO bug is_sp
 	// 客户行为详情
 	type ClientVipBehaviorDe struct {
 		ClientVipBehavior

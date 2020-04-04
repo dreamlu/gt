@@ -8,6 +8,7 @@ api快速开发工具库,模型生成
 ##### API
 - [API 使用](#api-examples)
     - [模型定义](#model)
+    - [结构体标记](#struct-gt)
     - [Crud](#Crud-request)
     - [批量创建](#createmore)
     - [配置文件模式](#getdevmode)
@@ -22,6 +23,7 @@ api快速开发工具库,模型生成
     - [crud原生SQL](#crud-selectsql)
     - [更新其他字段](#crud-update)
     - [事务](#transcation)
+    - [使用gorm](#use-gorm)
     
 
 ### API Examples  
@@ -83,6 +85,11 @@ type OrderD struct {
         [User Info]: &{{1 1 1 "2019-01-28 15:07:06"} 梦sql 服务名称}
 --- PASS: TestGetMoreDataBySearch (0.00s)
 PASS
+```
+
+#### Struct Gt
+```go
+
 ```
 
 #### Crud Request
@@ -307,8 +314,8 @@ func TestId(t *testing.T) {
     var user []*User
 	crud.Params(
 		Data(&user),
-		ClientPage(1),
-		EveryPage(2),
+		//ClientPage(1), // serch()分页需要
+		//EveryPage(2),
 	).
 		Select("select *from user").
 		Select("where id > 0")
@@ -368,6 +375,16 @@ func TestId(t *testing.T) {
 	if cd.Error() != nil {
 		cd.Rollback()
 	}
+```
+
+#### Use Gorm
+> 模型定义需遵循:[模型定义](https://gorm.io/zh_CN/docs/models.html)
+```go
+// example 1:
+// 根据模型定义自动生成表
+gt.NewDBTool().AutoMigrate(&User{},&Order{})
+// 直接使用gorm:
+db := gt.NewCrud().DB()
 ```
 
 - 约定  

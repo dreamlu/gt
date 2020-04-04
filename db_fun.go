@@ -60,7 +60,7 @@ func GetReflectTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 			continue
 		}
 		if oTag, tag, b = sq.GtTag(ref.Field(i).Tag, tag); b == true {
-			return
+			continue
 		}
 		if b = otherTableTagSQL(oTag, tag, buf, tables...); b == false {
 			buf.WriteString("`")
