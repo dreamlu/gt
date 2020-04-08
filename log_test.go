@@ -16,9 +16,15 @@ func init() {
 
 func TestNewFileLog(t *testing.T) {
 
+	i := 0
 	for {
+		i++
+		if i > 3 {
+			break
+		}
 		Logger().Info("[debug]")
 		time.Sleep(1 * time.Second)
 		Logger().Error("[error]")
 	}
+	t.Log("log over")
 }

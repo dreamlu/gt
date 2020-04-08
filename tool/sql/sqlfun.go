@@ -34,6 +34,9 @@ func GtTag(structTag reflect.StructTag, curTag string) (oTag, tag string, b bool
 
 // 层级递增解析tag
 func GetReflectTags(ref reflect.Type) (tags []string) {
+	if ref.Kind() != reflect.Struct {
+		return
+	}
 	var (
 		tag string
 		b   bool

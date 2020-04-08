@@ -241,9 +241,9 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 	// select* 变为对应的字段名
 	sql = strings.Replace(sqlNt, "count(`"+tables[0]+"`.id) as total_num", GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
 	var (
-		order        = "`" + tables[0] + "`.id desc" // order by
-		key          = ""                            // key like binary search
-		bufW, bufNtW bytes.Buffer                    // sql bytes connect
+		order = "`" + tables[0] + "`.id desc" // order by
+		key   = ""                            // key like binary search
+		bufW  bytes.Buffer                    // sql bytes connect
 	)
 	for k, v := range gt.CMaps {
 		switch k {
@@ -268,34 +268,28 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 			// more tables key search
 			sqlKey, argsKey := sq.GetMoreKeySQL(key, gt.KeyModel, tablens[:]...)
 			bufW.WriteString(sqlKey)
-			bufNtW.WriteString(sqlKey)
 			args = append(args, argsKey[:]...)
 			continue
 		case "":
 			continue
 		}
 
-		// other tables, except tables[0]
-		for _, table := range tables[1:] {
-			switch {
-			case !strings.Contains(table, table+"_id") && strings.Contains(table, table+"_"):
-				v[0] = strings.Replace(v[0], "'", "\\'", -1)
-				bufW.WriteString("`" + table + "`.`" + string([]byte(k)[len(v)+1:]) + "`" + " = ? and ")
-				bufNtW.WriteString("`" + table + "`.`" + string([]byte(k)[len(v)+1:]) + "`" + " = ? and ")
-				args = append(args, v[0])
-				goto into
-			}
+		if b := otherTableWhere(bufW, tables[1:], k, v); b != true {
+			v[0] = strings.Replace(v[0], "'", "\\'", -1)
+			//bufW.WriteString("`" + tables[0] + "`." + k + " = ? and ")
+			bufW.WriteString("`")
+			bufW.WriteString(tables[0])
+			bufW.WriteString("`.`")
+			bufW.WriteString(k)
+			bufW.WriteString("` = ? and ")
 		}
-		v[0] = strings.Replace(v[0], "'", "\\'", -1)
-		bufW.WriteString("`" + tables[0] + "`." + k + " = ? and ")
-		bufNtW.WriteString("`" + tables[0] + "`." + k + " = ? and ")
 		args = append(args, v[0])
-	into:
+		//into:
 	}
 
 	if bufW.Len() != 0 {
 		sql += fmt.Sprintf("where %s ", bufW.Bytes()[:bufW.Len()-4])
-		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
+		sqlNt += fmt.Sprintf("where %s", bufW.Bytes()[:bufW.Len()-4])
 		if gt.SubWhereSQL != "" {
 			sql += fmt.Sprintf("and %s ", gt.SubWhereSQL)
 			sqlNt += fmt.Sprintf("and %s", gt.SubWhereSQL)
@@ -306,6 +300,24 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 
+	return
+}
+
+func otherTableWhere(bufW bytes.Buffer, tables []string, k string, v []string) (b bool) {
+	// other tables, except tables[0]
+	for _, table := range tables[1:] {
+		switch {
+		case !strings.Contains(table, table+"_id") && strings.Contains(table, table+"_"):
+			//bufW.WriteString("`" + table + "`.`" + string([]byte(k)[len(v)+1:]) + "` = ? and ")
+			bufW.WriteString("`")
+			bufW.WriteString(table)
+			bufW.WriteString("`.`")
+			bufW.WriteString(string([]byte(k)[len(v)+1:]))
+			bufW.WriteString("` = ? and ")
+			//args = append(args, v[0])
+			b = true
+		}
+	}
 	return
 }
 

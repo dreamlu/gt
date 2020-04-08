@@ -2,6 +2,7 @@ package reflect
 
 import (
 	"errors"
+	"log"
 	"reflect"
 )
 
@@ -28,9 +29,6 @@ func GetDataByFieldName(data interface{}, filedName string) (interface{}, error)
 		f := v.FieldByName(filedName)
 		//判断字段是否存在
 		// 字段不催在判断错误
-		//if !v.IsValid() {
-		//	return nil, errors.New(filedName + "字段不存在")
-		//}
 		return f.Interface(), nil
 	}
 	return nil, errors.New("id不存在")
@@ -39,7 +37,8 @@ func GetDataByFieldName(data interface{}, filedName string) (interface{}, error)
 func ToSlice(arr interface{}) []interface{} {
 	v := reflect.ValueOf(arr)
 	if v.Kind() != reflect.Slice {
-		panic("toslice arr not slice")
+		log.Println(arr, "[ERROR]: arr not slice")
+		return nil
 	}
 	l := v.Len()
 	ret := make([]interface{}, l)

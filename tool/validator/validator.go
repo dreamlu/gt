@@ -94,7 +94,7 @@ func (v *Validator) CheckInfo() *result.MapData {
 			}
 		}
 	}
-	return result.MapValSuccess
+	return result.MapSuccess
 }
 
 // 执行检查
@@ -249,11 +249,11 @@ func nonzero(v interface{}) error {
 	case reflect.Struct:
 		valid = true // always valid since only nil pointers are empty
 	default:
-		return errors.New(result.MsgValError)
+		return fmt.Errorf("%w", errors.New("[nonzero val error]"))
 	}
 
 	if !valid {
-		return errors.New(result.MsgValError)
+		return fmt.Errorf("%w", errors.New("[nonzero val error]"))
 	}
 	return nil
 }
@@ -300,38 +300,38 @@ func min(v interface{}, param string) error {
 	case reflect.String:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(result.MsgValError)
+			return fmt.Errorf("%w", errors.New("[min val error]"))
 		}
 		invalid = int64(len(st.String())) < p
 	case reflect.Slice, reflect.Map, reflect.Array:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(result.MsgValError)
+			return fmt.Errorf("%w", errors.New("[min val error]"))
 		}
 		invalid = int64(st.Len()) < p
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(result.MsgValError)
+			return fmt.Errorf("%w", errors.New("[min val error]"))
 		}
 		invalid = st.Int() < p
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		p, err := asUint(param)
 		if err != nil {
-			return errors.New(result.MsgValError)
+			return fmt.Errorf("%w", errors.New("[min val error]"))
 		}
 		invalid = st.Uint() < p
 	case reflect.Float32, reflect.Float64:
 		p, err := asFloat(param)
 		if err != nil {
-			return errors.New(result.MsgValError)
+			return fmt.Errorf("%w", errors.New("[min val error]"))
 		}
 		invalid = st.Float() < p
 	default:
-		return errors.New(result.MsgValError)
+		return fmt.Errorf("%w", errors.New("[min val error]"))
 	}
 	if invalid {
-		return errors.New(result.MsgValError)
+		return fmt.Errorf("%w", errors.New("[min val error]"))
 	}
 	return nil
 }
@@ -350,38 +350,38 @@ func max(v interface{}, param string) error {
 	case reflect.String:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(result.MsgValError)
+			return fmt.Errorf("%w", errors.New("[max val error]"))
 		}
 		invalid = int64(len(st.String())) > p
 	case reflect.Slice, reflect.Map, reflect.Array:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(result.MsgValError)
+			return fmt.Errorf("%w", errors.New("[max val error]"))
 		}
 		invalid = int64(st.Len()) > p
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		p, err := asInt(param)
 		if err != nil {
-			return errors.New(result.MsgValError)
+			return fmt.Errorf("%w", errors.New("[max val error]"))
 		}
 		invalid = st.Int() > p
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		p, err := asUint(param)
 		if err != nil {
-			return errors.New(result.MsgValError)
+			return fmt.Errorf("%w", errors.New("[max val error]"))
 		}
 		invalid = st.Uint() > p
 	case reflect.Float32, reflect.Float64:
 		p, err := asFloat(param)
 		if err != nil {
-			return errors.New(result.MsgValError)
+			return fmt.Errorf("%w", errors.New("[max val error]"))
 		}
 		invalid = st.Float() > p
 	default:
-		return errors.New(result.MsgValError)
+		return fmt.Errorf("%w", errors.New("[max val error]"))
 	}
 	if invalid {
-		return errors.New(result.MsgValError)
+		return fmt.Errorf("%w", errors.New("[max val error]"))
 	}
 	return nil
 }
@@ -392,7 +392,7 @@ func regex(v interface{}, param string) error {
 	if !ok {
 		sptr, ok := v.(*string)
 		if !ok {
-			return errors.New(result.MsgValError)
+			return fmt.Errorf("%w", errors.New("[regex val error]"))
 		}
 		if sptr == nil {
 			return nil
@@ -402,11 +402,11 @@ func regex(v interface{}, param string) error {
 
 	re, err := regexp.Compile(param)
 	if err != nil {
-		return errors.New(result.MsgValError)
+		return fmt.Errorf("%w", errors.New("[regex val error]"))
 	}
 
 	if !re.MatchString(s) {
-		return errors.New(result.MsgValError)
+		return fmt.Errorf("%w", errors.New("[regex val error]"))
 	}
 	return nil
 }

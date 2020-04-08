@@ -26,7 +26,7 @@ func TestGetTags(t *testing.T) {
 	}
 
 	type UserDeX struct {
-		a []string
+		a []string // 该字段不解析
 		UserDe
 		OtherX string `json:"other_x"`
 	}

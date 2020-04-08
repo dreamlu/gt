@@ -55,10 +55,11 @@ func httpServerDemo(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, pager.Add("id", 1).Add("test", 2).String())
 }
 
+// test http request
 func TestRequest(t *testing.T) {
-	http.HandleFunc("/", httpServerDemo)
-	err := http.ListenAndServe(":9090", nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
+	//http.HandleFunc("/", httpServerDemo)
+	//err := http.ListenAndServe(":9090", nil)
+	//if err != nil {
+	//	log.Fatal("ListenAndServe: ", err)
+	//}
 }

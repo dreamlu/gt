@@ -20,8 +20,8 @@ TODO
 19.~~update()id默认不为空限制(弃)~~  
 20.~~多文件上传,返回文件名数组~~(参考demo:[deercoder-gin](https://github.com/dreamlu/deercoder-gin))  
 21.~~多表连接支持设置不同表名~~  
-22.更进一步解析sql放入内存,加快解析效率  
-23.字符串解析buf与移除goto  
+22.~~更进一步解析sql放入内存,加快解析效率~~  
+23.~~字符串解析buf与移除goto,panic~~  
 24.~~createMore移除id验证(可通过继承上级来去除id)~~  
 25.~~事务中select()问题~~  
 26.完善使用文档  

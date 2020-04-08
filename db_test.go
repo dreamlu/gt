@@ -150,8 +150,8 @@ func TestSqlSearch(t *testing.T) {
 	sql = string([]byte(sql)[:len(sql)-4]) //去and
 	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
 	sql += "order by a.id "
-	log.Println(crud.DB().GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage, nil, nil))
-	log.Println(ui[0].Userinfo.String())
+	t.Log(crud.DB().GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage, nil, nil))
+	//t.Log(ui[0].Userinfo.String())
 }
 
 // select 数据存在验证
@@ -170,12 +170,15 @@ func TestGetSearchSql(t *testing.T) {
 	}
 
 	var args = make(cmap.CMap)
-	args["clientPage"] = append(args["clientPage"], "1")
-	args["everyPage"] = append(args["everyPage"], "2")
+	args.Add("clientPage", "1")
+	args.Add("everyPage", "2")
 	//args["key"] = append(args["key"], "梦 嘿,伙计")
 	//sub_sql := ",(select aa.name from shop aa where aa.user_id = a.id) as shop_name"
 	sqlNt, sql, _, _, _ := GetSearchSQL(&GT{
-		Params: nil,
+		Params: &Params{
+			Table: "user",
+			Model: User{},
+		},
 		CMaps:  args,
 		Select: "",
 		From:   "",
@@ -183,7 +186,7 @@ func TestGetSearchSql(t *testing.T) {
 		Args:   nil,
 		ArgsNt: nil,
 	})
-	log.Println("SQLNOLIMIT:", sqlNt, "\nSQL:", sql)
+	t.Log("SQLNOLIMIT:", sqlNt, "\nSQL:", sql)
 
 	// 两张表，待重新测试
 	// sqlNt, sql, _, _ = GetDoubleSearchSQL(UserInfo{}, "userinfo", "user", args)
@@ -216,7 +219,7 @@ func TestGetDataBySearch(t *testing.T) {
 			Data:  &user,
 		},
 	})
-	t.Log(user[0])
+	t.Log(user)
 }
 
 // 测试多表连接
@@ -240,7 +243,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	if err != nil {
 		log.Println(err)
 	}
-	t.Log("\n[User Info]:", or[0])
+	t.Log("\n[User Info]:", or)
 }
 
 func TestGetMoreSearchSQL(t *testing.T) {
@@ -285,7 +288,7 @@ func TestCreateMoreData(t *testing.T) {
 		{Name: "测试2"},
 	}
 	crud := NewCrud(
-		//Table("user"),
+		Table("user"),
 		Model(UserPar{}),
 		Data(up),
 		//SubSQL("(asdf) as a","(asdfa) as b"),
