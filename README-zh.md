@@ -88,7 +88,65 @@ PASS
 ```
 
 #### Struct Gt
+> gt:"sub_sql"<忽略该字段解析,<可进行子查询>>  
 ```go
+type Client struct {
+	models.AdminCom
+	Name    string `gorm:"type:varchar(30)" json:"name" valid:"required,len=2-20"` // 昵称
+	Openid  string `json:"openid" gorm:"varchar(30);UNIQUE_INDEX:openid已存在"`       // openID
+	HeadImg string `json:"head_img"`                                               // 头像
+}
+
+type ClientD struct {
+	Client      // 头像
+	BuyNum int8 `json:"buy_num" gt:"sub_sql"` // 购买次数
+}
+// search
+func (c *Client) GetBySearch(params cmap.CMap) interface{} {
+
+	buyNumSQL := "(select count(*) from `order` where client_id = `client`.id and status >= 3) as buy_num"
+	var datas []*ClientD
+	crud.Params(
+		gt.Data(&datas),
+		gt.SubSQL(buyNumSQL),
+		)
+	cd := crud.GetBySearch(params)
+	if cd.Error() != nil {
+		//log.Log.Error(err.Error())
+		return result.CError(cd.Error())
+	}
+	return result.GetSuccessPager(datas, cd.Pager())
+}
+// output:
+print sql: select `id`,`createtime`,`admin_id`,`name`,`openid`,`head_img`,(select count(*) from `order` where client_id = `client`.id and status >= 3) as buy_num from `client` order by id desc limit 0, 2 
+```
+> gt:"field:fieldName"<特殊情况下,替代json解析>  
+```go
+    type CVB struct {
+		ID          int64      `gorm:"type:bigint(20)" json:"id"`
+		ClientVipID int64      `gorm:"type:bigint(20)" json:"client_vip_id"`
+		ShopId      int64      `gorm:"type:bigint(20)" json:"shop_id"`
+	}
+
+	// 客户行为详情
+	type CVBDe struct {
+		CVB
+		ClientName    string `json:"client_name"`
+		VipType       int64  `json:"vip_type" gt:"sub_sql"`
+		IsSp          int64  `json:"-" gt:"field:is_sp"`
+	}
+	gt := &GT{
+		Params: &Params{
+			InnerTable: []string{"client_vip_behavior", "client_vip", "client_vip", "client"},
+			Model:      CVBDe{},
+		},
+	}
+	sqlNt, sql, _, _, _ := GetMoreSearchSQL(gt)
+	t.Log(sqlNt)
+	t.Log(sql)
+// output:
+TestGetMoreSearchSQL: db_test.go:267: select count(`client_vip_behavior`.id) as total_num from `client_vip_behavior` inner join `client_vip` on `client_vip_behavior`.`client_vip_id`=`client_vip`.`id`  inner join `client` on `client_vip`.`client_id`=`client`.`id` 
+TestGetMoreSearchSQL: db_test.go:268: select `client_vip_behavior`.`id`,`client_vip_behavior`.`client_vip_id`,`client_vip_behavior`.`shop_id`,`client`.`name` as client_name,`client_vip_behavior`.`is_sp` from `client_vip_behavior` inner join `client_vip` on `client_vip_behavior`.`client_vip_id`=`client_vip`.`id`  inner join `client` on `client_vip`.`client_id`=`client`.`id`  order by `client_vip_behavior`.id desc 
 
 ```
 

@@ -848,7 +848,7 @@ func (db *DBTool) UpdateData(gt *GT) {
 	if gt.Select != "" {
 		db.DB = db.Model(gt.Model).Where(gt.Select, gt.Args)
 	} else {
-		db.DB = db.Model(gt.Model)
+		db.DB = db.Model(gt.Data)
 	}
 
 	db.DB = db.Update(gt.Data)
