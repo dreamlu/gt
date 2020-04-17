@@ -8,8 +8,6 @@ import (
 
 var projectPath, _ = os.Getwd()
 
-//var myLog = Logger()
-
 func init() {
 	Logger().FileLog(projectPath+"/test/log/", "gt.log", 3, time.Minute)
 }

@@ -4,6 +4,7 @@ package gt
 
 import (
 	time2 "github.com/dreamlu/gt/tool/type/time"
+	os2 "github.com/dreamlu/gt/tool/util/os"
 	"github.com/lestrrat-go/file-rotatelogs"
 	"github.com/pkg/errors"
 	"github.com/rifflock/lfshook"
@@ -60,7 +61,9 @@ func NewLog() *Log {
 // new output file log
 func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationTime time.Duration) {
 
-	//l.NewLog()
+	if !os2.Exists(logPath) {
+		_ = os.Mkdir(logPath, os.ModePerm)
+	}
 
 	baseLogPath := path.Join(logPath, logFileName)
 	writer, err := rotatelogs.New(

@@ -4,10 +4,12 @@ package gt
 
 import (
 	"fmt"
+	"github.com/dreamlu/gt/tool/result"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/json"
 	"github.com/dreamlu/gt/tool/type/time"
 	"log"
+	"net/http"
 	"net/url"
 	"testing"
 	time2 "time"
@@ -40,8 +42,9 @@ type Order struct {
 // order detail
 type OrderD struct {
 	Order
-	UserName    string `json:"user_name"`    // user table column name
-	ServiceName string `json:"service_name"` // service table column `name`
+	UserName    string     `json:"user_name"`                       // user table column name
+	ServiceName string     `json:"service_name"`                    // service table column `name`
+	Info        json.CJSON `json:"info" gt:"sub_sql" faker:"cjson"` // json
 }
 
 // 局部
@@ -231,6 +234,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	//params.Add("key", "梦") // key work
 	params.Add("clientPage", "1")
 	params.Add("everyPage", "2")
+	params.Add("mock", "1") // mock data
 	var or []*OrderD
 	crud := NewCrud(
 		InnerTable([]string{"order", "user", "order", "service"}),
@@ -294,7 +298,7 @@ func TestCreateMoreData(t *testing.T) {
 		//SubSQL("(asdf) as a","(asdfa) as b"),
 	)
 
-	err := crud.CreateMoreData()
+	err := crud.CreateMore()
 	t.Log(err)
 }
 
@@ -441,10 +445,9 @@ func TestGetMoreSQL(t *testing.T) {
 	// table: venuepricets
 	// related table: venue/venuehomestay
 	type Venuepricets struct {
-		ID      int `json:"id"`
-		VenueID int `json:"venue_id"` // different table
-		// type, related table: venue/venuehomestay
-		Type *int `json:"type" gorm:"type:tinyint(2);DEFAULT:0"`
+		ID      int  `json:"id"`
+		VenueID int  `json:"venue_id"` // different table
+		Type    *int `json:"type" gorm:"type:tinyint(2);DEFAULT:0"`
 	}
 	// 后台 特价
 	type VpsInfo struct {
@@ -467,4 +470,33 @@ func TestGetMoreSQL(t *testing.T) {
 			t.Log(cd.Error())
 		}
 	}
+}
+
+func httpServerDemo(w http.ResponseWriter, r *http.Request) {
+	// get more search
+	var params = make(cmap.CMap)
+	params.Add("mock", "1") // mock data
+	var or []*OrderD
+	crud := NewCrud(
+		InnerTable([]string{"order", "user"}),
+		//LeftTable([]string{"order", "service"}),
+		Model(OrderD{}),
+		Data(&or),
+		SubWhereSQL("1 = 1", "2 = 2", ""),
+	)
+	err := crud.GetMoreBySearch(params).Error()
+	if err != nil {
+		log.Println(err)
+	}
+	_, _ = fmt.Fprintf(w, result.GetSuccess(or).String())
+}
+
+// test mock data
+func TestMock(t *testing.T) {
+	//http.HandleFunc("/", httpServerDemo)
+	//log.Println("http://127.0.0.1:9090")
+	//err := http.ListenAndServe(":9090", nil)
+	//if err != nil {
+	//	log.Fatal("ListenAndServe: ", err)
+	//}
 }

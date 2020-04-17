@@ -2,7 +2,6 @@ package validator
 
 import (
 	"github.com/dreamlu/gt/tool/type/cmap"
-	"log"
 	"testing"
 )
 
@@ -19,13 +18,13 @@ func TestValidator(t *testing.T) {
 	var maps = make(cmap.CMap)
 	maps["name"] = append(maps["name"], "梦1")
 	info := Valid(maps, Test{})
-	log.Println(info)
+	t.Log(info)
 
 	// json data
 	var test = Test{
 		ID:   6,
 		Name: "梦1",
 	}
-	log.Println(Valid(test, Test{}))
+	t.Log(Valid(test, Test{}))
 
 }

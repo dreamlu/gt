@@ -24,6 +24,7 @@ api快速开发工具库,模型生成
     - [更新其他字段](#crud-update)
     - [事务](#transcation)
     - [使用gorm](#use-gorm)
+    - [mock假数据](#mock-data)
     
 
 ### API Examples  
@@ -444,6 +445,19 @@ gt.NewDBTool().AutoMigrate(&User{},&Order{})
 // 直接使用gorm:
 db := gt.NewCrud().DB()
 ```
+
+#### Mock Data
+> 使用mock参数, 生成随机数据, 将不会进行数据库查询  
+```go
+    GetBySearch(params cmap.CMap) Crud     // search
+    GetByData(params cmap.CMap) Crud       // get data no search
+    GetMoreBySearch(params cmap.CMap) Crud // more search    
+    // 以上三种支持mock参数,传递的参数mock=1即可
+```
+ps:  
+1.不支持CJSON类型, 请使用tag: `faker:"-"`进行过滤  
+2.不支持图片等实体文件数据  
+3.默认随机生成,如有长度等其他要求,请参考:[faker_test](https://github.com/bxcodec/faker/blob/master/faker_test.go)  
 
 - 约定  
 1.模型结构体json 内容与表字段保持一致  

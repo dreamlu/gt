@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dreamlu/gt/tool/type/te"
+	"log"
 )
 
 // status and msg
@@ -152,17 +153,17 @@ func (m *GetInfoPager) Parent() *GetInfo {
 }
 
 // string
-func (m MapData) String() (string, error) {
+func (m MapData) String() string {
 
 	return StructToString(m)
 }
 
-func (m GetInfo) String() (string, error) {
+func (m GetInfo) String() string {
 
 	return StructToString(m)
 }
 
-func (m GetInfoPager) String() (string, error) {
+func (m GetInfoPager) String() string {
 
 	return StructToString(m)
 }
@@ -197,12 +198,13 @@ func (m *MapData) AddStruct(value interface{}) (rmp ResultMap) {
 	return rmp.Add(Status, m.Status).Add(Msg, m.Msg).AddStruct(value)
 }
 
-func StructToString(st interface{}) (string, error) {
+func StructToString(st interface{}) string {
 	s, err := json.Marshal(st)
 	if err != nil {
-		return "", err
+		log.Println("struct:[", err, "]:error")
+		return ""
 	}
-	return string(s), nil
+	return string(s)
 }
 
 func StringToStruct(str string, st interface{}) error {

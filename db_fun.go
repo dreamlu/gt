@@ -5,6 +5,7 @@ package gt
 import (
 	"bytes"
 	"fmt"
+	"github.com/dreamlu/gt/tool/mock"
 	reflect2 "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/result"
 	sq "github.com/dreamlu/gt/tool/sql"
@@ -225,6 +226,9 @@ type GT struct {
 	Group  string // the last group
 	Args   []interface{}
 	ArgsNt []interface{}
+
+	// mock data
+	isMock bool
 }
 
 //=======================================sql语句处理==========================================
@@ -269,6 +273,10 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 			sqlKey, argsKey := sq.GetMoreKeySQL(key, gt.KeyModel, tablens[:]...)
 			bufW.WriteString(sqlKey)
 			args = append(args, argsKey[:]...)
+			continue
+		case str.GtMock:
+			mock.Mock(gt.Data)
+			gt.isMock = true
 			continue
 		case "":
 			continue
@@ -448,6 +456,10 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 			bufNtW.WriteString(sqlKey)
 			args = append(args, argsKey[:]...)
 			continue
+		case str.GtMock:
+			mock.Mock(gt.Data)
+			gt.isMock = true
+			continue
 		case "":
 			continue
 		}
@@ -477,7 +489,7 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 
 	var (
-		order = "id desc"  // default order by
+		order = ""         // default no order by
 		key   = ""         // key like binary search
 		bufW  bytes.Buffer // where sql, sqlNt bytes sql
 	)
@@ -498,6 +510,10 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 			bufW.WriteString(sqlKey)
 			args = append(args, argsKey[:]...)
 			continue
+		case str.GtMock:
+			mock.Mock(gt.Data)
+			gt.isMock = true
+			continue
 		case "":
 			continue
 		}
@@ -514,7 +530,9 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 	} else if gt.SubWhereSQL != "" {
 		sql += fmt.Sprintf(" where %s ", gt.SubWhereSQL)
 	}
-	sql += fmt.Sprintf(" order by %s ", order)
+	if order != "" {
+		sql += fmt.Sprintf(" order by %s ", order)
+	}
 	return
 }
 
@@ -652,7 +670,10 @@ func (db *DBTool) GetDataByID(data interface{}, id interface{}) {
 func (db *DBTool) GetMoreDataBySearch(gt *GT) (pager result.Pager) {
 	// more table search
 	sqlNt, sql, clientPage, everyPage, args := GetMoreSearchSQL(gt)
-
+	// isMock
+	if gt.isMock {
+		return
+	}
 	return db.GetDataBySQLSearch(gt.Data, sql, sqlNt, clientPage, everyPage, args, args)
 }
 
@@ -660,7 +681,10 @@ func (db *DBTool) GetMoreDataBySearch(gt *GT) (pager result.Pager) {
 func (db *DBTool) GetDataBySearch(gt *GT) (pager result.Pager) {
 
 	sqlNt, sql, clientPage, everyPage, args := GetSearchSQL(gt)
-
+	// isMock
+	if gt.isMock {
+		return
+	}
 	return db.GetDataBySQLSearch(gt.Data, sql, sqlNt, clientPage, everyPage, args, args)
 }
 
@@ -668,6 +692,10 @@ func (db *DBTool) GetDataBySearch(gt *GT) (pager result.Pager) {
 func (db *DBTool) GetData(gt *GT) {
 
 	sql, args := GetDataSQL(gt)
+	// isMock
+	if gt.isMock {
+		return
+	}
 	db.GetDataBySQL(gt.Data, sql, args[:]...)
 }
 

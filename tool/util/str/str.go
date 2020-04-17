@@ -33,6 +33,7 @@ const (
 	GtEveryPage  = "everyPage"
 	GtOrder      = "order"
 	GtKey        = "key"
+	GtMock       = "mock"
 	// gt tag
 	GtField = "field"
 )

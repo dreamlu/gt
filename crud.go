@@ -47,9 +47,11 @@ type Crud interface {
 
 	// crud and search id
 	// json data
-	Update() Crud         // update
-	Create() Crud         // create, include res insert id
+	Update() Crud // update
+	Create() Crud // create, include res insert id
+	// Deprecated
 	CreateMoreData() Crud // create more, data must array type, single table
+	CreateMore() Crud     // create more, data must array type, single table
 
 	// select
 	Select(query string, args ...interface{}) Crud // select sql
