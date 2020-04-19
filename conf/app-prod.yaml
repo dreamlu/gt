@@ -6,6 +6,5 @@ app:
     # default false
     #log: false
     host: tcp(mysql:3306)
-    name: gt
     password: docker
     user: root

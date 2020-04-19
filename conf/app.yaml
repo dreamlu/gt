@@ -6,5 +6,7 @@ app:
   db:
     maxIdleConn: 20
     maxOpenConn: 100
+    # database name
+    name: gt
   # upload filepath
   filepath: static/file/

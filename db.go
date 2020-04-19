@@ -37,9 +37,17 @@ func (db *DBTool) NewDB() *gorm.DB {
 	dbS := &dba{}
 	Configger().GetStruct("app.db", dbS)
 	var (
-		sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
+		sql = fmt.Sprintf("%s:%s@%s/?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host)
 	)
 
+	// auto create database
+	DB = db.open(sql)
+	DB.Exec("create database if not exists " + dbS.Name)
+	err := DB.Close()
+	if err != nil {
+		Logger().Error("[mysql连接错误]:", err)
+	}
+	sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
 	db.once.Do(func() {
 		DB = db.open(sql)
 	})
@@ -62,6 +70,9 @@ func (db *DBTool) open(sql string) *gorm.DB {
 	DB, err := gorm.Open("mysql", sql)
 	//defer db.DB.Close()
 	if err != nil {
+		//if strings.Contains(err.Error(), "Unknown database"){
+		//	DB.Exec("create database 'coupon'")
+		//}
 		Logger().Error("[mysql连接错误]:", err)
 		Logger().Error("[mysql开始尝试重连中]: try it every 5s...")
 		// try to reconnect
