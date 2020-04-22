@@ -238,7 +238,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	var or []*OrderD
 	crud := NewCrud(
 		// 支持同一个mysql多数据库跨库查询
-		InnerTable([]string{"gt.order", "user"}),
+		InnerTable([]string{"order", "gt.user"}),
 		LeftTable([]string{"order", "service"}),
 		Model(OrderD{}),
 		Data(&or),

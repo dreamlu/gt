@@ -425,7 +425,11 @@ func moreTables(gt *GT) (innerTables, leftTables, innerField, leftField []string
 			field := "id"
 			if k%2 == 0 {
 				// default other table_id
-				field = strings.Split(gt.InnerTable[k+1], ":")[0] + "_id"
+				otb := strings.Split(gt.InnerTable[k+1], ":")[0]
+				if strings.Contains(otb, ".") {
+					otb = strings.Split(otb, ".")[1]
+				}
+				field = otb + "_id"
 			}
 			innerField = append(innerField, field)
 		} else {
@@ -448,7 +452,12 @@ func moreTables(gt *GT) (innerTables, leftTables, innerField, leftField []string
 		if len(st) == 1 {
 			field := "id"
 			if k%2 == 0 {
-				field = strings.Split(gt.LeftTable[k+1], ":")[0] + "_id"
+				// default other table_id
+				otb := strings.Split(gt.LeftTable[k+1], ":")[0]
+				if strings.Contains(otb, ".") {
+					otb = strings.Split(otb, ".")[1]
+				}
+				field = otb + "_id"
 			}
 			leftField = append(leftField, field)
 		} else {
