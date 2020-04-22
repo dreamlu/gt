@@ -42,11 +42,16 @@ func (db *DBTool) NewDB() *gorm.DB {
 
 	// auto create database
 	DB = db.open(sql)
-	DB.Exec("create database if not exists " + dbS.Name)
-	err := DB.Close()
-	if err != nil {
-		Logger().Error("[mysql连接错误]:", err)
+	err := DB.Exec("create database if not exists " + dbS.Name).Error
+	if err == nil {
+		err = DB.Close()
+		if err != nil {
+			Logger().Info("[mysql根连接]:", err)
+		}
+	} else {
+		Logger().Info("[mysql自动连接根数据库失败,尝试直接连接]")
 	}
+
 	sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
 	db.once.Do(func() {
 		DB = db.open(sql)
@@ -113,13 +118,11 @@ var (
 )
 
 // single db
-func DBTooler() *DBTool {
+func DBTooler() {
 
 	onceDB.Do(func() {
 		dbTool = NewDBTool()
 	})
-
-	return dbTool
 }
 
 func (db *DBTool) clone() *DBTool {

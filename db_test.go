@@ -230,18 +230,19 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	// 多表查询
 	// get more search
 	var params = make(cmap.CMap)
-	params.Add("user_id", "1")
+	//params.Add("user_id", "1")
 	//params.Add("key", "梦") // key work
 	params.Add("clientPage", "1")
 	params.Add("everyPage", "2")
-	params.Add("mock", "1") // mock data
+	//params.Add("mock", "1") // mock data
 	var or []*OrderD
 	crud := NewCrud(
-		InnerTable([]string{"order", "user", "order", "service"}),
-		//LeftTable([]string{"order", "service"}),
+		// 支持同一个mysql多数据库跨库查询
+		InnerTable([]string{"gt.order", "user"}),
+		LeftTable([]string{"order", "service"}),
 		Model(OrderD{}),
 		Data(&or),
-		SubWhereSQL("1 = 1", "2 = 2", ""),
+		//SubWhereSQL("1 = 1", "2 = 2", ""),
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {

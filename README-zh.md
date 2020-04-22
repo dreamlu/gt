@@ -10,6 +10,7 @@ api快速开发工具库,模型生成
     - [模型定义](#model)
     - [结构体标记](#struct-gt)
     - [Crud](#Crud-request)
+    - [多表查询](#Crud-More)
     - [批量创建](#createmore)
     - [配置文件模式](#getdevmode)
     - [缓存使用](#cachemanager)
@@ -219,6 +220,33 @@ func (c *Client) Create(data *Client) (*Client, error) {
 }
 ```
 
+#### Crud More
+多表查询支持多表/同一个mysql跨数据库查询/mock假数据等等
+```go
+    // 多表查询
+	// get more search
+	var params = make(cmap.CMap)
+	//params.Add("user_id", "1")
+	//params.Add("key", "梦") // key work
+	params.Add("clientPage", "1")
+	params.Add("everyPage", "2")
+	//params.Add("mock", "1") // mock data
+	var or []*OrderD
+	crud := NewCrud(
+		// 支持同一个mysql多数据库跨库查询
+		InnerTable([]string{"gt.order", "user"}),
+		LeftTable([]string{"order", "service"}),
+		Model(OrderD{}),
+		Data(&or),
+		//SubWhereSQL("1 = 1", "2 = 2", ""),
+	)
+	err := crud.GetMoreBySearch(params).Error()
+	if err != nil {
+		log.Println(err)
+	}
+	t.Log("\n[User Info]:", or)
+```
+
 #### CreateMore
 ```go
 // 批量创建
@@ -243,7 +271,7 @@ func TestCreateMoreDataJ(t *testing.T) {
 		//SubSQL("(asdf) as a","(asdfa) as b"),
 	)
 
-	err := crud.CreateMoreData()
+	err := crud.CreateMore()
 	t.Log(err)
 }
 

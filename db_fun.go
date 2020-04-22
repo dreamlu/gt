@@ -331,19 +331,24 @@ func otherTableWhere(bufW bytes.Buffer, tables []string, k string, v []string) (
 
 // more sql
 func moreSql(gt *GT) (sqlNt string, tables []string) {
-	innerTables, leftTables, innerField, leftField := moreTables(gt)
-	tables = append(tables, innerTables...)
-	tables = append(tables, leftTables...)
-	tables = util.RemoveDuplicateString(tables)
 
-	// 内存读取
+	// read ram
 	typ := reflect.TypeOf(gt.Model)
-	key := typ.PkgPath() + "/sqlNt/" + typ.Name()
-	sqlNt = coMap.Get(key)
+	keyNt := typ.PkgPath() + "/sqlNt/" + typ.Name()
+	keyTs := typ.PkgPath() + "/sqlNtTables/" + typ.Name()
+	sqlNt = coMap.Get(keyNt)
+	if tables = strings.Split(coMap.Get(keyTs), ","); tables[0] == "" {
+		tables = []string{}
+	}
 	if sqlNt != "" {
 		//Logger().Info("[USE coMap GET ColumnSQL]")
 		return
 	}
+
+	innerTables, leftTables, innerField, leftField, DBS := moreTables(gt)
+	tables = append(tables, innerTables...)
+	tables = append(tables, leftTables...)
+	tables = util.RemoveDuplicateString(tables)
 
 	var (
 		//tables = innerTables // all tables
@@ -352,12 +357,21 @@ func moreSql(gt *GT) (sqlNt string, tables []string) {
 	// sql and sqlCount
 	bufNt.WriteString("select count(`")
 	bufNt.WriteString(tables[0])
-	bufNt.WriteString("`.id) as total_num from `")
-	bufNt.WriteString(tables[0])
+	bufNt.WriteString("`.id) as total_num from ")
+	if tb := DBS[tables[0]]; tb != "" {
+		bufNt.WriteString("`" + tb + "`.")
+	}
 	bufNt.WriteString("`")
+	bufNt.WriteString(tables[0])
+	bufNt.WriteString("` ")
 	// inner join
 	for i := 1; i < len(innerTables); i += 2 {
-		bufNt.WriteString(" inner join `")
+		bufNt.WriteString("inner join ")
+		// innerDB not support ``
+		if tb := DBS[innerTables[i]]; tb != "" {
+			bufNt.WriteString("`" + tb + "`.")
+		}
+		bufNt.WriteString("`")
 		bufNt.WriteString(innerTables[i])
 		bufNt.WriteString("` on `")
 		bufNt.WriteString(innerTables[i-1])
@@ -371,10 +385,14 @@ func moreSql(gt *GT) (sqlNt string, tables []string) {
 	}
 	// left join
 	for i := 1; i < len(leftTables); i += 2 {
-		bufNt.WriteString(" left join `")
+		bufNt.WriteString("left join ")
+		if tb := DBS[leftTables[i]]; tb != "" {
+			bufNt.WriteString("`" + tb + "`.")
+		}
+		bufNt.WriteString("`")
 		bufNt.WriteString(leftTables[i])
 		bufNt.WriteString("` on `")
-		bufNt.WriteString(innerTables[i-1])
+		bufNt.WriteString(leftTables[i-1])
 		bufNt.WriteString("`.`")
 		bufNt.WriteString(leftField[i-1])
 		bufNt.WriteString("`=`")
@@ -384,15 +402,24 @@ func moreSql(gt *GT) (sqlNt string, tables []string) {
 		bufNt.WriteString("` ")
 	}
 	sqlNt = bufNt.String()
-	coMap.Add(key, sqlNt)
+	coMap.Add(keyNt, sqlNt)
+	coMap.Add(keyTs, strings.Join(tables, ","))
 	return
 }
 
 // more sql tables
-func moreTables(gt *GT) (innerTables, leftTables, innerField, leftField []string) {
+// can read by ram
+func moreTables(gt *GT) (innerTables, leftTables, innerField, leftField []string, DBS map[string]string) {
+
 	for k, v := range gt.InnerTable {
 		st := strings.Split(v, ":")
 
+		if strings.Contains(st[0], ".") {
+			sts := strings.Split(st[0], ".")
+			DBS = make(map[string]string)
+			DBS[sts[1]] = sts[0]
+			st[0] = sts[1]
+		}
 		innerTables = append(innerTables, st[0])
 		if len(st) == 1 { // default
 			field := "id"
@@ -405,8 +432,18 @@ func moreTables(gt *GT) (innerTables, leftTables, innerField, leftField []string
 			innerField = append(innerField, st[1])
 		}
 	}
+	// left
 	for k, v := range gt.LeftTable {
 		st := strings.Split(v, ":")
+
+		if strings.Contains(st[0], ".") {
+			sts := strings.Split(st[0], ".")
+			if DBS == nil {
+				DBS = make(map[string]string)
+			}
+			DBS[sts[1]] = sts[0]
+			st[0] = sts[1]
+		}
 		leftTables = append(leftTables, st[0])
 		if len(st) == 1 {
 			field := "id"
