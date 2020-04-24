@@ -3,12 +3,15 @@
 package gt
 
 import (
+	"fmt"
 	"github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/result"
 	sq "github.com/dreamlu/gt/tool/sql"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/hump"
 	"github.com/dreamlu/gt/tool/util/str"
+	"runtime"
+	"strings"
 )
 
 // implement DBCrud
@@ -29,7 +32,7 @@ type DBCrud struct {
 	pager result.Pager
 
 	// transaction
-	isTrans int8 // open(0), close(1)
+	isTrans byte // open(0), close(1)
 }
 
 // init DBTool tool
@@ -41,6 +44,7 @@ func (c *DBCrud) initCrud(dbTool *DBTool, param *Params) {
 }
 
 func (c *DBCrud) DB() *DBTool {
+	c.common()
 	return c.dbTool
 }
 
@@ -55,6 +59,7 @@ func (c *DBCrud) Params(params ...Param) Crud {
 // search
 // pager info
 func (c *DBCrud) GetBySearch(params cmap.CMap) Crud {
+	c.common()
 	clone := c.clone()
 	clone.pager = clone.dbTool.GetDataBySearch(&GT{
 		Params: clone.param,
@@ -65,6 +70,7 @@ func (c *DBCrud) GetBySearch(params cmap.CMap) Crud {
 }
 
 func (c *DBCrud) GetByData(params cmap.CMap) Crud {
+	c.common()
 	clone := c.clone()
 	clone.dbTool.GetData(&GT{
 		Params: clone.param,
@@ -75,6 +81,7 @@ func (c *DBCrud) GetByData(params cmap.CMap) Crud {
 
 // by id
 func (c *DBCrud) GetByID(id interface{}) Crud {
+	c.common()
 
 	clone := c.clone()
 	clone.dbTool.GetDataByID(clone.param.Data, id)
@@ -84,6 +91,7 @@ func (c *DBCrud) GetByID(id interface{}) Crud {
 // the same as search
 // more tables
 func (c *DBCrud) GetMoreBySearch(params cmap.CMap) Crud {
+	c.common()
 
 	clone := c.clone()
 	clone.pager = clone.dbTool.GetMoreDataBySearch(&GT{
@@ -95,6 +103,7 @@ func (c *DBCrud) GetMoreBySearch(params cmap.CMap) Crud {
 
 // delete
 func (c *DBCrud) Delete(id interface{}) Crud {
+	c.common()
 
 	clone := c.clone()
 	clone.dbTool.Delete(clone.param.Table, id)
@@ -105,18 +114,21 @@ func (c *DBCrud) Delete(id interface{}) Crud {
 
 // update
 func (c *DBCrud) UpdateForm(params cmap.CMap) error {
+	c.common()
 
 	return c.dbTool.UpdateFormData(c.param.Table, params)
 }
 
 // create
 func (c *DBCrud) CreateForm(params cmap.CMap) error {
+	c.common()
 
 	return c.dbTool.CreateFormData(c.param.Table, params)
 }
 
 // create res insert id
 func (c *DBCrud) CreateResID(params cmap.CMap) (str.ID, error) {
+	c.common()
 
 	return c.dbTool.CreateDataResID(c.param.Table, params)
 }
@@ -133,6 +145,7 @@ func (c *DBCrud) CreateMoreData() Crud {
 
 // create more
 func (c *DBCrud) CreateMore() Crud {
+	c.common()
 
 	clone := c.clone()
 	clone.dbTool.CreateMoreData(clone.param.Table, clone.param.Model, clone.param.Data)
@@ -141,6 +154,7 @@ func (c *DBCrud) CreateMore() Crud {
 
 // update
 func (c *DBCrud) Update() Crud {
+	c.common()
 	clone := c.clone()
 	clone.dbTool.UpdateData(&GT{
 		Params: clone.param,
@@ -152,6 +166,7 @@ func (c *DBCrud) Update() Crud {
 
 // create
 func (c *DBCrud) Create() Crud {
+	c.common()
 	clone := c.clone()
 	clone.dbTool.CreateData(clone.param.Data)
 	return clone
@@ -183,6 +198,7 @@ func (c *DBCrud) Group(query string) Crud {
 }
 
 func (c *DBCrud) Search(params cmap.CMap) Crud {
+	c.common()
 
 	if c.argsNt == nil {
 		c.argsNt = c.args
@@ -201,6 +217,7 @@ func (c *DBCrud) Search(params cmap.CMap) Crud {
 }
 
 func (c *DBCrud) Single() Crud {
+	c.common()
 
 	c.Select(c.group)
 
@@ -210,6 +227,7 @@ func (c *DBCrud) Single() Crud {
 }
 
 func (c *DBCrud) Exec() Crud {
+	c.common()
 
 	//clone := c.clone()
 	c.dbTool.ExecSQL(c.selectSQL, c.args...)
@@ -284,4 +302,31 @@ func (c *DBCrud) clone() (dbCrud *DBCrud) {
 	}
 	dbCrud.dbTool = c.dbTool.clone()
 	return
+}
+
+func (c *DBCrud) common() {
+	if c.dbTool.log {
+		c.line()
+	}
+}
+
+func (c *DBCrud) line() {
+	_, fullFile, line, ok := runtime.Caller(3) // 3 skip
+	file := fullFile
+	if file != "" {
+		// Truncate file name at last file name separator.
+		if index := strings.LastIndex(file, "/"); index >= 0 {
+			file = file[index+1:]
+		} else if index = strings.LastIndex(file, "\\"); index >= 0 {
+			file = file[index+1:]
+		}
+	} else {
+		file = "???"
+	}
+	if ok {
+		buf := new(strings.Builder)
+		fmt.Fprintf(buf, "\n\033[35m[gt]%v\033[0m: ", fullFile)
+		fmt.Fprintf(buf, "%s:%d", file, line)
+		fmt.Print(buf.String())
+	}
 }

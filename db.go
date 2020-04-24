@@ -16,6 +16,8 @@ type DBTool struct {
 	once sync.Once
 	// db driver
 	*gorm.DB
+	// db log mode
+	log bool
 }
 
 // db params
@@ -31,20 +33,20 @@ type dba struct {
 }
 
 // new db driver
-func (db *DBTool) NewDB() *gorm.DB {
+func (db *DBTool) NewDB() {
 
-	DB := &gorm.DB{}
 	dbS := &dba{}
 	Configger().GetStruct("app.db", dbS)
+	db.log = dbS.Log
 	var (
 		sql = fmt.Sprintf("%s:%s@%s/?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host)
 	)
 
 	// auto create database
-	DB = db.open(sql)
-	err := DB.Exec("create database if not exists " + dbS.Name).Error
+	db.DB = db.open(sql)
+	err := db.DB.Exec("create database if not exists " + dbS.Name).Error
 	if err == nil {
-		err = DB.Close()
+		err = db.DB.Close()
 		if err != nil {
 			Logger().Info("[mysql根连接]:", err)
 		}
@@ -54,20 +56,21 @@ func (db *DBTool) NewDB() *gorm.DB {
 
 	sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
 	db.once.Do(func() {
-		DB = db.open(sql)
+		db.DB = db.open(sql)
 	})
 	// Globally disable table names
 	// use name replace names
-	DB.SingularTable(true)
+	db.DB.SingularTable(true)
 
-	DB.LogMode(dbS.Log)
+	db.DB.LogMode(dbS.Log)
+	db.DB.SetLogger(defaultLog)
 	// connection pool
 	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
-	DB.DB().SetMaxIdleConns(dbS.MaxIdleConn)
+	db.DB.DB().SetMaxIdleConns(dbS.MaxIdleConn)
 	// SetMaxOpenConns sets the maximum number of open connections to the database.
-	DB.DB().SetMaxOpenConns(dbS.MaxOpenConn)
+	db.DB.DB().SetMaxOpenConns(dbS.MaxOpenConn)
 
-	return DB
+	return
 }
 
 func (db *DBTool) open(sql string) *gorm.DB {
@@ -104,7 +107,7 @@ func NewDBTool() *DBTool {
 	dbTool := &DBTool{}
 
 	// init db
-	dbTool.DB = dbTool.NewDB()
+	dbTool.NewDB()
 	return dbTool
 }
 
@@ -128,6 +131,7 @@ func DBTooler() {
 func (db *DBTool) clone() *DBTool {
 
 	return &DBTool{
-		DB: db.DB,
+		DB:  db.DB,
+		log: db.log,
 	}
 }

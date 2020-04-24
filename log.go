@@ -19,6 +19,7 @@ import (
 // log
 type Log struct {
 	*logrus.Logger
+	LogWriter
 }
 
 // log level

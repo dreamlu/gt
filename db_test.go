@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"runtime"
 	"testing"
 	time2 "time"
 )
@@ -86,8 +87,8 @@ func TestCrud(t *testing.T) {
 	crud.Update()
 
 	// get by id
-	info := crud.GetByID(1)
-	t.Log(info, "\n[GetByID]:", user)
+	info := crud.GetByID(10000)
+	t.Log(info, "\n[GetByID]:", info.Error())
 
 	// get by search
 	var args = url.Values{}
@@ -351,6 +352,10 @@ func TestDBCrud_Select(t *testing.T) {
 	).
 		Select("select *from user")
 	cd2.Single()
+	_, file, line, ok := runtime.Caller(1)
+	if ok {
+		t.Log(file, "[]", line)
+	}
 }
 
 // test update/delete
@@ -404,13 +409,15 @@ func TestTranscation(t *testing.T) {
 	).Create()
 	if cd.Error() != nil {
 		cd.Rollback()
+		cd = crud.Begin()
 	}
-	cd.Params(
+	cd = cd.Params(
 		Data(&User{
 			Name: "梦SSS2",
 		})).Create()
 	if cd.Error() != nil {
 		cd.Rollback()
+		cd = crud.Begin()
 	}
 	// add select sql test
 	var u []User
