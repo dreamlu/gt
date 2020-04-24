@@ -57,8 +57,7 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 		//防止文件名中多个“.”,获得文件后缀
 		filename = f.Name + filename
 	}
-	path := gt.Configger().GetString("app.filepath") + filename //文件目录
-	err = f.SaveUploadedFile(file, path)
+	path, err := f.SaveUploadedFile(file, filename)
 	if err != nil {
 		return "", err
 	}
@@ -120,19 +119,29 @@ func (f *File) CompressImage(imageType string) error {
 }
 
 // save file
-func (f *File) SaveUploadedFile(file *multipart.FileHeader, dst string) error {
+func (f *File) SaveUploadedFile(file *multipart.FileHeader, filename string) (path string, err error) {
+
+	filepath := gt.Configger().GetString("app.filepath")
+	if !Exists(filepath) {
+		err = os.Mkdir(filepath, os.ModePerm)
+		if err != nil {
+			return
+		}
+	}
+
+	path = filepath + filename //文件目录
 	src, err := file.Open()
 	if err != nil {
-		return err
+		return
 	}
 	defer src.Close()
 
-	out, err := os.Create(dst)
+	out, err := os.Create(path)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer out.Close()
 
 	_, err = io.Copy(out, src)
-	return err
+	return
 }
