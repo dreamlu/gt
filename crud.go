@@ -57,7 +57,7 @@ type Crud interface {
 	Select(query string, args ...interface{}) Crud // select sql
 	From(query string) Crud                        // from sql, if use search, From must only once
 	Group(query string) Crud                       // the last group by
-	Search() Crud                                  // search pager
+	Search(params cmap.CMap) Crud                  // search pager
 	Single() Crud                                  // no search
 	Exec() Crud                                    // exec insert/update/delete sql
 	Error() error                                  // crud error
@@ -77,10 +77,6 @@ type Params struct {
 	Model      interface{} // table model, like User{}
 	KeyModel   interface{} // key like model
 	Data       interface{} // table model data, like var user User{}, it is 'user', it store real data
-
-	// pager info
-	ClientPage int64 // page number
-	EveryPage  int64 // Number of pages per page
 
 	// count
 	SubSQL string // SubQuery SQL
@@ -147,20 +143,6 @@ func Data(Data interface{}) Param {
 
 	return func(params *Params) {
 		params.Data = Data
-	}
-}
-
-func ClientPage(ClientPage int64) Param {
-
-	return func(params *Params) {
-		params.ClientPage = ClientPage
-	}
-}
-
-func EveryPage(EveryPage int64) Param {
-
-	return func(params *Params) {
-		params.EveryPage = EveryPage
 	}
 }
 

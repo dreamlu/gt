@@ -328,20 +328,29 @@ func TestExtends(t *testing.T) {
 
 // select test
 func TestDBCrud_Select(t *testing.T) {
-	var user []*User
-	crud.Params(
+	var (
+		params = cmap.CMap{}
+		user   []*User
+	)
+	params.Add("clientPage", "1")
+	params.Add("everyPage", "2")
+	cd := crud.Params(
 		Data(&user),
-		ClientPage(1),
-		EveryPage(2),
 	).
 		Select("select *from user").
 		Select("where id > 0")
 	if true {
-		crud.Select("and 1=1")
+		cd.Select("and 1=1")
 	}
-	crud.Search()
-	t.Log(crud.Pager())
-	crud.Single()
+	// search
+	cd.Search(params)
+	t.Log(cd.Pager())
+	// single
+	cd2 := crud.Params(
+		Data(&user),
+	).
+		Select("select *from user")
+	cd2.Single()
 }
 
 // test update/delete

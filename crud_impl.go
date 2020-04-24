@@ -182,37 +182,38 @@ func (c *DBCrud) Group(query string) Crud {
 	return c
 }
 
-func (c *DBCrud) Search() Crud {
+func (c *DBCrud) Search(params cmap.CMap) Crud {
 
 	if c.argsNt == nil {
 		c.argsNt = c.args
 	}
-	clone := c.clone()
-	clone.pager = clone.dbTool.GetDataBySelectSQLSearch(&GT{
-		Params: clone.param,
-		Select: clone.selectSQL,
-		Args:   clone.args,
-		ArgsNt: clone.argsNt,
-		From:   clone.from,
-		Group:  clone.group,
+	//clone := c
+	c.pager = c.dbTool.GetDataBySelectSQLSearch(&GT{
+		Params: c.param,
+		Select: c.selectSQL,
+		Args:   c.args,
+		ArgsNt: c.argsNt,
+		From:   c.from,
+		Group:  c.group,
+		CMaps:  params,
 	})
-	return clone
+	return c
 }
 
 func (c *DBCrud) Single() Crud {
 
 	c.Select(c.group)
 
-	clone := c.clone()
-	clone.dbTool.GetDataBySQL(clone.param.Data, c.selectSQL, c.args...)
-	return clone
+	//clone := c.clone()
+	c.dbTool.GetDataBySQL(c.param.Data, c.selectSQL, c.args...)
+	return c
 }
 
 func (c *DBCrud) Exec() Crud {
 
-	clone := c.clone()
-	clone.dbTool.ExecSQL(c.selectSQL, c.args...)
-	return clone
+	//clone := c.clone()
+	c.dbTool.ExecSQL(c.selectSQL, c.args...)
+	return c
 }
 
 func (c *DBCrud) Error() error {

@@ -583,7 +583,18 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 }
 
 // select sql
-func GetSelectSearchSQL(gt *GT) (sqlNt, sql string) {
+func GetSelectSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64) {
+
+	for k, v := range gt.CMaps {
+		switch k {
+		case str.GtClientPage:
+			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
+			continue
+		case str.GtEveryPage:
+			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
+			continue
+		}
+	}
 
 	sql = gt.Select
 	if gt.From == "" {
@@ -748,9 +759,9 @@ func (db *DBTool) GetData(gt *GT) {
 // select sql search
 func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
 
-	sqlNt, sql := GetSelectSearchSQL(gt)
+	sqlNt, sql, clientPage, everyPage := GetSelectSearchSQL(gt)
 
-	return db.GetDataBySQLSearch(gt.Data, sql, sqlNt, gt.ClientPage, gt.EveryPage, gt.Args, gt.ArgsNt)
+	return db.GetDataBySQLSearch(gt.Data, sql, sqlNt, clientPage, everyPage, gt.Args, gt.ArgsNt)
 }
 
 // 获得数据,根据sql语句,分页

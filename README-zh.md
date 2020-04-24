@@ -26,6 +26,7 @@ api快速开发工具库,模型生成
     - [事务](#transcation)
     - [使用gorm](#use-gorm)
     - [mock假数据](#mock-data)
+    - [关于crud的clone](#crud-clone)
     
 
 ### API Examples  
@@ -399,7 +400,7 @@ func TestId(t *testing.T) {
     sql := "update `user` set name=? where id=?"
     t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
     var user []*User
-	crud.Params(
+	cd := crud.Params(
 		Data(&user),
 		//ClientPage(1), // serch()分页需要
 		//EveryPage(2),
@@ -407,11 +408,11 @@ func TestId(t *testing.T) {
 		Select("select *from user").
 		Select("where id > 0")
 	if true {
-		crud.Select("and 1=1")
+		cd.Select("and 1=1")
 	}
-	crud.Search() // 查询 + 分页
+	cd.Search() // 查询 + 分页
     t.Log(crud.Pager()) // Search()分页数据
-	crud.Single() // 直接查询
+	//cd.Single() // 注释Search使用Single()直接查询
 ```
 
 #### Crud Update
@@ -482,6 +483,12 @@ db := gt.NewCrud().DB()
     GetMoreBySearch(params cmap.CMap) Crud // more search    
     // 以上三种支持mock参数,传递的参数mock=1即可
 ```
+
+#### Crud clone
+```go
+// 关于crud的
+```
+
 ps:  
 1.不支持CJSON类型, 请使用tag: `faker:"-"`进行过滤  
 2.不支持图片等实体文件数据  
