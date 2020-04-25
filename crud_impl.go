@@ -325,8 +325,9 @@ func (c *DBCrud) line() {
 	}
 	if ok {
 		buf := new(strings.Builder)
-		fmt.Fprintf(buf, "\n\033[35m[gt]%v\033[0m: ", fullFile)
-		fmt.Fprintf(buf, "%s:%d", file, line)
+
+		fmt.Fprintf(buf, "\n\033[35m[gt]\033[0m: ")
+		fmt.Fprintf(buf, "%s:%d", fullFile, line)
 		fmt.Print(buf.String())
 	}
 }

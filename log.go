@@ -3,6 +3,7 @@
 package gt
 
 import (
+	"fmt"
 	time2 "github.com/dreamlu/gt/tool/type/time"
 	os2 "github.com/dreamlu/gt/tool/util/os"
 	"github.com/lestrrat-go/file-rotatelogs"
@@ -50,9 +51,7 @@ func Logger() *Log {
 func NewLog() *Log {
 
 	lgr := logrus.New()
-	lgr.SetFormatter(&logrus.JSONFormatter{
-		TimestampFormat: "2006-01-02 15:04:05",
-	})
+	lgr.SetFormatter(&myFormatter{})
 	log := &Log{}
 	log.Logger = lgr
 
@@ -109,4 +108,18 @@ func (l *Log) DefaultFileLog() {
 		projectName    = pns[len(pns)-1]
 	)
 	l.FileLog(projectPath+"/log/", projectName+".log", 7, time2.Day)
+}
+
+// gt log formatter
+type myFormatter struct{}
+
+func (s *myFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	timestamp := time.Now().Local().Format("2006-01-02 15:04:05")
+	msg := ""
+	if entry.Level == logrus.ErrorLevel {
+		msg = fmt.Sprintf("\u001B[36;31m[%s] [%s]\u001B[36;31m %s\n", timestamp, strings.ToUpper(entry.Level.String()), entry.Message)
+	} else {
+		msg = fmt.Sprintf("\u001B[33m[%s]\u001B[0m \u001B[36;1m[%s]\u001B[0m %s\n", timestamp, strings.ToUpper(entry.Level.String()), entry.Message)
+	}
+	return []byte(msg), nil
 }

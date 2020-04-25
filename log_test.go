@@ -20,9 +20,9 @@ func TestNewFileLog(t *testing.T) {
 		if i > 3 {
 			break
 		}
-		Logger().Info("[debug]")
+		Logger().Info("this is info")
 		time.Sleep(1 * time.Second)
-		Logger().Error("[error]")
+		Logger().Error("this is error")
 	}
 	t.Log("log over")
 }
