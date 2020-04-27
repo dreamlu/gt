@@ -104,8 +104,7 @@ func (l *Log) DefaultFileLog() {
 
 	var (
 		projectPath, _ = os.Getwd()
-		pns            = strings.Split(projectPath, "/")
-		projectName    = pns[len(pns)-1]
+		projectName    = Configger().GetString("app.db.name") // use db name replace
 	)
 	l.FileLog(projectPath+"/log/", projectName+".log", 7, time2.Day)
 }
