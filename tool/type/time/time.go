@@ -27,7 +27,8 @@ func (t CTime) MarshalJSON() ([]byte, error) {
 // 反序列化方法 https://stackoverflow.com/questions/45303326/how-to-parse-non-standard-time-format-from-json-in-golang
 func (t *CTime) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), "\"")
-	ti, err := time.Parse("2006-01-02 15:04:05", s)
+	loc, _ := time.LoadLocation("Local")
+	ti, err := time.ParseInLocation("2006-01-02 15:04:05", s, loc)
 	if err != nil {
 		return err
 	}
@@ -77,7 +78,8 @@ func (t CDate) MarshalJSON() ([]byte, error) {
 // 反序列化
 func (t *CDate) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), "\"")
-	ti, err := time.Parse("2006-01-02", s)
+	loc, _ := time.LoadLocation("Local")
+	ti, err := time.ParseInLocation("2006-01-02", s, loc)
 	if err != nil {
 		return err
 	}
