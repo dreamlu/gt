@@ -48,8 +48,8 @@ func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 func GetReflectTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 
 	var (
-		oTag, tag string
-		b         bool
+		oTag, tag, tagTable string
+		b                   bool
 	)
 	if ref.Kind() != reflect.Struct {
 		return
@@ -60,9 +60,25 @@ func GetReflectTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 			GetReflectTagMore(ref.Field(i).Type, buf, tables[:]...)
 			continue
 		}
-		if oTag, tag, b = sq.GtTag(ref.Field(i).Tag, tag); b == true {
+		if oTag, tag, tagTable, b = sq.GtTag(ref.Field(i).Tag, tag); b == true {
 			continue
 		}
+		if tagTable != "" {
+			buf.WriteString("`")
+			buf.WriteString(tagTable)
+			buf.WriteString("`.`")
+			buf.WriteString(tag)
+			//buf.WriteString("`,")
+			buf.WriteString("` as ")
+			if oTag != "" && oTag != "-" {
+				buf.WriteString(oTag)
+			} else {
+				buf.WriteString(tag)
+			}
+			buf.WriteString(",")
+			continue
+		}
+
 		if b = otherTableTagSQL(oTag, tag, buf, tables...); b == false {
 			buf.WriteString("`")
 			buf.WriteString(tables[0])
@@ -417,7 +433,9 @@ func moreTables(gt *GT) (innerTables, leftTables, innerField, leftField []string
 
 		if strings.Contains(st[0], ".") {
 			sts := strings.Split(st[0], ".")
-			DBS = make(map[string]string)
+			if DBS == nil {
+				DBS = make(map[string]string)
+			}
 			DBS[sts[1]] = sts[0]
 			st[0] = sts[1]
 		}

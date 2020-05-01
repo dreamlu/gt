@@ -8,7 +8,7 @@ import (
 )
 
 // get tag
-func GtTag(structTag reflect.StructTag, curTag string) (oTag, tag string, b bool) {
+func GtTag(structTag reflect.StructTag, curTag string) (oTag, tag, tagTable string, b bool) {
 	gtTag := structTag.Get("gt")
 	tag = curTag
 	if gtTag == "" {
@@ -26,6 +26,10 @@ func GtTag(structTag reflect.StructTag, curTag string) (oTag, tag string, b bool
 		if strings.Contains(v, str.GtField) {
 			tagTmp := strings.Split(v, ":")
 			tag = tagTmp[1]
+			if a := strings.Split(tag, "."); len(a) > 1 { // include table
+				tag = a[1]
+				tagTable = a[0]
+			}
 			return
 		}
 	}
@@ -47,7 +51,7 @@ func GetReflectTags(ref reflect.Type) (tags []string) {
 			tags = append(tags, GetReflectTags(ref.Field(i).Type)...)
 			continue
 		}
-		if _, tag, b = GtTag(ref.Field(i).Tag, tag); b == true {
+		if _, tag, _, b = GtTag(ref.Field(i).Tag, tag); b == true {
 			continue
 		}
 		tags = append(tags, tag)

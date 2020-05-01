@@ -517,3 +517,27 @@ func TestMock(t *testing.T) {
 	//	log.Fatal("ListenAndServe: ", err)
 	//}
 }
+
+func TestField(t *testing.T) {
+	type Sv struct {
+		ID   uint64 `json:"id"`
+		Name string `json:"name" gorm:"type:varchar(50)"` // 名称
+	}
+
+	// 详情
+	type SvD struct {
+		Sv
+		GoodsID   uint64 `json:"goods_id" gt:"field:goods.id"` // 商品id
+		GoodsName string `json:"goods_name"`                   // 商品名
+	}
+
+	var datas []*SvD
+	crud.Params(
+		Model(SvD{}),
+		Data(&datas),
+		InnerTable([]string{"sv.sv:id", "sv.svg:sv_id"}),
+		LeftTable([]string{"sv.svg", "shop.goods"}),
+	)
+	var params = cmap.CMap{}
+	_ = crud.GetMoreBySearch(params)
+}
