@@ -282,7 +282,7 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 			continue
 		}
 
-		if b := otherTableWhere(bufW, tables[1:], k, v); b != true {
+		if b := otherTableWhere(&bufW, tables[1:], k); b != true {
 			v[0] = strings.Replace(v[0], "'", "\\'", -1)
 			//bufW.WriteString("`" + tables[0] + "`." + k + " = ? and ")
 			bufW.WriteString("`")
@@ -311,19 +311,20 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 	return
 }
 
-func otherTableWhere(bufW bytes.Buffer, tables []string, k string, v []string) (b bool) {
+func otherTableWhere(bufW *bytes.Buffer, tables []string, k string) (b bool) {
 	// other tables, except tables[0]
-	for _, table := range tables[1:] {
+	for _, v := range tables {
 		switch {
-		case !strings.Contains(table, table+"_id") && strings.Contains(table, table+"_"):
+		case !strings.Contains(k, v+"_id") && strings.Contains(k, v+"_"):
 			//bufW.WriteString("`" + table + "`.`" + string([]byte(k)[len(v)+1:]) + "` = ? and ")
 			bufW.WriteString("`")
-			bufW.WriteString(table)
+			bufW.WriteString(v)
 			bufW.WriteString("`.`")
 			bufW.WriteString(string([]byte(k)[len(v)+1:]))
 			bufW.WriteString("` = ? and ")
 			//args = append(args, v[0])
 			b = true
+			return
 		}
 	}
 	return
