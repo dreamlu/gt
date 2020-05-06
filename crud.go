@@ -150,6 +150,9 @@ func SubSQL(SubSQL ...string) Param {
 
 	return func(params *Params) {
 		SubSQL = util.RemoveStrings(SubSQL, "")
+		if len(SubSQL) == 0 {
+			return
+		}
 		params.SubSQL = "," + strings.Join(SubSQL[:], ",")
 	}
 }
@@ -158,6 +161,9 @@ func SubWhereSQL(SubWhereSQL ...string) Param {
 
 	return func(params *Params) {
 		SubWhereSQL = util.RemoveStrings(SubWhereSQL, "")
+		if len(SubWhereSQL) == 0 {
+			return
+		}
 		params.SubWhereSQL = strings.Join(SubWhereSQL[:], " and ")
 	}
 }

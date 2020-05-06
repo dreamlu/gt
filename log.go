@@ -67,7 +67,7 @@ func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationT
 
 	baseLogPath := path.Join(logPath, logFileName)
 	writer, err := rotatelogs.New(
-		path.Join(logPath, "%Y%m%d%H%M-"+logFileName),
+		path.Join(logPath, "%Y-%m-%d-"+logFileName),
 		rotatelogs.WithLinkName(baseLogPath), // 生成软链，指向最新日志文件
 		//rotatelogs.WithMaxAge(maxAge),             // 文件最大保存时间
 		rotatelogs.WithRotationTime(rotationTime), // 日志切割时间间隔
@@ -103,10 +103,10 @@ func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationT
 func (l *Log) DefaultFileLog() {
 
 	var (
-		projectPath, _ = os.Getwd()
-		projectName    = Configger().GetString("app.db.name") // use db name replace
+		//projectPath, _ = os.Getwd()
+		projectName = Configger().GetString("app.db.name") // use db name replace
 	)
-	l.FileLog(projectPath+"/log/", projectName+".log", 7, time2.Day)
+	l.FileLog("log/", projectName+".log", 7, time2.Day)
 }
 
 // gt log formatter
