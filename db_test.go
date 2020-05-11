@@ -23,7 +23,8 @@ import (
 type User struct {
 	ID         uint64     `json:"id"`
 	Name       string     `json:"name"`
-	Createtime time.CTime `json:"createtime"`
+	BirthDate  time.CDate `json:"birth_date" gorm:"type:date"` // data
+	CreateTime time.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
 }
 
 // service model
@@ -37,15 +38,19 @@ type Order struct {
 	ID         uint64     `json:"id"`
 	UserID     int64      `json:"user_id"`    // user id
 	ServiceID  int64      `json:"service_id"` // service table id
-	Createtime time.CTime `json:"createtime"` // createtime
+	CreateTime time.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
 }
 
 // order detail
 type OrderD struct {
 	Order
-	UserName    string     `json:"user_name"`                       // user table column name
+	UserName    string     `json:"user_name" gt:"field:user.name"`  // user table column name
 	ServiceName string     `json:"service_name"`                    // service table column `name`
 	Info        json.CJSON `json:"info" gt:"sub_sql" faker:"cjson"` // json
+}
+
+func init() {
+	NewCrud().DB().AutoMigrate(User{}, Order{}, Service{})
 }
 
 // 局部
@@ -54,7 +59,8 @@ var crud = NewCrud()
 func TestDB(t *testing.T) {
 
 	var user = User{
-		Name: "测试xx",
+		Name:      "测试xx",
+		BirthDate: time.CDate(time2.Now()),
 		//Createtime:JsonDate(time.Now()),
 	}
 
@@ -66,6 +72,9 @@ func TestDB(t *testing.T) {
 	crud.DB().CreateData(&user)
 	t.Log("user: ", user)
 	t.Log(crud.DB().RowsAffected)
+	var user2 User
+	crud.Params(Data(&user2)).GetByID(1)
+	t.Log(user2)
 }
 
 // 通用增删该查测试
@@ -232,7 +241,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	// get more search
 	var params = make(cmap.CMap)
 	//params.Add("user_id", "1")
-	//params.Add("key", "梦") // key work
+	params.Add("key", "梦") // key work
 	params.Add("clientPage", "1")
 	params.Add("everyPage", "2")
 	//params.Add("mock", "1") // mock data
@@ -243,6 +252,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		LeftTable([]string{"order", "service"}),
 		Model(OrderD{}),
 		Data(&or),
+		KeyModel(OrderD{}),
 		//SubWhereSQL("1 = 1", "2 = 2", ""),
 	)
 	err := crud.GetMoreBySearch(params).Error()

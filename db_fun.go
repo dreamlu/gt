@@ -266,6 +266,9 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 		bufW  bytes.Buffer                    // sql bytes connect
 	)
 	for k, v := range gt.CMaps {
+		if v[0] == "" {
+			continue
+		}
 		switch k {
 		case str.GtClientPage:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
@@ -501,6 +504,9 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 	sql = fmt.Sprintf("select %s%s from `%s`", GetColSQL(gt.Model), gt.SubSQL, gt.Table)
 	sqlNt = fmt.Sprintf("select count(id) as total_num from `%s`", gt.Table)
 	for k, v := range gt.CMaps {
+		if v[0] == "" {
+			continue
+		}
 		switch k {
 		case str.GtClientPage:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
@@ -562,6 +568,9 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 	// select* replace
 	sql = fmt.Sprintf("select %s%s from `%s`", GetColSQL(gt.Model), gt.SubSQL, gt.Table)
 	for k, v := range gt.CMaps {
+		if v[0] == "" {
+			continue
+		}
 		switch k {
 		case str.GtOrder:
 			order = v[0]

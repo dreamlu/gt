@@ -42,8 +42,8 @@ func GetReflectTags(ref reflect.Type) (tags []string) {
 		return
 	}
 	var (
-		tag string
-		b   bool
+		tag, tagTable string
+		b             bool
 	)
 	for i := 0; i < ref.NumField(); i++ {
 		tag = ref.Field(i).Tag.Get("json")
@@ -51,8 +51,11 @@ func GetReflectTags(ref reflect.Type) (tags []string) {
 			tags = append(tags, GetReflectTags(ref.Field(i).Type)...)
 			continue
 		}
-		if _, tag, _, b = GtTag(ref.Field(i).Tag, tag); b == true {
+		if _, tag, tagTable, b = GtTag(ref.Field(i).Tag, tag); b == true {
 			continue
+		}
+		if tagTable != "" {
+			tag = tagTable + "_" + tag
 		}
 		tags = append(tags, tag)
 	}
