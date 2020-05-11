@@ -14,7 +14,11 @@ import (
 	"strings"
 )
 
-const Version = "1.7.x"
+const Version = "1.7.20+"
+
+func init() {
+	println("[gt version]:", Version)
+}
 
 // crud is db driver extend
 type Crud interface {

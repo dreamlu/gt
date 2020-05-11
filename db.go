@@ -44,7 +44,7 @@ func (db *DBTool) NewDB() {
 
 	// auto create database
 	db.DB = db.open(sql)
-	err := db.DB.Exec("create database if not exists " + dbS.Name).Error
+	err := db.DB.Exec("create database if not exists `" + dbS.Name + "`").Error
 	if err == nil {
 		err = db.DB.Close()
 		if err != nil {

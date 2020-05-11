@@ -175,7 +175,11 @@ func (c *DBCrud) Create() Crud {
 // create
 func (c *DBCrud) Select(query string, args ...interface{}) Crud {
 
-	clone := c.clone()
+	clone := c
+	if c.selectSQL == "" {
+		clone = c.clone()
+	}
+
 	clone.selectSQL += query + " "
 	clone.args = append(clone.args, args...)
 	if clone.from != "" {

@@ -116,7 +116,7 @@ func (s *myFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	timestamp := time.Now().Local().Format("2006-01-02 15:04:05")
 	msg := ""
 	if entry.Level == logrus.ErrorLevel {
-		msg = fmt.Sprintf("\u001B[36;31m[%s] [%s]\u001B[36;31m %s\n", timestamp, strings.ToUpper(entry.Level.String()), entry.Message)
+		msg = fmt.Sprintf("\u001B[36;31m[%s] [%s] %s\u001B[0m\n", timestamp, strings.ToUpper(entry.Level.String()), entry.Message)
 	} else {
 		msg = fmt.Sprintf("\u001B[33m[%s]\u001B[0m \u001B[36;1m[%s]\u001B[0m %s\n", timestamp, strings.ToUpper(entry.Level.String()), entry.Message)
 	}
