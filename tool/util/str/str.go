@@ -10,6 +10,10 @@ type Value struct {
 	Value string `json:"value"`
 }
 
+type Num struct {
+	Num int `json:"num"`
+}
+
 // ID struct
 type ID struct {
 	ID int64 `json:"id"`
@@ -23,6 +27,7 @@ type String interface {
 // devMode const
 // key words
 const (
+	// devMode
 	Dev  = "dev"
 	Prod = "prod"
 	// default config file dir

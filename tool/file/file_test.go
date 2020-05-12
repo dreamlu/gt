@@ -1,6 +1,8 @@
 package file
 
 import (
+	"github.com/dreamlu/gt"
+	"os"
 	"testing"
 )
 
@@ -15,4 +17,12 @@ func TestCompressImage(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+}
+
+// 子目录读取文gt配置文件测试
+func TestConfigger(t *testing.T) {
+	dir, _ := os.Getwd()
+	t.Log(dir)
+	mode := gt.Configger().GetString("app.devMode")
+	t.Log(mode)
 }

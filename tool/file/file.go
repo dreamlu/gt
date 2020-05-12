@@ -2,6 +2,7 @@ package file
 
 import (
 	"github.com/dreamlu/gt"
+	"github.com/dreamlu/gt/tool/file/file_func"
 	"github.com/dreamlu/gt/tool/id"
 	"github.com/dreamlu/resize"
 	"image"
@@ -16,7 +17,7 @@ import (
 // example
 // 单文件上传
 // use gin upload file
-//func UpoadFile(u *gin.Context) {
+//file_func UpoadFile(u *gin.Context) {
 //
 //	fname := u.PostForm("fname") //指定文件名
 //	file, err := u.FormFile("file")
@@ -122,7 +123,7 @@ func (f *File) CompressImage(imageType string) error {
 func (f *File) SaveUploadedFile(file *multipart.FileHeader, filename string) (path string, err error) {
 
 	filepath := gt.Configger().GetString("app.filepath")
-	if !Exists(filepath) {
+	if !file_func.Exists(filepath) {
 		err = os.Mkdir(filepath, os.ModePerm)
 		if err != nil {
 			return
