@@ -209,10 +209,11 @@ func TestGetSearchSql(t *testing.T) {
 
 // 通用sql以及参数
 func TestGetDataBySql(t *testing.T) {
-	var sql = "select id,name,createtime from `user` where id = ?"
+	var sql = "select id,name,create_time from `user` where id = ?"
 
 	var user User
-	crud.DB().GetDataBySQL(&user, sql, "1")
+	err := crud.Params(Data(&user)).Select(sql, "1000").Single().Error()
+	t.Log(err)
 	t.Log(user)
 }
 
@@ -248,8 +249,8 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	var or []*OrderD
 	crud := NewCrud(
 		// 支持同一个mysql多数据库跨库查询
-		InnerTable([]string{"order", "gt.user"}),
-		LeftTable([]string{"order", "service"}),
+		Inner("order", "gt.user"),
+		Left("order", "service"),
 		Model(OrderD{}),
 		Data(&or),
 		KeyModel(OrderD{}),
@@ -292,7 +293,7 @@ func TestCreateMoreData(t *testing.T) {
 
 	type UserPar struct {
 		Name       string     `json:"name"`
-		Createtime time.CTime `json:"createtime"`
+		CreateTime time.CTime `json:"create_time"`
 	}
 	type User struct {
 		ID uint64 `json:"id"`
@@ -300,7 +301,7 @@ func TestCreateMoreData(t *testing.T) {
 	}
 
 	var up = []UserPar{
-		{Name: "测试1", Createtime: time.CTime(time2.Now())},
+		{Name: "测试1", CreateTime: time.CTime(time2.Now())},
 		{Name: "测试2"},
 	}
 	crud := NewCrud(
@@ -458,7 +459,7 @@ func TestGetReflectTagMore(t *testing.T) {
 	crud.Params(
 		Data(&data),
 		Model(GroupmealModel{}),
-		InnerTable([]string{"groupmeal", "groupmeal_category"}))
+		Inner("groupmeal", "groupmeal_category"))
 	var params = make(cmap.CMap)
 	crud.GetMoreBySearch(params)
 }
@@ -489,7 +490,7 @@ func TestGetMoreSQL(t *testing.T) {
 	crud := NewCrud(
 		Model(VpsInfo{}),
 		Data(&vsi),
-		InnerTable([]string{"venuepricets:venue_id", "venuehomestay"}),
+		Inner("venuepricets:venue_id", "venuehomestay"),
 	)
 	for i := 0; i < 3; i++ {
 		cd := crud.GetMoreBySearch(param)
@@ -505,8 +506,8 @@ func httpServerDemo(w http.ResponseWriter, r *http.Request) {
 	params.Add("mock", "1") // mock data
 	var or []*OrderD
 	crud := NewCrud(
-		InnerTable([]string{"order", "user"}),
-		//LeftTable([]string{"order", "service"}),
+		Inner("order", "user"),
+		//Left("order", "service"),
 		Model(OrderD{}),
 		Data(&or),
 		SubWhereSQL("1 = 1", "2 = 2", ""),
@@ -545,8 +546,8 @@ func TestField(t *testing.T) {
 	crud.Params(
 		Model(SvD{}),
 		Data(&datas),
-		InnerTable([]string{"sv.sv:id", "sv.svg:sv_id"}),
-		LeftTable([]string{"sv.svg", "shop.goods"}),
+		Inner("sv.sv:id", "sv.svg:sv_id"),
+		Left("sv.svg", "shop.goods"),
 	)
 	var params = cmap.CMap{}
 	_ = crud.GetMoreBySearch(params)

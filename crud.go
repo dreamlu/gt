@@ -108,6 +108,14 @@ func newParam(params ...Param) *Params {
 	return param
 }
 
+func Inner(InnerTables ...string) Param {
+
+	return func(params *Params) {
+		params.InnerTable = InnerTables
+	}
+}
+
+// Deprecated
 func InnerTable(InnerTables []string) Param {
 
 	return func(params *Params) {
@@ -115,6 +123,14 @@ func InnerTable(InnerTables []string) Param {
 	}
 }
 
+func Left(LeftTable ...string) Param {
+
+	return func(params *Params) {
+		params.LeftTable = LeftTable
+	}
+}
+
+// Deprecated
 func LeftTable(LeftTable []string) Param {
 
 	return func(params *Params) {

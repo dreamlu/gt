@@ -1,6 +1,7 @@
 package file
 
 import (
+	"errors"
 	"github.com/dreamlu/gt"
 	"github.com/dreamlu/gt/tool/file/file_func"
 	"github.com/dreamlu/gt/tool/id"
@@ -38,6 +39,7 @@ type File struct {
 	// img attributes
 	Width  int
 	Height int
+	IsComp int8 // is img compress
 }
 
 // 获得文件上传路径
@@ -65,7 +67,11 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 
 	// whatever
 	go func() {
-		switch strings.ToLower(fType) {
+		if f.IsComp == 0 {
+			return
+		}
+		fType = strings.ToLower(fType)
+		switch fType {
 		case "jpeg", "jpg", "png":
 			f.Path = path
 			_ = f.CompressImage(fType)
@@ -91,6 +97,8 @@ func (f *File) CompressImage(imageType string) error {
 		img, err = jpeg.Decode(ImgFile)
 	case "png":
 		img, err = png.Decode(ImgFile)
+	default:
+		return errors.New("[gt] not support img type:" + imageType)
 	}
 	if err != nil {
 		return err

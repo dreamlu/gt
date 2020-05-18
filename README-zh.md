@@ -1,5 +1,5 @@
 #### Erwin Schrödinger's Cat  
-gt使用手册 (v1.7.0)  
+gt使用手册 (v1.8.0+)  
 
 api快速开发工具库,模型生成  
 
@@ -71,8 +71,8 @@ type OrderD struct {
 	params.Add("everyPage", "2") // 每页2条
 	var or []*OrderD
 	crud := NewCrud(
-		InnerTable([]string{"order", "user", "order", "service"}),
-		//LeftTable([]string{"order", "service"}),
+		Inner("order", "user", "order", "service"),
+		//Left("order", "service"),
 		Model(OrderD{}),
 		Data(&or),
 		SubWhereSQL("1 = 1", "2 = 2", ""),
@@ -235,8 +235,8 @@ func (c *Client) Create(data *Client) (*Client, error) {
 	var or []*OrderD
 	crud := NewCrud(
 		// 支持同一个mysql多数据库跨库查询
-		InnerTable([]string{"gt.order", "user"}),
-		LeftTable([]string{"order", "service"}),
+		Inner("gt.order", "user"),
+		Left("order", "service"),
 		Model(OrderD{}),
 		Data(&or),
 		//SubWhereSQL("1 = 1", "2 = 2", ""),
