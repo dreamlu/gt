@@ -20,13 +20,13 @@ type CTime time.Time
 
 // 实现它的json序列化方法
 func (t CTime) MarshalJSON() ([]byte, error) {
-	var stamp = fmt.Sprintf("\"%s\"", time.Time(t).Format("2006-01-02 15:04:05"))
+	var stamp = fmt.Sprintf("%s", time.Time(t).Format("2006-01-02 15:04:05"))
 	return []byte(stamp), nil
 }
 
 // 反序列化方法 https://stackoverflow.com/questions/45303326/how-to-parse-non-standard-time-format-from-json-in-golang
 func (t *CTime) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), "\"")
+	s := strings.Trim(string(b), "")
 	loc, _ := time.LoadLocation("Local")
 	ti, err := time.ParseInLocation("2006-01-02 15:04:05", s, loc)
 	if err != nil {
@@ -71,13 +71,13 @@ type CDate time.Time
 
 // 实现它的json序列化方法
 func (t CDate) MarshalJSON() ([]byte, error) {
-	var stamp = fmt.Sprintf("\"%s\"", time.Time(t).Format("2006-01-02"))
+	var stamp = fmt.Sprintf("%s", time.Time(t).Format("2006-01-02"))
 	return []byte(stamp), nil
 }
 
 // 反序列化
 func (t *CDate) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), "\"")
+	s := strings.Trim(string(b), "")
 	loc, _ := time.LoadLocation("Local")
 	ti, err := time.ParseInLocation("2006-01-02", s, loc)
 	if err != nil {
