@@ -7,9 +7,11 @@ import (
 
 func TestTime(t *testing.T) {
 
+	ti := time.Now()
+	t.Log(ti)
 	te := CTime(time.Now()).String()
 	t.Log(te)
 	var tt CTime
 	_ = tt.UnmarshalJSON([]byte(te))
-	t.Log(tt.String())
+	t.Log(tt)
 }
