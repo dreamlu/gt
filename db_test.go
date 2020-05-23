@@ -65,11 +65,11 @@ func TestDB(t *testing.T) {
 	}
 
 	// return create id
-	crud.DB().CreateData(&user)
+	crud.DB().CreateData("", &user)
 	t.Log("user: ", user)
 	t.Log(crud.DB().RowsAffected)
 	user.Name = "haha"
-	crud.DB().CreateData(&user)
+	crud.DB().CreateData("", &user)
 	t.Log("user: ", user)
 	t.Log(crud.DB().RowsAffected)
 	var user2 User
@@ -87,7 +87,7 @@ func TestCrud(t *testing.T) {
 	}
 	crud = NewCrud(
 		Model(User{}),
-		//Table("user"),
+		Table(""),
 		Data(&user),
 	).Create()
 

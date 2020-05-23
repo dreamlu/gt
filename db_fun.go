@@ -932,9 +932,9 @@ func (db *DBTool) ValidateSQL(sql string) (err error) {
 //==============================================================
 
 // create
-func (db *DBTool) CreateData(data interface{}) {
+func (db *DBTool) CreateData(table string, data interface{}) {
 
-	db.DB = db.Create(data)
+	db.DB = db.Table(table).Create(data)
 }
 
 // data must array type
@@ -971,9 +971,9 @@ func (db *DBTool) UpdateData(gt *GT) {
 	}
 
 	if gt.Select != "" {
-		db.DB = db.Model(gt.Model).Where(gt.Select, gt.Args)
+		db.DB = db.Table(gt.Params.Table).Model(gt.Model).Where(gt.Select, gt.Args)
 	} else {
-		db.DB = db.Model(gt.Data)
+		db.DB = db.Table(gt.Params.Table).Model(gt.Data)
 	}
 
 	db.DB = db.Update(gt.Data)

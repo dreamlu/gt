@@ -168,7 +168,7 @@ func (c *DBCrud) Update() Crud {
 func (c *DBCrud) Create() Crud {
 	c.common()
 	clone := c.clone()
-	clone.dbTool.CreateData(clone.param.Data)
+	clone.dbTool.CreateData(clone.param.Table, clone.param.Data)
 	return clone
 }
 
