@@ -194,6 +194,7 @@ func (c *Client) GetBySearch(params cmap.CMap) (datas []*Client, pager result.Pa
 	return datas, cd.Pager(), nil
 }
 
+// id支持批量删除(逗号分割), 如: id = 12,13,14
 // delete data, by id
 func (c *Client) Delete(id string) error {
 
@@ -487,6 +488,8 @@ db := gt.NewCrud().DB()
 #### Crud clone
 ```go
 // 关于crud的
+一个crud = gt.NewCrud()对象中的参数是共享的,通用的增删改查针对同一张表可复用  
+如果进行了表关联或改变了模型, 需要重新cd = gt.NewCrud(),否则继续使用crud容易影响到其他使用这个变量的地方
 ```
 
 ps:  

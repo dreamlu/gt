@@ -118,6 +118,8 @@ func TestCrud(t *testing.T) {
 	// delete
 	info2 := crud.Delete(12)
 	t.Log(info2.Error())
+	info2 = crud.Delete("12,13,14")
+	t.Log(info2.Error())
 
 	// update by form request
 	args.Add("id", "4")

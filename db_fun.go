@@ -830,8 +830,13 @@ func (db *DBTool) ExecSQL(sql string, args ...interface{}) {
 
 // delete
 func (db *DBTool) Delete(table string, id interface{}) {
-	// sql := fmt.Sprintf("delete from `%s` where id=?", table)
-	db.ExecSQL(fmt.Sprintf("delete from `%s` where id = ?", table), id)
+	switch id.(type) {
+	case string:
+		if strings.Contains(id.(string), ",") {
+			id = strings.Split(id.(string), ",")
+		}
+	}
+	db.ExecSQL(fmt.Sprintf("delete from `%s` where id in (?)", table), id)
 }
 
 // update
