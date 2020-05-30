@@ -58,18 +58,18 @@ type Crud interface {
 	CreateMore() Crud     // create more, data must array type, single table
 
 	// select
-	Select(query string, args ...interface{}) Crud // select sql
-	From(query string) Crud                        // from sql, if use search, From must only once
-	Group(query string) Crud                       // the last group by
-	Search(params cmap.CMap) Crud                  // search pager
-	Single() Crud                                  // no search
-	Exec() Crud                                    // exec insert/update/delete sql
-	Error() error                                  // crud error
-	RowsAffected() int64                           // inflect rows
-	Pager() result.Pager                           // search pager
-	Begin() Crud                                   // start a transaction
-	Commit() Crud                                  // commit a transaction
-	Rollback() Crud                                // rollback a transaction
+	Select(q interface{}, args ...interface{}) Crud // select sql
+	From(query string) Crud                         // from sql, if use search, From must only once
+	Group(query string) Crud                        // the last group by
+	Search(params cmap.CMap) Crud                   // search pager
+	Single() Crud                                   // no search
+	Exec() Crud                                     // exec insert/update/delete sql
+	Error() error                                   // crud error
+	RowsAffected() int64                            // inflect rows
+	Pager() result.Pager                            // search pager
+	Begin() Crud                                    // start a transaction
+	Commit() Crud                                   // commit a transaction
+	Rollback() Crud                                 // rollback a transaction
 }
 
 // crud params

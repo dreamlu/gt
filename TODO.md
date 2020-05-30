@@ -40,7 +40,7 @@ TODO
 39.~~CDate映射sql date类型问题(无问题)~~  
 40.crud总是复用导致的问题  
 41.~~在线查看日志不显示问题~~  
-42.原生sql支持cmap参数和#{param}(or select(Struct))  
+42.~~原生sql支持cmap参数和#{param}(or select(Struct))~~  
 43.~~key,以及所有条件为空过滤~~    
 44.~~日期默认值问题为空过滤(弃)~~  
 45.~~keyModel不支持gt:field问题~~  

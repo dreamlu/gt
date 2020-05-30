@@ -173,11 +173,21 @@ func (c *DBCrud) Create() Crud {
 }
 
 // create
-func (c *DBCrud) Select(query string, args ...interface{}) Crud {
+func (c *DBCrud) Select(q interface{}, args ...interface{}) Crud {
 
 	clone := c
 	if c.selectSQL == "" {
 		clone = c.clone()
+	}
+
+	var query string
+	switch q.(type) {
+	case string:
+		query = q.(string)
+	//case cmap.CMap:
+	//	query, args = sq.CMapWhereSQL(q.(cmap.CMap))
+	case interface{}:
+		query, args = sq.StructWhereSQL(q)
 	}
 
 	clone.selectSQL += query + " "

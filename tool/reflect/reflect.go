@@ -1,6 +1,7 @@
 package reflect
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"reflect"
@@ -52,4 +53,12 @@ func ToSlice(arr interface{}) []interface{} {
 func StructToString(st interface{}) string {
 	typ := reflect.TypeOf(st)
 	return typ.Name()
+}
+
+// struct to map
+func ToMap(st interface{}) map[string]interface{} {
+	m := make(map[string]interface{})
+	bs, _ := json.Marshal(st)
+	_ = json.Unmarshal(bs, &m)
+	return m
 }

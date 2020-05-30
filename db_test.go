@@ -130,8 +130,16 @@ func TestCrud(t *testing.T) {
 
 // select sql
 func TestCrudSQL(t *testing.T) {
+	var cMap = cmap.CMap{}
+	cMap.Add("112", "1234")
 	sql := "update `user` set name=? where id=?"
-	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Select(" and 1=1").Exec())
+	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Select("and 1=1 and").
+		Select(cMap).
+		Select("and").
+		Select(&User{
+			ID:   11234,
+			Name: "梦S",
+		}).Exec())
 	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
 	t.Log("[Info]:", crud.DB().RowsAffected)
 	var user []User

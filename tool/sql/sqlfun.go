@@ -2,6 +2,7 @@ package sql
 
 import (
 	"bytes"
+	reflect2 "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/util/str"
 	"reflect"
 	"strings"
@@ -158,3 +159,40 @@ func otherTableKeySql(tag string, buf *bytes.Buffer, tables ...string) (b bool) 
 	}
 	return
 }
+
+// struct to where sql
+// return key1 = value1 and key2 = value2...
+func StructWhereSQL(st interface{}) (sql string, args []interface{}) {
+	var (
+		buf bytes.Buffer
+		m   = reflect2.ToMap(st)
+	)
+
+	for k, v := range m {
+		//if v == "" {
+		//	continue
+		//}
+		buf.WriteString(k)
+		buf.WriteString(" = ? and ")
+		args = append(args, v)
+	}
+	if len(m) > 0 {
+		sql = string(buf.Bytes()[:len(buf.Bytes())-5])
+	}
+	return
+}
+
+//// cmap to where sql
+//// return key1 = value1 and key2 = value2...
+//func CMapWhereSQL(cm cmap.CMap) (sql string, args []interface{}) {
+//	var buf bytes.Buffer
+//	for k, v := range cm {
+//		buf.WriteString(k)
+//		buf.WriteString(" = ? and ")
+//		args = append(args, v)
+//	}
+//	if len(cm) > 0 {
+//		sql = string(buf.Bytes()[:len(buf.Bytes())-5])
+//	}
+//	return
+//}
