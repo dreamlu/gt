@@ -270,10 +270,10 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 			continue
 		}
 		switch k {
-		case str.GtClientPage:
+		case str.GtClientPage, str.GtClientPageUnderLine:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case str.GtEveryPage:
+		case str.GtEveryPage, str.GtEveryPageUnderLine:
 			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
 		case str.GtOrder:
@@ -508,10 +508,10 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 			continue
 		}
 		switch k {
-		case str.GtClientPage:
+		case str.GtClientPage, str.GtClientPageUnderLine:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case str.GtEveryPage:
+		case str.GtEveryPage, str.GtEveryPageUnderLine:
 			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
 		case str.GtOrder:
@@ -615,10 +615,10 @@ func GetSelectSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64)
 
 	for k, v := range gt.CMaps {
 		switch k {
-		case str.GtClientPage:
+		case str.GtClientPage, str.GtClientPageUnderLine:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case str.GtEveryPage:
+		case str.GtEveryPage, str.GtEveryPageUnderLine:
 			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
 		}
