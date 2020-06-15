@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"runtime"
+	"strings"
 	"testing"
 	time2 "time"
 )
@@ -561,4 +562,12 @@ func TestField(t *testing.T) {
 	)
 	var params = cmap.CMap{}
 	_ = crud.GetMoreBySearch(params)
+}
+
+func TestOther(t *testing.T) {
+	a := "abc"
+	b := "bc"
+	c := "abc"
+	t.Log(strings.HasPrefix(a, b))
+	t.Log(strings.HasPrefix(a, c))
 }

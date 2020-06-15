@@ -99,7 +99,7 @@ func otherTableTagSQL(oTag, tag string, buf *bytes.Buffer, tables ...string) boo
 		}
 		// tables
 		switch {
-		case strings.Contains(tag, v+"_") &&
+		case strings.HasPrefix(tag, v+"_") &&
 			// 下面两种条件参考db_test.go==>TestGetReflectTagMore()
 			!strings.Contains(tag, "_id") &&
 			!strings.EqualFold(v, tables[0]):

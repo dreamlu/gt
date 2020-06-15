@@ -21,4 +21,7 @@ app:
 #    Error = "error"
 #    )
     level: info
-    #file:
+  nsq:
+    producer_addr: 127.0.0.1:4150
+    consumer_addr: 127.0.0.1:4150
+  # file:

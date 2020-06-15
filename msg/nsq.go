@@ -1,0 +1,70 @@
+package msg
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/dreamlu/gt"
+	"github.com/nsqio/go-nsq"
+	"strings"
+)
+
+// nsq
+type Nsg struct {
+	producer *nsq.Producer
+	consumer *nsq.Consumer
+	bs       []byte
+}
+
+func (n *Nsg) NewProducer() Msg {
+
+	config := nsq.NewConfig()
+	producer, err := nsq.NewProducer(gt.Configger().GetString("app.nsq.producer_addr"), config)
+	if err != nil {
+		fmt.Printf("[gt]:create producer failed, err:%v\n", err)
+		return nil
+	}
+	n.producer = producer
+	return n
+}
+
+func (n *Nsg) NewConsumer(topic, channel string) Msg {
+
+	config := nsq.NewConfig()
+	consumer, err := nsq.NewConsumer(topic, channel, config)
+	if err != nil {
+		fmt.Printf("[gt]:create producer failed, err:%v\n", err)
+		return nil
+	}
+	n.consumer = consumer
+	return n
+}
+
+func (n *Nsg) Pub(topic string, msg interface{}) error {
+
+	b, err := json.Marshal(msg)
+	if err != nil {
+		fmt.Println("[gt]:MSG Pub err: ", err)
+		return err
+	}
+	err = n.producer.Publish(topic, b)
+	return err
+}
+
+func (n *Nsg) Sub(handler HandlerFunc) error {
+
+	n.consumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
+		msg := &Message{}
+		msg.Message = message
+		err := handler(msg)
+		return err
+	}))
+	// use ',' split address
+	// ConnectToNSQD/ConnectToNSQLookupd
+	err := n.consumer.ConnectToNSQDs(strings.Split(gt.Configger().GetString("app.nsq.consumer_addr"), ","))
+	if err != nil {
+		gt.Logger().Error("[gt]:MSG Consumer ConnectToNSQD err: ", err)
+		return err
+	}
+
+	return nil
+}

@@ -40,12 +40,8 @@ func (c ResultMap) String() string {
 	return string(b)
 }
 
-// 接口封装, 替换返回interface, 出现无法add操作问题
+// Resultable interface
 type Resultable interface {
-
-	// 添加额外字段
-	Add(key string, value interface{}) (rmp ResultMap)
-
-	// 直接添加结构体
-	AddStruct(value interface{}) (rmp ResultMap)
+	Add(key string, value interface{}) (rmp ResultMap) // Add
+	AddStruct(value interface{}) (rmp ResultMap)       // AddStruct
 }

@@ -33,16 +33,14 @@ const (
 	// default config file dir
 	ConfDir = "conf/"
 	// db sql const
-	GtSubSQL = "sub_sql"
-	// Deprecated
+	GtSubSQL              = "sub_sql"
 	GtClientPage          = "clientPage"
 	GtClientPageUnderLine = "client_page" // 支持下划线
-	// Deprecated
-	GtEveryPage          = "everyPage"
-	GtEveryPageUnderLine = "every_page" // 支持下划线
-	GtOrder              = "order"
-	GtKey                = "key"
-	GtMock               = "mock"
+	GtEveryPage           = "everyPage"
+	GtEveryPageUnderLine  = "every_page" // 支持下划线
+	GtOrder               = "order"
+	GtKey                 = "key"
+	GtMock                = "mock"
 	// gt tag
 	GtField = "field"
 )
