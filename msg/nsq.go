@@ -50,6 +50,22 @@ func (n *Nsg) Pub(topic string, msg interface{}) error {
 	return err
 }
 
+func (n *Nsg) MultiPub(topic string, msgs ...interface{}) error {
+
+	var bs [][]byte
+	for _, v := range msgs {
+		b, err := json.Marshal(v)
+		if err != nil {
+			fmt.Println("[gt]:MSG MultiPub err: ", err)
+			return err
+		}
+		bs = append(bs, b)
+	}
+
+	err := n.producer.MultiPublish(topic, bs)
+	return err
+}
+
 func (n *Nsg) Sub(handler HandlerFunc) error {
 
 	n.consumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
