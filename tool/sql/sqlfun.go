@@ -89,7 +89,7 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 			// 排除_id结尾字段
 			case !strings.HasSuffix(tag, "_id") &&
 				!strings.HasPrefix(tag, "id"):
-				sqlKey += "`" + alias + "`.`" + tag + "` like binary ? or "
+				sqlKey += alias + ".`" + tag + "` like binary ? or "
 				argsKey = append(argsKey, "%"+key+"%")
 			}
 
