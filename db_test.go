@@ -86,7 +86,8 @@ func TestCrud(t *testing.T) {
 	var user = User{
 		Name: "new name",
 	}
-	crud = NewCrud(
+	crud = NewCrud()
+	crud.Params(
 		Model(User{}),
 		Table(""),
 		Data(&user),
@@ -113,7 +114,7 @@ func TestCrud(t *testing.T) {
 	//args["name"][0] = "梦"
 	var params cmap.CMap
 	params = params.CMap(args)
-	crud.GetBySearch(params)
+	crud.Params(Table("gt.user")).GetBySearch(params)
 	t.Log("\n[User Info]:", users)
 
 	// delete

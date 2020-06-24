@@ -2,6 +2,7 @@ package sql
 
 import (
 	"bytes"
+	"fmt"
 	reflect2 "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/util/str"
 	"reflect"
@@ -180,6 +181,24 @@ func StructWhereSQL(st interface{}) (sql string, args []interface{}) {
 		sql = string(buf.Bytes()[:len(buf.Bytes())-5])
 	}
 	return
+}
+
+// table parse
+func Table(table string) string {
+
+	if table == "" {
+		return table
+	}
+	if []byte(table)[0] == '`' {
+		return table
+	}
+	if strings.Contains(table, ".") {
+		ts := strings.Split(table, ".")
+		table = fmt.Sprintf("`%s`.`%s`", ts[0], ts[1])
+		return table
+	}
+
+	return fmt.Sprintf("`%s`", table)
 }
 
 //// cmap to where sql

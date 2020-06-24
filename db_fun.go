@@ -498,11 +498,12 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 		order        = "id desc"  // default order by
 		key          = ""         // key like binary search
 		bufW, bufNtW bytes.Buffer // where sql, sqlNt bytes sql
+		table        = sq.Table(gt.Table)
 	)
 
 	// select* replace
-	sql = fmt.Sprintf("select %s%s from `%s`", GetColSQL(gt.Model), gt.SubSQL, gt.Table)
-	sqlNt = fmt.Sprintf("select count(id) as total_num from `%s`", gt.Table)
+	sql = fmt.Sprintf("select %s%s from %s ", GetColSQL(gt.Model), gt.SubSQL, table)
+	sqlNt = fmt.Sprintf("select count(id) as total_num from %s ", table)
 	for k, v := range gt.CMaps {
 		if v[0] == "" {
 			continue
@@ -522,7 +523,7 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
 			}
-			sqlKey, argsKey := sq.GetKeySQL(key, gt.KeyModel, gt.Table)
+			sqlKey, argsKey := sq.GetKeySQL(key, gt.KeyModel, table)
 			bufW.WriteString(sqlKey)
 			bufNtW.WriteString(sqlKey)
 			args = append(args, argsKey[:]...)
@@ -563,10 +564,11 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 		order = ""         // default no order by
 		key   = ""         // key like binary search
 		bufW  bytes.Buffer // where sql, sqlNt bytes sql
+		table = sq.Table(gt.Table)
 	)
 
 	// select* replace
-	sql = fmt.Sprintf("select %s%s from `%s`", GetColSQL(gt.Model), gt.SubSQL, gt.Table)
+	sql = fmt.Sprintf("select %s%s from %s ", GetColSQL(gt.Model), gt.SubSQL, table)
 	for k, v := range gt.CMaps {
 		if v[0] == "" {
 			continue
@@ -580,7 +582,7 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
 			}
-			sqlKey, argsKey := sq.GetKeySQL(key, gt.KeyModel, gt.Table)
+			sqlKey, argsKey := sq.GetKeySQL(key, gt.KeyModel, table)
 			bufW.WriteString(sqlKey)
 			args = append(args, argsKey[:]...)
 			continue
@@ -836,7 +838,7 @@ func (db *DBTool) Delete(table string, id interface{}) {
 			id = strings.Split(id.(string), ",")
 		}
 	}
-	db.ExecSQL(fmt.Sprintf("delete from `%s` where id in (?)", table), id)
+	db.ExecSQL(fmt.Sprintf("delete from %s where id in (?)", sq.Table(table)), id)
 }
 
 // update
@@ -964,7 +966,7 @@ func (db *DBTool) CreateMoreData(table string, model interface{}, data interface
 	}
 	values := string(buf.Bytes()[:buf.Len()-1])
 
-	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", table, GetColSQL(model), values)
+	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", sq.Table(table), GetColSQL(model), values)
 	db.DB = db.DB.Exec(sql, params[:]...)
 }
 
