@@ -705,7 +705,7 @@ func GetInsertSQL(table string, params cmap.CMap) (sql string, args []interface{
 // 获得数据,根据sql语句,无分页
 func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}) {
 
-	db.DB = db.DB.Raw(sql, args[:]...).Scan(data)
+	db.DB.Raw(sql, args[:]...).Scan(data)
 }
 
 // 获得数据,根据name条件
@@ -744,9 +744,9 @@ func (db *DBTool) GetDataByName(data interface{}, name, value string) (err error
 //}
 
 // 获得数据,根据id
-func (db *DBTool) GetDataByID(data interface{}, id interface{}) {
+func (db *DBTool) GetDataByID(gt *GT, id interface{}) {
 
-	db.DB = db.DB.First(data, id) // limit 1
+	db.GetDataBySQL(gt.Data, fmt.Sprintf("select %s from %s where id = ?", GetColSQL(gt.Model), sq.Table(gt.Table)), id)
 }
 
 // More Table
@@ -805,15 +805,14 @@ func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, client
 		sql += fmt.Sprintf("limit %d, %d", (clientPage-1)*everyPage, everyPage)
 	}
 	// sqlNt += limit
-	dba := db.DB.Raw(sqlNt, argsNt[:]...).Scan(&pager)
+	db.DB.Raw(sqlNt, argsNt[:]...).Scan(&pager)
 	if db.Error == nil {
-		db.DB = db.DB.Raw(sql, args[:]...).Scan(data)
+		db.DB.Raw(sql, args[:]...).Scan(data)
 		// pager data
 		pager.ClientPage = clientPage
 		pager.EveryPage = everyPage
 		return
 	}
-	db.DB = dba
 	return
 }
 
@@ -823,8 +822,7 @@ func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, client
 // exec sql
 func (db *DBTool) ExecSQL(sql string, args ...interface{}) {
 
-	db.DB = db.Exec(sql, args...)
-	//return db
+	db.Exec(sql, args...)
 }
 
 // delete
@@ -941,7 +939,7 @@ func (db *DBTool) ValidateSQL(sql string) (err error) {
 // create
 func (db *DBTool) CreateData(table string, data interface{}) {
 
-	db.DB = db.Table(table).Create(data)
+	db.Table(table).Create(data)
 }
 
 // data must array type
@@ -967,7 +965,7 @@ func (db *DBTool) CreateMoreData(table string, model interface{}, data interface
 	values := string(buf.Bytes()[:buf.Len()-1])
 
 	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", sq.Table(table), GetColSQL(model), values)
-	db.DB = db.DB.Exec(sql, params[:]...)
+	db.DB.Exec(sql, params[:]...)
 }
 
 // update
@@ -978,10 +976,10 @@ func (db *DBTool) UpdateData(gt *GT) {
 	}
 
 	if gt.Select != "" {
-		db.DB = db.Table(gt.Params.Table).Model(gt.Model).Where(gt.Select, gt.Args)
+		db.Table(gt.Table).Model(gt.Model).Where(gt.Select, gt.Args).Update(gt.Data)
 	} else {
-		db.DB = db.Table(gt.Params.Table).Model(gt.Data)
+		db.Table(gt.Table).Model(gt.Data).Update(gt.Data)
 	}
 
-	db.DB = db.Update(gt.Data)
+	//db.Update(gt.Data)
 }

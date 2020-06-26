@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 	"runtime"
-	"strings"
 	"testing"
 	time2 "time"
 )
@@ -565,10 +564,52 @@ func TestField(t *testing.T) {
 	_ = crud.GetMoreBySearch(params)
 }
 
-func TestOther(t *testing.T) {
-	a := "abc"
-	b := "bc"
-	c := "abc"
-	t.Log(strings.HasPrefix(a, b))
-	t.Log(strings.HasPrefix(a, c))
+// test transaction
+func TestTransaction(t *testing.T) {
+	cd := NewCrud().Begin()
+	var (
+		params = cmap.CMap{}
+		user   = User{
+			ID:   1,
+			Name: "test2",
+		}
+		users []*User
+	)
+	_ = cd.Params(Model(User{}), Data(&user)).Select("select *from user where id = 1").Single()
+	t.Log("step1: ", user)
+
+	user.Name = "testUpdate"
+	cd.Params(Data(user)).Update()
+
+	params.Set("id", "1")
+	cd.Params(Data(&user)).GetByData(params)
+	t.Log("step2: ", user)
+
+	cd.Params(Data(&users)).GetBySearch(params)
+	for _, v := range users {
+		t.Log("step3: ", v)
+		break
+	}
+
+	cd.Select("update user set name = 'testExec' where id = 1").Exec()
+	cd.Params(Data(&user)).GetByID(1)
+	t.Log("step4: ", user)
+
+	cd.Params(Data(user)).Create()
+
+	cd.Params(Data(&user)).GetByID(2)
+	t.Log("step5: ", user)
+
+	cd.Params(Data(user)).Update()
+
+	cd.Update()
+
+	cd.Create()
+
+	user.ID = 1
+	user.Name = "test3"
+	cd.Params(Data(user)).Update()
+
+	cd.Commit()
+
 }

@@ -84,7 +84,9 @@ func (c *DBCrud) GetByID(id interface{}) Crud {
 	c.common()
 
 	clone := c.clone()
-	clone.dbTool.GetDataByID(clone.param.Data, id)
+	clone.dbTool.GetDataByID(&GT{
+		Params: clone.param,
+	}, id)
 	return clone
 }
 
