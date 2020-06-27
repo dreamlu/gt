@@ -418,41 +418,6 @@ func TestDBCrud_Create(t *testing.T) {
 	t.Log(crud.Error())
 }
 
-// test Transcation
-func TestTranscation(t *testing.T) {
-
-	cd := crud.Begin()
-	cd.Params(
-		Table("user"),
-		Data(&User{
-			ID:   11234,
-			Name: "梦S",
-		}),
-	).Create()
-	if cd.Error() != nil {
-		cd.Rollback()
-		cd = crud.Begin()
-	}
-	cd = cd.Params(
-		Data(&User{
-			Name: "梦SSS2",
-		})).Create()
-	if cd.Error() != nil {
-		cd.Rollback()
-		cd = crud.Begin()
-	}
-	// add select sql test
-	var u []User
-	cd.Params(Data(&u)).Select("select * from `user`").Select("where 1=1").Single()
-	cd.Params(Data(&u)).Select("select * from `user`").Select("where 1=1").Single()
-	//cd.DB().Raw("select * from `user`").Scan(&u)
-
-	cd.Commit()
-	if cd.Error() != nil {
-		cd.Rollback()
-	}
-}
-
 func TestGetReflectTagMore(t *testing.T) {
 	//type GroupmealCategory struct {
 	//	ID   int64  `gorm:"type:bigint(20) AUTO_INCREMENT;PRIMARY_KEY;" json:"id"` //编号

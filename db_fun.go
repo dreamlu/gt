@@ -296,14 +296,13 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 		case str.GtMock:
 			mock.Mock(gt.Data)
 			gt.isMock = true
-			continue
+			return
 		case "":
 			continue
 		}
 
 		if b := otherTableWhere(&bufW, tables[1:], k); b != true {
 			v[0] = strings.Replace(v[0], "'", "\\'", -1)
-			//bufW.WriteString("`" + tables[0] + "`." + k + " = ? and ")
 			bufW.WriteString("`")
 			bufW.WriteString(tables[0])
 			bufW.WriteString("`.`")
@@ -531,7 +530,7 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 		case str.GtMock:
 			mock.Mock(gt.Data)
 			gt.isMock = true
-			continue
+			return
 		case "":
 			continue
 		}
@@ -589,7 +588,7 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 		case str.GtMock:
 			mock.Mock(gt.Data)
 			gt.isMock = true
-			continue
+			return
 		case "":
 			continue
 		}
