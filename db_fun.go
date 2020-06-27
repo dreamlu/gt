@@ -29,7 +29,7 @@ var coMap = cmap.CMap{}
 // 主表放在tables中第一个, 紧接着为主表关联的外键表名(无顺序)
 func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 	typ := reflect.TypeOf(model)
-	key := typ.PkgPath() + typ.Name()
+	key := typ.PkgPath() + "/more/" + typ.Name()
 	sql = coMap.Get(key)
 	if sql != "" {
 		//Logger().Info("[USE coMap GET ColumnSQL]")

@@ -61,4 +61,5 @@ TODO
 60.~~跨表gt.table()问题~~  
 61.错误处理统一封装，作为return返回同时还能记录日志  
 62.~~事务,select后影响update问题~~  
+63.优化内存sql解析记录  
 n.xxx  
