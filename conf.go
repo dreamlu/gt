@@ -9,6 +9,7 @@ import (
 	"github.com/dreamlu/gt/tool/util/str"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 )
@@ -69,12 +70,18 @@ func newConf(dir string) string {
 	GOPATH := os.Getenv("GOPATH")
 	ss := strings.Split(fileDir, GOPATH)
 	if len(ss) > 1 {
-		ss2 := strings.Split(ss[1], "/") // linux
+
+		// default linux/mac os
+		spChar := "/"
+		if runtime.GOOS == "windows" {
+			spChar = "\\"
+		}
+		ss2 := strings.Split(ss[1], spChar)
 
 		newDir := GOPATH
 		for i := 1; i < len(ss2); i++ {
-			newDir += "/" + ss2[i]
-			tmpDir := newDir + "/" + dir
+			newDir += spChar + ss2[i]
+			tmpDir := newDir + spChar + dir
 			if file_func.Exists(tmpDir) {
 				return tmpDir
 			}
