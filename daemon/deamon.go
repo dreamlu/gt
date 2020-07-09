@@ -1,0 +1,129 @@
+package daemon
+
+import (
+	"github.com/dreamlu/gt"
+	"github.com/dreamlu/gt/tool/type/time"
+	"sync"
+	time2 "time"
+)
+
+// daemon progress
+type Daemon struct {
+	Task  chan *Task // no time task
+	tasks []*Task    // no time task queue
+	Num   int        // task goroutine pool num
+}
+
+type Task struct {
+	ID         uint64      // job id, 0++
+	daemonFunc DaemonFunc  // exec func
+	Time       *time.CTime // ctime
+}
+
+type TimeTask struct {
+	Task
+	Time time.CTime // ctime
+}
+
+type DaemonFunc func()
+type Param func(*Task)
+
+func Func(daemonfunc DaemonFunc) Param {
+	return func(params *Task) {
+		params.daemonFunc = daemonfunc
+	}
+}
+
+func Time(time time.CTime) Param {
+	return func(params *Task) {
+		params.Time = &time
+	}
+}
+
+// ======= Singleton ========
+// single daemon
+var (
+	daemon     *Daemon
+	onceDaemon sync.Once
+)
+
+func Daemoner() *Daemon {
+
+	onceDaemon.Do(func() {
+		daemon = newDaemon()
+		go daemon.task()
+		go daemon.taskQueue()
+	})
+	return daemon
+}
+
+// new daemon
+func newDaemon() *Daemon {
+
+	// default num
+	//nums := make([]int, 2)
+	num := gt.Configger().GetInt("app.daemon.task_num")
+	//time_num := gt.Configger().GetInt("app.daemon.task_time_num")
+	//if time_num == 0 {
+	//	time_num = num
+	//}
+	//nums[0] = num
+	//nums[1] = time_num
+	return &Daemon{
+		Num:  num,
+		Task: make(chan *Task), // must init via make()
+	}
+}
+
+// add daemon task
+func (d *Daemon) AddTask(params ...Param) *Daemon {
+	task := &Task{}
+
+	for _, p := range params {
+		p(task)
+	}
+
+	// d.Task <- task
+	d.tasks = append(d.tasks, task)
+	return d
+}
+
+// no time
+// running task queue
+func (d *Daemon) taskQueue() {
+
+	for {
+		for k := 0; k < len(d.tasks); k++ {
+			task := d.tasks[k]
+			if task.Time != nil {
+				if time2.Time(*task.Time).After(time2.Now()) {
+					//fmt.Println("time early")
+					continue
+				} else {
+					d.Task <- task
+					d.tasks = append(d.tasks[:k], d.tasks[k+1:]...)
+					k--
+					continue
+				}
+			}
+			d.Task <- task
+		}
+		//fmt.Println("==split line===")
+	}
+}
+
+// running task
+// daemon goroutine num
+func (d *Daemon) task() {
+
+	for i := 0; i < d.Num; i++ {
+		//i := i
+		go func() {
+			for {
+				//fmt.Println("协程", i)
+				task := <-d.Task
+				task.daemonFunc()
+			}
+		}()
+	}
+}

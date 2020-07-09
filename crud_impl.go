@@ -137,14 +137,6 @@ func (c *DBCrud) CreateResID(params cmap.CMap) (str.ID, error) {
 
 // == json data ==
 
-// create
-func (c *DBCrud) CreateMoreData() Crud {
-
-	clone := c.clone()
-	clone.dbTool.CreateMoreData(clone.param.Table, clone.param.Model, clone.param.Data)
-	return clone
-}
-
 // create more
 func (c *DBCrud) CreateMore() Crud {
 	c.common()

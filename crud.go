@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const Version = "1.8.0+"
+const Version = "1.9.0+"
 
 func init() {
 	println("[gt version]:", Version)
@@ -51,11 +51,9 @@ type Crud interface {
 
 	// crud and search id
 	// json data
-	Update() Crud // update
-	Create() Crud // create, include res insert id
-	// Deprecated
-	CreateMoreData() Crud // create more, data must array type, single table
-	CreateMore() Crud     // create more, data must array type, single table
+	Update() Crud     // update
+	Create() Crud     // create, include res insert id
+	CreateMore() Crud // create more, data must array type, single table
 
 	// select
 	Select(q interface{}, args ...interface{}) Crud // select sql

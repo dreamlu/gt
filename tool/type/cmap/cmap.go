@@ -24,14 +24,16 @@ func (v CMap) Get(key string) string {
 
 // Set sets the key to value. It replaces any existing
 // values.
-func (v CMap) Set(key, value string) {
+func (v CMap) Set(key, value string) CMap {
 	v[key] = []string{value}
+	return v
 }
 
 // Add adds the value to key. It appends to any existing
 // values associated with key.
-func (v CMap) Add(key, value string) {
+func (v CMap) Add(key, value string) CMap {
 	v[key] = append(v[key], value)
+	return v
 }
 
 // Del deletes the values associated with key.

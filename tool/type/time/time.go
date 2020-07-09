@@ -9,8 +9,10 @@ import (
 
 // time.Duration expend
 const (
-	Day  = 24 * time.Minute
-	Week = 7 * Day
+	Day        = 24 * time.Minute
+	Week       = 7 * Day
+	Layout     = "2006-01-02 15:04:05"
+	LayoutDate = "2006-01-02"
 )
 
 // china time/date
@@ -19,7 +21,7 @@ type CTime time.Time
 
 // 实现它的json序列化方法
 func (t CTime) MarshalJSON() ([]byte, error) {
-	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format("2006-01-02 15:04:05"))
+	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format(Layout))
 	return []byte(stamp), nil
 }
 
@@ -27,7 +29,7 @@ func (t CTime) MarshalJSON() ([]byte, error) {
 func (t *CTime) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	loc, _ := time.LoadLocation("Local")
-	ti, err := time.ParseInLocation("2006-01-02 15:04:05", s, loc)
+	ti, err := time.ParseInLocation(Layout, s, loc)
 	if err != nil {
 		return err
 	}
@@ -57,7 +59,7 @@ func (t *CTime) Scan(v interface{}) error {
 // must sure MarshalJSON is right
 // to string
 func (t CTime) String() string {
-	return time.Time(t).Format("2006-01-02 15:04:05")
+	return time.Time(t).Format(Layout)
 }
 
 // 时间格式化2006-01-02
@@ -65,7 +67,7 @@ type CDate time.Time
 
 // 实现它的json序列化方法
 func (t CDate) MarshalJSON() ([]byte, error) {
-	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format("2006-01-02"))
+	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format(LayoutDate))
 	return []byte(stamp), nil
 }
 
@@ -73,7 +75,7 @@ func (t CDate) MarshalJSON() ([]byte, error) {
 func (t *CDate) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	loc, _ := time.LoadLocation("Local")
-	ti, err := time.ParseInLocation("2006-01-02", s, loc)
+	ti, err := time.ParseInLocation(LayoutDate, s, loc)
 	if err != nil {
 		return err
 	}
@@ -102,5 +104,5 @@ func (t *CDate) Scan(v interface{}) error {
 // must sure MarshalJSON is right
 // to string
 func (t CDate) String() string {
-	return time.Time(t).Format("2006-01-02")
+	return time.Time(t).Format(LayoutDate)
 }

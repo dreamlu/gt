@@ -24,4 +24,6 @@ app:
   nsq:
     producer_addr: 127.0.0.1:4150
     consumer_addr: 127.0.0.1:4150
+  daemon:
+    task_num: 10 # task exec num
   # file:

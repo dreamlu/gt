@@ -17,4 +17,6 @@ func TestCMap_Struct(t *testing.T) {
 		return
 	}
 	t.Log(te)
+
+	t.Log(CMap{}.Add("id", "1").Set("test", "2"))
 }
