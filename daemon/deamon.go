@@ -9,13 +9,13 @@ import (
 
 // daemon progress
 type Daemon struct {
-	Task  chan *Task // no time task
-	tasks []*Task    // no time task queue
+	Task  chan *Task // time task
+	tasks []*Task    // task queue
 	Num   int        // task goroutine pool num
 }
 
 type Task struct {
-	ID         uint64      // job id, 0++
+	//ID         uint64      // job id, 0++
 	daemonFunc DaemonFunc  // exec func
 	Time       *time.CTime // ctime
 }
@@ -88,7 +88,6 @@ func (d *Daemon) AddTask(params ...Param) *Daemon {
 	return d
 }
 
-// no time
 // running task queue
 func (d *Daemon) taskQueue() {
 
@@ -113,14 +112,14 @@ func (d *Daemon) taskQueue() {
 }
 
 // running task
-// daemon goroutine num
+// daemon goroutine pool num
 func (d *Daemon) task() {
 
 	for i := 0; i < d.Num; i++ {
 		//i := i
 		go func() {
 			for {
-				//fmt.Println("协程", i)
+				//fmt.Println("goroutine", i)
 				task := <-d.Task
 				task.daemonFunc()
 			}

@@ -560,7 +560,8 @@ func TestTransaction(t *testing.T) {
 	cd.Params(Data(&user)).GetByID(1)
 	t.Log("step4: ", user)
 
-	cd.Params(Data(user)).Create()
+	err := cd.Params(Data(user)).Create().Error()
+	t.Log("error", err)
 
 	cd.Params(Data(&user)).GetByID(2)
 	t.Log("step5: ", user)

@@ -16,6 +16,7 @@ type DBTool struct {
 	once sync.Once
 	// db driver
 	*gorm.DB
+	res *gorm.DB
 	// db log mode
 	log bool
 }
@@ -133,5 +134,6 @@ func (db *DBTool) clone() *DBTool {
 	return &DBTool{
 		DB:  db.DB,
 		log: db.log,
+		res: db.res,
 	}
 }

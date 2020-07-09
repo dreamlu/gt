@@ -704,10 +704,11 @@ func GetInsertSQL(table string, params cmap.CMap) (sql string, args []interface{
 // 获得数据,根据sql语句,无分页
 func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}) {
 
-	db.DB.Raw(sql, args[:]...).Scan(data)
+	db.res = db.DB.Raw(sql, args[:]...).Scan(data)
 }
 
 // 获得数据,根据name条件
+// Deprecated
 func (db *DBTool) GetDataByName(data interface{}, name, value string) (err error) {
 
 	dba := db.DB.Where(name+" = ?", value).Find(data) //只要一行数据时使用 LIMIT 1,增加查询性能
@@ -804,9 +805,9 @@ func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, client
 		sql += fmt.Sprintf("limit %d, %d", (clientPage-1)*everyPage, everyPage)
 	}
 	// sqlNt += limit
-	db.DB.Raw(sqlNt, argsNt[:]...).Scan(&pager)
-	if db.Error == nil {
-		db.DB.Raw(sql, args[:]...).Scan(data)
+	db.res = db.DB.Raw(sqlNt, argsNt[:]...).Scan(&pager)
+	if db.res.Error == nil {
+		db.res = db.DB.Raw(sql, args[:]...).Scan(data)
 		// pager data
 		pager.ClientPage = clientPage
 		pager.EveryPage = everyPage
@@ -821,7 +822,7 @@ func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, client
 // exec sql
 func (db *DBTool) ExecSQL(sql string, args ...interface{}) {
 
-	db.Exec(sql, args...)
+	db.res = db.Exec(sql, args...)
 }
 
 // delete
@@ -846,7 +847,7 @@ func (db *DBTool) UpdateFormData(table string, params cmap.CMap) (err error) {
 
 	sql, args := GetUpdateSQL(table, params)
 	db.ExecSQL(sql, args...)
-	return db.Error
+	return db.res.Error
 }
 
 // 结合struct修改
@@ -874,7 +875,7 @@ func (db *DBTool) CreateFormData(table string, params cmap.CMap) error {
 
 	sql, args := GetInsertSQL(table, params)
 	db.ExecSQL(sql, args...)
-	return db.Error
+	return db.res.Error
 }
 
 // param.CMap 形式批量创建问题: 顺序对应, 使用json形式批量创建
@@ -938,7 +939,7 @@ func (db *DBTool) ValidateSQL(sql string) (err error) {
 // create
 func (db *DBTool) CreateData(table string, data interface{}) {
 
-	db.Table(table).Create(data)
+	db.res = db.Table(table).Create(data)
 }
 
 // data must array type
@@ -964,7 +965,7 @@ func (db *DBTool) CreateMoreData(table string, model interface{}, data interface
 	values := string(buf.Bytes()[:buf.Len()-1])
 
 	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", sq.Table(table), GetColSQL(model), values)
-	db.DB.Exec(sql, params[:]...)
+	db.res = db.DB.Exec(sql, params[:]...)
 }
 
 // update
@@ -975,10 +976,10 @@ func (db *DBTool) UpdateData(gt *GT) {
 	}
 
 	if gt.Select != "" {
-		db.Table(gt.Table).Model(gt.Model).Where(gt.Select, gt.Args).Update(gt.Data)
+		db.res = db.Table(gt.Table).Model(gt.Model).Where(gt.Select, gt.Args).Update(gt.Data)
 	} else {
-		db.Table(gt.Table).Model(gt.Data).Update(gt.Data)
+		db.res = db.Table(gt.Table).Model(gt.Data).Update(gt.Data)
 	}
 
-	//db.Update(gt.Data)
+	//db.res = db.Update(gt.Data)
 }
