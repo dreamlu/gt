@@ -244,10 +244,14 @@ func (c *DBCrud) Exec() Crud {
 
 func (c *DBCrud) Error() error {
 
-	if c.dbTool.Error != nil {
-		c.dbTool.Error = sq.GetSQLError(c.dbTool.Error.Error())
+	var err error
+	if c.dbTool.res != nil {
+		err = c.dbTool.res.Error
+		if err != nil {
+			err = sq.GetSQLError(err.Error())
+		}
 	}
-	return c.dbTool.Error
+	return err
 }
 
 func (c *DBCrud) RowsAffected() int64 {
