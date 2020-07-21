@@ -25,6 +25,7 @@ type User struct {
 	Name       string     `json:"name"`
 	BirthDate  time.CDate `json:"birth_date" gorm:"type:date"` // data
 	CreateTime time.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
+	Account    float64    `json:"account" gorm:"type:decimal(10,2)"`
 }
 
 // service model
@@ -110,10 +111,7 @@ func TestCrud(t *testing.T) {
 		Data(&user),
 		SubWhereSQL("1=1"),
 	)
-	//args["name"][0] = "梦"
-	var params cmap.CMap
-	params = params.CMap(args)
-	crud.Params(Table("gt.user")).GetBySearch(params)
+	crud.Params(Table("gt.user")).GetBySearch(cmap.CMap{}.Set("key", "梦"))
 	t.Log("\n[User Info]:", users)
 
 	// delete
@@ -230,8 +228,8 @@ func TestGetDataBySql(t *testing.T) {
 
 func TestGetDataBySearch(t *testing.T) {
 	var args = make(cmap.CMap)
-	args.Add("name", "梦")
-	//args["name"] = append(args["name"], "梦")
+	args.Add("id", "2")
+	args["name"] = append(args["name"], "梦")
 	args["key"] = append(args["key"], "梦")
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
@@ -244,7 +242,7 @@ func TestGetDataBySearch(t *testing.T) {
 			Data:  &user,
 		},
 	})
-	t.Log(user)
+	t.Log(user[0])
 }
 
 // 测试多表连接
@@ -577,5 +575,23 @@ func TestTransaction(t *testing.T) {
 	cd.Params(Data(user)).Update()
 
 	cd.Commit()
+}
 
+func TestDBDouble10to2(t *testing.T) {
+	var user User
+	NewCrud(
+		Data(&user),
+		Model(User{}),
+	).
+		GetByData(cmap.CMap{}.
+			Set("id", "1"),
+		)
+	t.Log(user)
+
+	var user2 User
+	NewCrud(
+		Data(&user2),
+		Model(User{}),
+	).Select("select *from `user` where id = ?", 1).Single()
+	t.Log(user2)
 }

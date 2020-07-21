@@ -122,3 +122,8 @@ func (s *myFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 	return []byte(msg), nil
 }
+
+// print error line
+func (l *Log) ErrorLine(args ...interface{}) {
+	l.Error(fmt.Sprintf("%+v\n", args))
+}

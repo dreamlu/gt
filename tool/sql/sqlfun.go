@@ -76,24 +76,28 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 	var (
 		tags = GetTags(model)
 		keys = strings.Split(key, " ") // 空格隔开
-		//buf  bytes.Buffer
+		buf  bytes.Buffer
 	)
 
 	for _, key := range keys {
 		if key == "" {
 			continue
 		}
-		sqlKey += "("
+		buf.WriteString("(")
 		for _, tag := range tags {
 			switch {
 			// 排除_id结尾字段
 			case !strings.HasSuffix(tag, "_id") &&
 				!strings.HasPrefix(tag, "id"):
-				sqlKey += alias + ".`" + tag + "` like binary ? or "
+				buf.WriteString(alias)
+				buf.WriteString(".`")
+				buf.WriteString(tag)
+				buf.WriteString("` like binary ? or ")
 				argsKey = append(argsKey, "%"+key+"%")
 			}
 
 		}
+		sqlKey = buf.String()
 		sqlKey = string([]byte(sqlKey)[:len(sqlKey)-4]) + ") and "
 	}
 	return

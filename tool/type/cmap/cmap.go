@@ -37,8 +37,9 @@ func (v CMap) Add(key, value string) CMap {
 }
 
 // Del deletes the values associated with key.
-func (v CMap) Del(key string) {
+func (v CMap) Del(key string) CMap {
 	delete(v, key)
+	return v
 }
 
 // CMap to struct data

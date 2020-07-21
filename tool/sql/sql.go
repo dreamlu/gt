@@ -24,8 +24,9 @@ func GetSQLError(error string) (err error) {
 			error = strings.Split(error, ".")[1]
 		}
 		err = fmt.Errorf("%w", &te.TextError{Msg: error})
-	case strings.Contains(error, "Data too long"):
-		err = fmt.Errorf("%w", &te.TextError{Msg: "存在字段范围过长"})
+	case strings.Contains(error, "Error 1406") || strings.Contains(error, "Error 1264"):
+		key := strings.Split(strings.Split(error, "column '")[1], "'")[0]
+		err = fmt.Errorf("%w", &te.TextError{Msg: fmt.Sprintf("字段过长[%s]", key)})
 	default:
 		err = fmt.Errorf("%v", errors.New(error))
 	}

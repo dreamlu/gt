@@ -1,6 +1,7 @@
 package gt
 
 import (
+	"github.com/dreamlu/gt/tool/type/errors"
 	"os"
 	"testing"
 	"time"
@@ -25,4 +26,14 @@ func TestNewFileLog(t *testing.T) {
 		Logger().Error("this is error")
 	}
 	t.Log("log over")
+}
+
+func TestErrorLine(t *testing.T) {
+	e := errors.New("origin error")
+	err2 := errors.Wrap(e, "new err")
+	err3 := errors.Wrap(err2, "new err2")
+	t.Log(err3)
+	//s := fmt.Sprintf("%+v\n", err3)
+	Logger().Error(err3)
+	Logger().ErrorLine(err3)
 }
