@@ -13,7 +13,7 @@ services:
       - micro-go
   nsqd:
     image: nsqio/nsq:v1.2.0
-    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --data-path=/data
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 #-data-path=/data --mem-queue-size=0 # 记录和持久存储
     #    depends_on:
     #      - nsqlookupd
     ports:
@@ -21,7 +21,7 @@ services:
       - 4151:4151
     networks:
       - micro-go
-  # 暂弃
+  # 如需持久化
   #    volumes:
   #      - /data/nsq:/data
   nsqadmin:

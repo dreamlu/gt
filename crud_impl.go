@@ -277,7 +277,7 @@ func (c *DBCrud) Begin() Crud {
 }
 
 func (c *DBCrud) Commit() Crud {
-	if c.dbTool.Error != nil {
+	if c.dbTool.res.Error != nil {
 		c.dbTool.Rollback()
 	}
 	c.dbTool.Commit()
