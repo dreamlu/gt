@@ -704,7 +704,78 @@ func GetInsertSQL(table string, params cmap.CMap) (sql string, args []interface{
 // 获得数据,根据sql语句,无分页
 func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}) {
 
+	typ := reflect.TypeOf(data)
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+	switch typ.Kind() {
+	case reflect.Struct:
+	case reflect.Slice:
+		// TODO 数组-基本类型解析
+		//typS := typ.Elem()
+		//if typS.Kind() == reflect.Ptr {
+		//	typS = typS.Elem()
+		//}
+		//if typS.Kind() != reflect.Struct {
+		//	db.GetBasicTypesData(typ, data, sql, args...)
+		//	//log.Print("其他基础类型")
+		//	return
+		//}
+		//log.Print(typS.Kind())
+
+	default:
+		db.GetBasicTypesData(typ, data, sql, args...)
+		//log.Print("其他基础类型")
+		return
+	}
+
 	db.res = db.DB.Raw(sql, args[:]...).Scan(data)
+}
+
+func (db *DBTool) GetBasicTypesData(typ reflect.Type, data interface{}, sql string, args ...interface{}) {
+	rows, err := db.Raw(sql, args).Rows() // (*sql.Rows, error)
+	if err != nil {
+		db.res = db.New()
+		_ = db.res.AddError(err)
+		return
+	}
+	defer rows.Close()
+
+	switch typ.Kind() {
+	//case reflect.Slice:
+	//
+	//	typS := typ.Elem()
+	//	if typS.Kind() == reflect.Ptr {
+	//		typS = typS.Elem()
+	//	}
+	//	//log.Print(typS)
+	//
+	//	value := reflect.ValueOf(data)
+	//	if value.Kind() == reflect.Ptr {
+	//		value = value.Elem()
+	//	}
+	//	//var vs = reflect2.ToSlice(data)
+	//	for rows.Next() {
+	//		// new
+	//		e := reflect.New(typS)
+	//		ev := e.Elem()
+	//		var v interface{}
+	//		rows.Scan(&v) //,&a,&b)
+	//		//ev.SetString("v")
+	//		bs := v.([]byte)
+	//		//log.Print(string(bs))
+	//		println(ev.CanSet())
+	//		ev.SetBytes(bs)
+	//		//vs = append(vs, v)
+	//		value.Set(reflect.Append(value, ev))
+	//	}
+	//log.Print(vs)
+	//data = &vs
+	default:
+		for rows.Next() {
+			rows.Scan(data) //,&a,&b)
+		}
+	}
 }
 
 // 获得数据,根据name条件

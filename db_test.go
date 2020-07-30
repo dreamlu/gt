@@ -376,6 +376,11 @@ func TestDBCrud_Select(t *testing.T) {
 	if ok {
 		t.Log(file, "[]", line)
 	}
+
+	var name string
+	cd3 := NewCrud(Data(&name)).Select("select name from user where id > 0").Single()
+	t.Log(cd3.Error())
+	t.Log(name)
 }
 
 // test update/delete
