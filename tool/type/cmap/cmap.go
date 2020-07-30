@@ -22,6 +22,13 @@ func (v CMap) Get(key string) string {
 	return vs[0]
 }
 
+// return Get value and Del key
+func (v CMap) Pop(key string) string {
+	s := v.Get(key)
+	v.Del(key)
+	return s
+}
+
 // Set sets the key to value. It replaces any existing
 // values.
 func (v CMap) Set(key, value string) CMap {
@@ -67,4 +74,9 @@ func (v CMap) Struct(value interface{}) error {
 // url.Values to CMap
 func (v CMap) CMap(values url.Values) CMap {
 	return CMap(values)
+}
+
+// new cmap
+func NewCMap() CMap {
+	return CMap{}
 }
