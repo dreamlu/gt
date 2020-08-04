@@ -8,8 +8,10 @@ import (
 	"github.com/dreamlu/gt/tool/result"
 	sq "github.com/dreamlu/gt/tool/sql"
 	"github.com/dreamlu/gt/tool/type/cmap"
+	"github.com/dreamlu/gt/tool/type/errors"
 	"github.com/dreamlu/gt/tool/util/hump"
 	"github.com/dreamlu/gt/tool/util/str"
+	"github.com/dreamlu/gt/tool/valid"
 	"runtime"
 	"strings"
 )
@@ -19,6 +21,8 @@ import (
 type DBCrud struct {
 	// DBTool  tool
 	dbTool *DBTool
+	// error
+	err error
 	// crud param
 	param *Params
 
@@ -140,8 +144,11 @@ func (c *DBCrud) CreateResID(params cmap.CMap) (str.ID, error) {
 // create more
 func (c *DBCrud) CreateMore() Crud {
 	c.common()
-
 	clone := c.clone()
+	clone.err = check(clone.param.Data)
+	if clone.err != nil {
+		return clone
+	}
 	clone.dbTool.CreateMoreData(clone.param.Table, clone.param.Model, clone.param.Data)
 	return clone
 }
@@ -162,6 +169,10 @@ func (c *DBCrud) Update() Crud {
 func (c *DBCrud) Create() Crud {
 	c.common()
 	clone := c.clone()
+	clone.err = check(clone.param.Data)
+	if clone.err != nil {
+		return clone
+	}
 	clone.dbTool.CreateData(clone.param.Table, clone.param.Data)
 	return clone
 }
@@ -244,14 +255,16 @@ func (c *DBCrud) Exec() Crud {
 
 func (c *DBCrud) Error() error {
 
-	var err error
+	if c.err != nil {
+		return c.err
+	}
 	if c.dbTool.res != nil {
-		err = c.dbTool.res.Error
-		if err != nil {
-			err = sq.GetSQLError(err.Error())
+		c.err = c.dbTool.res.Error
+		if c.err != nil {
+			c.err = sq.GetSQLError(c.err.Error())
 		}
 	}
-	return err
+	return c.err
 }
 
 func (c *DBCrud) RowsAffected() int64 {
@@ -306,6 +319,7 @@ func (c *DBCrud) clone() (dbCrud *DBCrud) {
 		args:      c.args,
 		argsNt:    c.argsNt,
 		group:     c.group,
+		err:       c.err,
 	}
 
 	// isTrans
@@ -339,7 +353,21 @@ func (c *DBCrud) line() {
 		buf := new(strings.Builder)
 
 		fmt.Fprintf(buf, "\n\033[35m[gt]\033[0m: ")
-		fmt.Fprintf(buf, "%s:%d", fullFile, line)
+		fmt.Fprintf(buf, "%s:%d\n", fullFile, line)
 		fmt.Print(buf.String())
 	}
+}
+
+// auto valid data
+func check(data interface{}) error {
+
+	ves := valid.Valid(data)
+	if len(ves) > 0 {
+		var s string
+		for k, v := range ves {
+			s += fmt.Sprintf("%s:%s;", k, v)
+		}
+		return errors.New(strings.TrimRight(s, ";"))
+	}
+	return nil
 }

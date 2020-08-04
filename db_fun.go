@@ -13,7 +13,9 @@ import (
 	"github.com/dreamlu/gt/tool/type/te"
 	"github.com/dreamlu/gt/tool/util"
 	"github.com/dreamlu/gt/tool/util/str"
+	"log"
 	"reflect"
+	. "reflect"
 	"strconv"
 	"strings"
 )
@@ -21,7 +23,7 @@ import (
 //======================return tag=============================
 //=============================================================
 
-var coMap = cmap.CMap{}
+var coMap = cmap.NewCMap()
 
 // select * replace
 // select more tables
@@ -705,31 +707,31 @@ func GetInsertSQL(table string, params cmap.CMap) (sql string, args []interface{
 func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}) {
 
 	typ := reflect.TypeOf(data)
+	log.Print(typ.Kind())
 	if typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
 	}
+	log.Print(typ.Kind())
 	switch typ.Kind() {
-	case reflect.Struct:
-	case reflect.Slice:
-		// TODO 数组-基本类型解析
-		//typS := typ.Elem()
-		//if typS.Kind() == reflect.Ptr {
-		//	typS = typS.Elem()
-		//}
-		//if typS.Kind() != reflect.Struct {
-		//	db.GetBasicTypesData(typ, data, sql, args...)
-		//	//log.Print("其他基础类型")
-		//	return
-		//}
-		//log.Print(typS.Kind())
+	case Bool, Int, Int8, Int16, Int32, Int64, Uint, Uint8, Uint16, Uint32, Uint64, Float32, Float64, String:
+		db.GetBasicTypesData(typ, data, sql, args...)
+	//case reflect.Slice:
+	// TODO 数组-基本类型解析
+	//typS := typ.Elem()
+	//if typS.Kind() == reflect.Ptr {
+	//	typS = typS.Elem()
+	//}
+	//if typS.Kind() != reflect.Struct {
+	//	db.GetBasicTypesData(typ, data, sql, args...)
+	//	//log.Print("其他基础类型")
+	//	return
+	//}
+	//log.Print(typS.Kind())
 
 	default:
-		db.GetBasicTypesData(typ, data, sql, args...)
-		//log.Print("其他基础类型")
+		db.res = db.DB.Raw(sql, args[:]...).Scan(data)
 		return
 	}
-
-	db.res = db.DB.Raw(sql, args[:]...).Scan(data)
 }
 
 func (db *DBTool) GetBasicTypesData(typ reflect.Type, data interface{}, sql string, args ...interface{}) {

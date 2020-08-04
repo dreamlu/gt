@@ -1,12 +1,14 @@
-package validator
+package valid
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	myReflect "github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/result"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/te"
+	"github.com/dreamlu/gt/tool/util/str"
+	"log"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -18,14 +20,14 @@ type Validator struct {
 	// 校验的数据对象
 	data interface{}
 	// 校检模型
-	model interface{}
+	//model interface{}
 	// 规则列表,key为字段名
-	rule map[string]*vRule
+	rule ValidRule
 }
 
 // 校检规则
 type vRule struct {
-	vr ValidateRuler
+	Vr DefaultRule
 	// required bool
 }
 
@@ -40,67 +42,147 @@ type ValidateRuler interface {
 // 实现ValidateRuler接口
 type DefaultRule struct {
 	// 验证的字段名
-	key string
+	Key string
 	// 翻译后的字段名
-	// 默认 = key
-	trans string
+	// 默认 = Key
+	Trans string
 	// 规则
-	valid string
+	Valid string
 }
 
-// 创建校验器对象
-// 针对form表单/json数据两种
-func Valid(data, model interface{}) *result.MapData {
+// valid error
+type (
+	ValidError map[string]error
+	ValidRule  map[string]*vRule
+)
 
-	v := &Validator{
-		data:  data,
-		model: model,
+func (v *ValidRule) String() string {
+	s, err := json.Marshal(v)
+	if err != nil {
+		log.Println("valid struct:[", err, "]:error")
+		return ""
 	}
-	v.rule = make(map[string]*vRule)
+	return string(s)
+}
+
+func (v *ValidRule) Struct(str string) {
+	err := json.Unmarshal([]byte(str), v)
+	if err != nil {
+		log.Println("valid string to struct err:", err)
+	}
+}
+
+var coMap = cmap.NewCMap()
+
+// 创建校验器对象
+// 针对结构体数据
+// json
+func Valid(data interface{}) ValidError {
+
 	// 根据模型添加验证规则
-	typ := reflect.TypeOf(model)
+	typ := reflect.TypeOf(data)
+
+	if typ.Kind() == reflect.Slice {
+		ss := myReflect.ToSlice(data)
+		for _, v := range ss {
+			typ = reflect.TypeOf(v)
+			errs := valid(v, typ)
+			if len(errs) > 0 {
+				return errs
+			}
+		}
+		return nil
+	}
+
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+	return valid(data, typ)
+}
+
+// form/single json data
+func ValidModel(data interface{}, model interface{}) ValidError {
+
+	return valid(data, reflect.TypeOf(model))
+}
+
+// valid
+func valid(data interface{}, typ reflect.Type) ValidError {
+
+	var (
+		v = &Validator{data: data}
+	)
+	key := typ.PkgPath() + "/valid/" + typ.Name()
+	log.Println(key)
+	vd := coMap.Get(key)
+	if vd != "" {
+		v.rule.Struct(vd)
+		return v.Check()
+	}
+
+	v.rule = make(ValidRule)
 	for i := 0; i < typ.NumField(); i++ {
 		// 新建一个规则
-		rule := &DefaultRule{}
+		rule := DefaultRule{}
 		// 字段名
 		// 使用Name替代json Tag
-		rule.key = typ.Field(i).Tag.Get("json")
+		rule.Key = typ.Field(i).Tag.Get("json")
 		// 规则
-		rule.valid = typ.Field(i).Tag.Get("valid")
+		gtTag := typ.Field(i).Tag.Get("gt")
+		if gtTag == "" {
+			continue
+		}
+		gtFields := strings.Split(gtTag, ";")
+		for _, v := range gtFields {
+			if strings.Contains(v, str.GtValid) {
+				rule.Valid = string([]byte(v)[6:]) //strings.Trim(v, str.GtValid+":")
+				//break
+			}
+			if strings.Contains(v, str.GtTrans) {
+				rule.Trans = string([]byte(v)[6:]) //strings.TrimLeft(v, str.GtTrans+":")
+				//break
+			}
+		}
+		//rule.Valid = typ.Field(i).Tag.Get("valid")
 		// 去除不存在验证字段
-		if rule.valid == "" {
+		if rule.Valid == "" {
 			continue
 		}
 		// 字段翻译
-		rule.trans = typ.Field(i).Tag.Get("trans")
+		//rule.Trans = typ.Field(i).Tag.Get("Trans")
 
 		// 绑定添加规则
-		v.rule[rule.key] = &vRule{rule}
+		v.rule[rule.Key] = &vRule{rule}
 	}
+
+	// add coMap
+	//log.Println(v.rule.String())
+	coMap.Set(key, v.rule.String())
+
 	// 进行校检
-	return v.CheckInfo()
+	return v.Check()
 }
 
 // 执行检查后返回信息
-// trans 翻译后的字段名
-func (v *Validator) CheckInfo() *result.MapData {
-	if err := v.Check(); err != nil {
-		// 检查不通过，处理错误
-		// fmt.Println(err)
-		// return err
-		for k := range v.rule {
-			if err[k] != nil {
-				return result.GetMapData(result.CodeValidator, err[k].Error())
-			}
-		}
-	}
-	return result.MapSuccess
-}
+// Trans 翻译后的字段名
+//func (v *Validator) CheckInfo() ValidError {
+//	//if err := v.Check(); err != nil {
+//	//	// 检查不通过，处理错误
+//	//	// fmt.Println(err)
+//	//	// return err
+//	//	//for k := range v.rule {
+//	//	//	if err[k] != nil {
+//	//	//		return result.GetMapData(result.CodeValidator, err[k].Error())
+//	//	//	}
+//	//	//}
+//	//}
+//	return v.Check()
+//}
 
 // 执行检查
-func (v *Validator) Check() (errs map[string]error) {
+func (v *Validator) Check() (errs ValidError) {
 
-	errs = make(map[string]error)
+	errs = make(ValidError)
 	// 类型判断
 	// d is value
 	switch d := v.data.(type) {
@@ -114,7 +196,7 @@ func (v *Validator) Check() (errs map[string]error) {
 			if data == nil {
 				data = []string{""}
 			}
-			if err := r.vr.Check(data[0]); err != nil { // 调用ValidateRuler接口的Check方法来检查
+			if err := r.Vr.Check(data[0]); err != nil { // 调用ValidateRuler接口的Check方法来检查
 				errs[k] = err
 			}
 		}
@@ -125,7 +207,7 @@ func (v *Validator) Check() (errs map[string]error) {
 			if data == nil {
 				data = []string{""}
 			}
-			if err := r.vr.Check(data[0]); err != nil { // 调用ValidateRuler接口的Check方法来检查
+			if err := r.Vr.Check(data[0]); err != nil { // 调用ValidateRuler接口的Check方法来检查
 				errs[k] = err
 			}
 		}
@@ -135,6 +217,9 @@ func (v *Validator) Check() (errs map[string]error) {
 			var val interface{}
 			//val, err := myReflect.GetDataByFieldName(d, k)
 			typ := reflect.TypeOf(d)
+			if typ.Kind() == reflect.Ptr {
+				typ = typ.Elem()
+			}
 			for i := 0; i < typ.NumField(); i++ {
 				if typ.Field(i).Tag.Get("json") == k {
 					//log.Println(reflect.ValueOf(d).Field(i).String())
@@ -144,7 +229,7 @@ func (v *Validator) Check() (errs map[string]error) {
 			}
 
 			//log.Println(string(val))
-			if err := r.vr.Check(val); err != nil { // 调用ValidateRuler接口的Check方法来检查
+			if err := r.Vr.Check(val); err != nil { // 调用ValidateRuler接口的Check方法来检查
 				errs[k] = err
 			}
 		}
@@ -157,15 +242,15 @@ func (v *Validator) Check() (errs map[string]error) {
 // 字段值转换成string进行验证
 func (n *DefaultRule) Check(data interface{}) (err error) {
 	// required 判断
-	if !strings.Contains(n.valid, "required") && data == "" {
+	if !strings.Contains(n.Valid, "required") && data == "" {
 		return
 	}
 
 	//  split rule
 	//  先后规则顺序
-	rules := strings.Split(n.valid, ",")
-	if n.trans == "" {
-		n.trans = n.key
+	rules := strings.Split(n.Valid, ",")
+	if n.Trans == "" {
+		n.Trans = n.Key
 	}
 	for _, v := range rules {
 		// 规则
@@ -175,7 +260,7 @@ func (n *DefaultRule) Check(data interface{}) (err error) {
 
 		case "required":
 			if err := nonzero(data); err != nil {
-				return &te.TextError{Msg: fmt.Sprintln(n.trans, "为必填项")}
+				return &te.TextError{Msg: fmt.Sprint(n.Trans, "为必填项")}
 			}
 		case "len":
 			min := 0
@@ -193,21 +278,21 @@ func (n *DefaultRule) Check(data interface{}) (err error) {
 			}
 
 			if lg < min || lg > max {
-				return &te.TextError{Msg: fmt.Sprintln(n.trans, "长度在", min, "与", max, "之间")}
+				return &te.TextError{Msg: fmt.Sprint(n.Trans, "长度在", min, "与", max, "之间")}
 			}
 		case "max":
 
 			if err := max(data, param[1]); err != nil {
-				return &te.TextError{Msg: fmt.Sprintln(n.trans, "最大值为", param[1])}
+				return &te.TextError{Msg: fmt.Sprint(n.Trans, "最大值为", param[1])}
 			}
 		case "min":
 
 			if err := min(data, param[1]); err != nil {
-				return &te.TextError{Msg: fmt.Sprintln(n.trans, "最小值为", param[1])}
+				return &te.TextError{Msg: fmt.Sprint(n.Trans, "最小值为", param[1])}
 			}
 		case "regex":
 			if err := regex(data, param[1]); err != nil {
-				return &te.TextError{Msg: fmt.Sprintln(n.trans, "正则规则为", param[1])}
+				return &te.TextError{Msg: fmt.Sprint(n.Trans, "正则规则为", param[1])}
 			}
 		case "phone":
 
@@ -220,7 +305,7 @@ func (n *DefaultRule) Check(data interface{}) (err error) {
 				return &te.TextError{Msg: fmt.Sprintln("邮箱格式非法")}
 			}
 		default:
-			return errors.New(fmt.Sprintf("rule error: not support of rule=%s", n.valid))
+			return errors.New(fmt.Sprintf("rule error: not support of rule=%s", n.Valid))
 		}
 	}
 	return nil
@@ -443,10 +528,10 @@ func asFloat(param string) (float64, error) {
 
 //type myRuler struct {
 //	// 验证的字段名
-//	key string
+//	Key string
 //	// 翻译后的字段名
-//	// 默认 = key
-//	trans string
+//	// 默认 = Key
+//	Trans string
 //	// 规则
 //	rule string
 //}

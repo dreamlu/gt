@@ -347,27 +347,27 @@ type CJSON []byte
 ```  
 
 ### Validator  
+>  
 ```go
 func TestValidator(t *testing.T) {
-
-	type Test struct {
-		ID   int64  `json:"id" valid:"required,min=0,max=5"`
-		Name string `json:"name" valid:"required,len=2-5" trans:"用户名"`
+    type Test struct {
+		ID   int64  `json:"id" gt:"valid:required,min=0,max=5"`
+		Name string `json:"name" gt:"valid:required,len=2-5;trans:用户名"`
 	}
 
-	// form request data
-	var maps = make(map[string][]string)
-	maps["name"] = append(maps["name"], "梦1")
-	info := Valid(maps, Test{})
-	log.Println(info)
-
-	// json request data
+	// json data
 	var test = Test{
 		ID:   6,
-		Name: "梦1",
+		Name: "梦",
 	}
-	log.Println(Valid(test, Test{}))
+	t.Log(Valid(test))
 
+	// form data
+	var maps = cmap.NewCMap()
+	maps["name"] = append(maps["name"], "梦")
+	info := ValidForm(maps, Test{})
+	//t.Log(info == nil)
+	t.Log(info)
 }
 ```
 

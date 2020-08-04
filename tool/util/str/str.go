@@ -43,4 +43,6 @@ const (
 	GtMock                = "mock"
 	// gt tag
 	GtField = "field"
+	GtValid = "valid"
+	GtTrans = "trans"
 )

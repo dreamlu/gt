@@ -10,7 +10,6 @@ import (
 	"github.com/dreamlu/gt/tool/type/time"
 	"log"
 	"net/http"
-	"net/url"
 	"runtime"
 	"testing"
 	time2 "time"
@@ -22,7 +21,7 @@ import (
 // user model
 type User struct {
 	ID         uint64     `json:"id"`
-	Name       string     `json:"name"`
+	Name       string     `json:"name" gt:"valid:len=3-5;trans:名称"`
 	BirthDate  time.CDate `json:"birth_date" gorm:"type:date"` // data
 	CreateTime time.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
 	Account    float64    `json:"account" gorm:"type:decimal(10,2)"`
@@ -87,12 +86,13 @@ func TestCrud(t *testing.T) {
 		Name: "new name",
 	}
 	crud = NewCrud()
-	crud.Params(
+	cd := crud.Params(
 		Model(User{}),
 		Table(""),
 		Data(&user),
 	).Create()
 
+	t.Log(cd.Error())
 	// update
 	user.ID = 2
 	crud.Update()
@@ -102,17 +102,18 @@ func TestCrud(t *testing.T) {
 	t.Log(info, "\n[GetByID]:", info.Error())
 
 	// get by search
-	var args = url.Values{}
-	args.Add("name", "梦")
+	//var args = url.Values{}
+	//args.Add("name", "梦")
 	// get by search
 	var users []*User
 	crud.Params(
 		Model(User{}),
-		Data(&user),
-		SubWhereSQL("1=1"),
+		Data(&users),
+		//SubWhereSQL("1=1"),
 	)
-	crud.Params(Table("gt.user")).GetBySearch(cmap.CMap{}.Set("key", "梦"))
+	crud = crud.Params(Table("gt.user")).GetBySearch(cmap.NewCMap().Set("id", "1000"))
 	t.Log("\n[User Info]:", users)
+	t.Log(crud.Error())
 
 	// delete
 	info2 := crud.Delete(12)
@@ -121,15 +122,15 @@ func TestCrud(t *testing.T) {
 	t.Log(info2.Error())
 
 	// update by form request
-	args.Add("id", "4")
-	args.Set("name", "梦4")
-	err := crud.UpdateForm(cmap.CMap(args))
-	log.Println(err)
+	//args.Add("id", "4")
+	//args.Set("name", "梦4")
+	//err := crud.UpdateForm(cmap.CMap(args))
+	//log.Println(err)
 }
 
 // select sql
 func TestCrudSQL(t *testing.T) {
-	var cMap = cmap.CMap{}
+	var cMap = cmap.NewCMap()
 	cMap.Add("112", "1234")
 	sql := "update `user` set name=? where id=?"
 	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Select("and 1=1 and").
@@ -242,6 +243,7 @@ func TestGetDataBySearch(t *testing.T) {
 			Data:  &user,
 		},
 	})
+	t.Log(crud.DB().res.Error)
 	t.Log(user[0])
 }
 
@@ -249,11 +251,10 @@ func TestGetDataBySearch(t *testing.T) {
 func TestGetMoreDataBySearch(t *testing.T) {
 	// 多表查询
 	// get more search
-	var params = make(cmap.CMap)
-	//params.Add("user_id", "1")
-	params.Add("key", "梦") // key work
-	params.Add("clientPage", "1")
-	params.Add("everyPage", "2")
+	var params = cmap.NewCMap().
+		Set("key", "梦"). // key work
+		Set("clientPage", "1").
+		Set("everyPage", "2")
 	//params.Add("mock", "1") // mock data
 	var or []*OrderD
 	crud := NewCrud(
@@ -301,7 +302,7 @@ func TestGetMoreSearchSQL(t *testing.T) {
 func TestCreateMoreData(t *testing.T) {
 
 	type UserPar struct {
-		Name       string     `json:"name"`
+		Name       string     `json:"name" gt:"valid:len=5-10"`
 		CreateTime time.CTime `json:"create_time"`
 	}
 	type User struct {
@@ -320,7 +321,7 @@ func TestCreateMoreData(t *testing.T) {
 		//SubSQL("(asdf) as a","(asdfa) as b"),
 	)
 
-	err := crud.CreateMore()
+	err := crud.CreateMore().Error()
 	t.Log(err)
 }
 
@@ -350,7 +351,7 @@ func TestExtends(t *testing.T) {
 // select test
 func TestDBCrud_Select(t *testing.T) {
 	var (
-		params = cmap.CMap{}
+		params = cmap.NewCMap()
 		user   []*User
 	)
 	params.Add("clientPage", "1")
@@ -364,8 +365,8 @@ func TestDBCrud_Select(t *testing.T) {
 		cd.Select("and 1=1")
 	}
 	// search
-	cd.Search(params)
-	t.Log(cd.Pager())
+	cd = cd.Search(params)
+	t.Log(cd.Error())
 	// single
 	cd2 := crud.Params(
 		Data(&user),
@@ -463,7 +464,7 @@ func TestGetMoreSQL(t *testing.T) {
 	}
 	var vsi []VpsInfo
 
-	var param = cmap.CMap{}
+	var param = cmap.NewCMap()
 	param.Add("key", "test")
 	//param.Add()
 	crud := NewCrud(
@@ -528,7 +529,7 @@ func TestField(t *testing.T) {
 		Inner("sv.sv:id", "sv.svg:sv_id"),
 		Left("sv.svg", "shop.goods"),
 	)
-	var params = cmap.CMap{}
+	var params = cmap.NewCMap()
 	_ = crud.GetMoreBySearch(params)
 }
 
@@ -536,7 +537,7 @@ func TestField(t *testing.T) {
 func TestTransaction(t *testing.T) {
 	cd := NewCrud().Begin()
 	var (
-		params = cmap.CMap{}
+		params = cmap.NewCMap()
 		user   = User{
 			ID:   1,
 			Name: "test2",
@@ -588,7 +589,7 @@ func TestDBDouble10to2(t *testing.T) {
 		Data(&user),
 		Model(User{}),
 	).
-		GetByData(cmap.CMap{}.
+		GetByData(cmap.NewCMap().
 			Set("id", "1"),
 		)
 	t.Log(user)
