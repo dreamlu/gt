@@ -13,7 +13,6 @@ import (
 	"github.com/dreamlu/gt/tool/type/te"
 	"github.com/dreamlu/gt/tool/util"
 	"github.com/dreamlu/gt/tool/util/str"
-	"log"
 	"reflect"
 	. "reflect"
 	"strconv"
@@ -707,11 +706,11 @@ func GetInsertSQL(table string, params cmap.CMap) (sql string, args []interface{
 func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}) {
 
 	typ := reflect.TypeOf(data)
-	log.Print(typ.Kind())
+	//log.Print(typ.Kind())
 	if typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
 	}
-	log.Print(typ.Kind())
+	//log.Print(typ.Kind())
 	switch typ.Kind() {
 	case Bool, Int, Int8, Int16, Int32, Int64, Uint, Uint8, Uint16, Uint32, Uint64, Float32, Float64, String:
 		db.GetBasicTypesData(typ, data, sql, args...)
