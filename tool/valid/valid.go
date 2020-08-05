@@ -81,12 +81,10 @@ func Valid(data interface{}) ValidError {
 
 	// 根据模型添加验证规则
 	typ := reflect.TypeOf(data)
-
 	if typ.Kind() == reflect.Slice {
 		ss := myReflect.ToSlice(data)
 		for _, v := range ss {
-			typ = reflect.TypeOf(v)
-			errs := valid(v, typ)
+			errs := Valid(v)
 			if len(errs) > 0 {
 				return errs
 			}
