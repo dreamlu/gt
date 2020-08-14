@@ -221,7 +221,7 @@ func GetColParamSQL(model interface{}) (sql string) {
 func GetParams(data interface{}) (params []interface{}) {
 
 	typ := reflect.ValueOf(data)
-	if typ.Kind() == reflect.Ptr {
+	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
 	}
 	for i := 0; i < typ.NumField(); i++ {
@@ -707,7 +707,7 @@ func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}
 
 	typ := reflect.TypeOf(data)
 	//log.Print(typ.Kind())
-	if typ.Kind() == reflect.Ptr {
+	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
 	}
 	//log.Print(typ.Kind())

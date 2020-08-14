@@ -92,8 +92,9 @@ func Valid(data interface{}) ValidError {
 		return nil
 	}
 
-	if typ.Kind() == reflect.Ptr {
+	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
+		data = reflect.ValueOf(data).Elem().Interface()
 	}
 	return valid(data, typ)
 }

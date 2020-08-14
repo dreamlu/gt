@@ -21,6 +21,12 @@ func TestValidator(t *testing.T) {
 	}
 	t.Log(Valid(test))
 
+	var test2 = &Test{
+		ID:   6,
+		Name: "梦",
+	}
+	t.Log(Valid(&test2))
+
 	// json data
 	var tests = []Test{
 		{
