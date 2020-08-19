@@ -3,6 +3,7 @@
 package gt
 
 import (
+	json2 "encoding/json"
 	"fmt"
 	"github.com/dreamlu/gt/tool/result"
 	"github.com/dreamlu/gt/tool/type/cmap"
@@ -25,6 +26,11 @@ type User struct {
 	BirthDate  time.CDate `json:"birth_date" gorm:"type:date"` // data
 	CreateTime time.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
 	Account    float64    `json:"account" gorm:"type:decimal(10,2)"`
+}
+
+func (u User) String() string {
+	b, _ := json2.Marshal(u)
+	return string(b)
 }
 
 // service model

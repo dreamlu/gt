@@ -1,9 +1,12 @@
 #### Erwin Schrödinger's Cat  
-gt使用手册 (v1.9.0+)  
+gt使用手册 (v1.10.0+)  
 
 api快速开发业务框架,模型生成  
+通用增删改查，支持多表连接  
 
-##### demo: [deercoder-gin](https://github.com/dreamlu/deercoder-gin)  
+##### demo:  
+[deercoder-gin](https://github.com/dreamlu/deercoder-gin) (单机)  
+[micro-go](https://github.com/dreamlu/micro-go) (微服务)  
 
 ##### API
 - [API 使用](#api-examples)
@@ -490,7 +493,11 @@ db := gt.NewCrud().DB()
     GetByData(params cmap.CMap) Crud       // get data no search
     GetMoreBySearch(params cmap.CMap) Crud // more search    
     // 以上三种支持mock参数,传递的参数mock=1即可
-```
+```  
+ps:  
+1.不支持CJSON类型, 请使用tag: `faker:"-"`进行过滤  
+2.不支持图片等实体文件数据  
+3.默认随机生成,如有长度等其他要求,请参考:[faker_test](https://github.com/bxcodec/faker/blob/master/faker_test.go)  
 
 #### Crud clone
 ```go
@@ -498,11 +505,6 @@ db := gt.NewCrud().DB()
 一个crud = gt.NewCrud()对象中的参数是共享的,通用的增删改查针对同一张表可复用  
 如果进行了表关联或改变了模型, 需要重新cd = gt.NewCrud(),否则继续使用crud容易影响到其他使用这个变量的地方
 ```
-
-ps:  
-1.不支持CJSON类型, 请使用tag: `faker:"-"`进行过滤  
-2.不支持图片等实体文件数据  
-3.默认随机生成,如有长度等其他要求,请参考:[faker_test](https://github.com/bxcodec/faker/blob/master/faker_test.go)  
 
 - 约定  
 1.模型结构体json 内容与表字段保持一致  

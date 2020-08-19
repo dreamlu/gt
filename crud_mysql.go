@@ -40,7 +40,7 @@ type DBCrud struct {
 }
 
 // init DBTool tool
-func (c *DBCrud) initCrud(dbTool *DBTool, param *Params) {
+func (c *DBCrud) initCrud(param *Params) {
 
 	c.dbTool = dbTool
 	c.param = param
@@ -50,6 +50,11 @@ func (c *DBCrud) initCrud(dbTool *DBTool, param *Params) {
 func (c *DBCrud) DB() *DBTool {
 	c.common()
 	return c.dbTool
+}
+
+func (c *DBCrud) AutoMigrate(values ...interface{}) Crud {
+	c.dbTool.AutoMigrate(values...)
+	return c
 }
 
 func (c *DBCrud) Params(params ...Param) Crud {

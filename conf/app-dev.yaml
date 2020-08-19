@@ -1,10 +1,14 @@
 app:
   # database
+  # mysql
   db:
     log: true
     host: tcp(127.0.0.1:3306)
     user: root
     password: lucheng
+  # mongodb
+  mongo:
+    host: 127.0.0.1:27017
   # redis
   # If not, leave it blank
   redis:

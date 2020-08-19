@@ -12,8 +12,6 @@ import (
 
 // DB tool
 type DBTool struct {
-	// once
-	once sync.Once
 	// db driver
 	*gorm.DB
 	res *gorm.DB
@@ -56,9 +54,7 @@ func (db *DBTool) NewDB() {
 	}
 
 	sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
-	db.once.Do(func() {
-		db.DB = db.open(sql)
-	})
+	db.DB = db.open(sql)
 	// Globally disable table names
 	// use name replace names
 	db.DB.SingularTable(true)
@@ -103,7 +99,7 @@ func (db *DBTool) open(sql string) *gorm.DB {
 }
 
 // init DBTool
-func NewDBTool() *DBTool {
+func newDBTool() *DBTool {
 
 	dbTool := &DBTool{}
 
@@ -114,19 +110,17 @@ func NewDBTool() *DBTool {
 
 var (
 	onceDB sync.Once
-	// dbTool
-	// dbTool was global
+	// dbTool is global
 	dbTool *DBTool
-	// config
-	//config = NewConfig()
 )
 
 // single db
-func DBTooler() {
+func DB() *DBTool {
 
 	onceDB.Do(func() {
-		dbTool = NewDBTool()
+		dbTool = newDBTool()
 	})
+	return dbTool
 }
 
 func (db *DBTool) clone() *DBTool {

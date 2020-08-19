@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const Version = "1.9.0+"
+const Version = "1.10.0+"
 
 func init() {
 	println("[gt version]:", Version)
@@ -23,9 +23,12 @@ func init() {
 // crud is db driver extend
 type Crud interface {
 	// init crud
-	initCrud(dbTool *DBTool, param *Params)
+	initCrud(param *Params)
 	// DB
+	// Deprecated, use gt.DB() replace
 	DB() *DBTool
+	// Auto create/update table
+	AutoMigrate(values ...interface{}) Crud
 	// new/replace param
 	// return param
 	Params(param ...Param) Crud
@@ -72,6 +75,9 @@ type Crud interface {
 
 // crud params
 type Params struct {
+	// db type
+	D string
+
 	// attributes
 	InnerTable []string    // inner join tables
 	LeftTable  []string    // left join tables
@@ -89,12 +95,20 @@ type Params struct {
 type Param func(*Params)
 
 // new crud
-func NewCrud(params ...Param) Crud {
+func NewCrud(params ...Param) (crud Crud) {
 
-	DBTooler()
-	crud := new(DBCrud)
-	crud.initCrud(dbTool, newParam(params...))
-	return crud
+	p := newParam(params...)
+	switch p.D {
+	case "mongo":
+		MongoDB()
+		crud = new(Mongo)
+		crud.initCrud(p)
+	default:
+		DB()
+		crud = new(DBCrud)
+		crud.initCrud(p)
+	}
+	return
 }
 
 func newParam(params ...Param) *Params {
@@ -104,6 +118,13 @@ func newParam(params ...Param) *Params {
 		p(param)
 	}
 	return param
+}
+
+func D(d string) Param {
+
+	return func(params *Params) {
+		params.D = d
+	}
 }
 
 func Inner(InnerTables ...string) Param {
