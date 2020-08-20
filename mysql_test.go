@@ -56,7 +56,7 @@ type OrderD struct {
 }
 
 func init() {
-	NewCrud().DB().AutoMigrate(User{}, Order{}, Service{})
+	DB().AutoMigrate(User{}, Order{}, Service{})
 }
 
 // 局部
@@ -71,13 +71,13 @@ func TestDB(t *testing.T) {
 	}
 
 	// return create id
-	crud.DB().CreateData("", &user)
+	DB().CreateData("", &user)
 	t.Log("user: ", user)
-	t.Log(crud.DB().RowsAffected)
+	t.Log(DB().RowsAffected)
 	user.Name = "haha"
-	crud.DB().CreateData("", &user)
+	DB().CreateData("", &user)
 	t.Log("user: ", user)
-	t.Log(crud.DB().RowsAffected)
+	t.Log(DB().RowsAffected)
 	var user2 User
 	crud.Params(Data(&user2)).GetByID(1)
 	t.Log(user2)
@@ -147,7 +147,7 @@ func TestCrudSQL(t *testing.T) {
 			Name: "梦S",
 		}).Exec())
 	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
-	t.Log("[Info]:", crud.DB().RowsAffected)
+	t.Log("[Info]:", crud.RowsAffected())
 	var user []User
 	sql = "select * from `user` where name=? and id=?"
 	cd := NewCrud()
@@ -179,14 +179,14 @@ func TestSqlSearch(t *testing.T) {
 	sql = string([]byte(sql)[:len(sql)-4]) //去and
 	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
 	sql += "order by a.id "
-	t.Log(crud.DB().GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage, nil, nil))
+	t.Log(DB().GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage, nil, nil))
 	//t.Log(ui[0].Userinfo.String())
 }
 
 // select 数据存在验证
 func TestValidateData(t *testing.T) {
 	sql := "select *from `user` where id=2"
-	ss := crud.DB().ValidateSQL(sql)
+	ss := DB().ValidateSQL(sql)
 	log.Println(ss)
 }
 
@@ -241,7 +241,7 @@ func TestGetDataBySearch(t *testing.T) {
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
 	var user []*User
-	crud.DB().GetDataBySearch(&GT{
+	DB().GetDataBySearch(&GT{
 		CMaps: args,
 		Params: &Params{
 			Table: "user",
@@ -249,7 +249,7 @@ func TestGetDataBySearch(t *testing.T) {
 			Data:  &user,
 		},
 	})
-	t.Log(crud.DB().res.Error)
+	t.Log(DB().res.Error)
 	t.Log(user[0])
 }
 

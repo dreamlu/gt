@@ -16,9 +16,8 @@ import (
 	"strings"
 )
 
-// implement DBCrud
-// form data
-type DBCrud struct {
+// implement Crud
+type Mysql struct {
 	// DBTool  tool
 	dbTool *DBTool
 	// error
@@ -40,24 +39,24 @@ type DBCrud struct {
 }
 
 // init DBTool tool
-func (c *DBCrud) initCrud(param *Params) {
+func (c *Mysql) initCrud(param *Params) {
 
 	c.dbTool = dbTool
 	c.param = param
 	return
 }
 
-func (c *DBCrud) DB() *DBTool {
+func (c *Mysql) DB() *DBTool {
 	c.common()
 	return c.dbTool
 }
 
-func (c *DBCrud) AutoMigrate(values ...interface{}) Crud {
+func (c *Mysql) AutoMigrate(values ...interface{}) Crud {
 	c.dbTool.AutoMigrate(values...)
 	return c
 }
 
-func (c *DBCrud) Params(params ...Param) Crud {
+func (c *Mysql) Params(params ...Param) Crud {
 
 	for _, p := range params {
 		p(c.param)
@@ -67,7 +66,7 @@ func (c *DBCrud) Params(params ...Param) Crud {
 
 // search
 // pager info
-func (c *DBCrud) GetBySearch(params cmap.CMap) Crud {
+func (c *Mysql) GetBySearch(params cmap.CMap) Crud {
 	c.common()
 	clone := c.clone()
 	clone.pager = clone.dbTool.GetDataBySearch(&GT{
@@ -78,7 +77,7 @@ func (c *DBCrud) GetBySearch(params cmap.CMap) Crud {
 	return clone
 }
 
-func (c *DBCrud) GetByData(params cmap.CMap) Crud {
+func (c *Mysql) GetByData(params cmap.CMap) Crud {
 	c.common()
 	clone := c.clone()
 	clone.dbTool.GetData(&GT{
@@ -89,7 +88,7 @@ func (c *DBCrud) GetByData(params cmap.CMap) Crud {
 }
 
 // by id
-func (c *DBCrud) GetByID(id interface{}) Crud {
+func (c *Mysql) GetByID(id interface{}) Crud {
 	c.common()
 
 	clone := c.clone()
@@ -101,7 +100,7 @@ func (c *DBCrud) GetByID(id interface{}) Crud {
 
 // the same as search
 // more tables
-func (c *DBCrud) GetMoreBySearch(params cmap.CMap) Crud {
+func (c *Mysql) GetMoreBySearch(params cmap.CMap) Crud {
 	c.common()
 
 	clone := c.clone()
@@ -113,7 +112,7 @@ func (c *DBCrud) GetMoreBySearch(params cmap.CMap) Crud {
 }
 
 // delete
-func (c *DBCrud) Delete(id interface{}) Crud {
+func (c *Mysql) Delete(id interface{}) Crud {
 	c.common()
 
 	clone := c.clone()
@@ -124,21 +123,21 @@ func (c *DBCrud) Delete(id interface{}) Crud {
 // === form data ===
 
 // update
-func (c *DBCrud) UpdateForm(params cmap.CMap) error {
+func (c *Mysql) UpdateForm(params cmap.CMap) error {
 	c.common()
 
 	return c.dbTool.UpdateFormData(c.param.Table, params)
 }
 
 // create
-func (c *DBCrud) CreateForm(params cmap.CMap) error {
+func (c *Mysql) CreateForm(params cmap.CMap) error {
 	c.common()
 
 	return c.dbTool.CreateFormData(c.param.Table, params)
 }
 
 // create res insert id
-func (c *DBCrud) CreateResID(params cmap.CMap) (str.ID, error) {
+func (c *Mysql) CreateResID(params cmap.CMap) (str.ID, error) {
 	c.common()
 
 	return c.dbTool.CreateDataResID(c.param.Table, params)
@@ -147,7 +146,7 @@ func (c *DBCrud) CreateResID(params cmap.CMap) (str.ID, error) {
 // == json data ==
 
 // create more
-func (c *DBCrud) CreateMore() Crud {
+func (c *Mysql) CreateMore() Crud {
 	c.common()
 	clone := c.clone()
 	clone.err = check(clone.param.Data)
@@ -159,7 +158,7 @@ func (c *DBCrud) CreateMore() Crud {
 }
 
 // update
-func (c *DBCrud) Update() Crud {
+func (c *Mysql) Update() Crud {
 	c.common()
 	clone := c.clone()
 	clone.dbTool.UpdateData(&GT{
@@ -171,7 +170,7 @@ func (c *DBCrud) Update() Crud {
 }
 
 // create
-func (c *DBCrud) Create() Crud {
+func (c *Mysql) Create() Crud {
 	c.common()
 	clone := c.clone()
 	clone.err = check(clone.param.Data)
@@ -183,7 +182,7 @@ func (c *DBCrud) Create() Crud {
 }
 
 // create
-func (c *DBCrud) Select(q interface{}, args ...interface{}) Crud {
+func (c *Mysql) Select(q interface{}, args ...interface{}) Crud {
 
 	clone := c
 	if c.selectSQL == "" {
@@ -208,20 +207,20 @@ func (c *DBCrud) Select(q interface{}, args ...interface{}) Crud {
 	return clone
 }
 
-func (c *DBCrud) From(query string) Crud {
+func (c *Mysql) From(query string) Crud {
 
 	c.from = query
 	c.selectSQL += query + " "
 	return c
 }
 
-func (c *DBCrud) Group(query string) Crud {
+func (c *Mysql) Group(query string) Crud {
 
 	c.group = query
 	return c
 }
 
-func (c *DBCrud) Search(params cmap.CMap) Crud {
+func (c *Mysql) Search(params cmap.CMap) Crud {
 	c.common()
 
 	if c.argsNt == nil {
@@ -240,7 +239,7 @@ func (c *DBCrud) Search(params cmap.CMap) Crud {
 	return c
 }
 
-func (c *DBCrud) Single() Crud {
+func (c *Mysql) Single() Crud {
 	c.common()
 
 	c.Select(c.group)
@@ -250,7 +249,7 @@ func (c *DBCrud) Single() Crud {
 	return c
 }
 
-func (c *DBCrud) Exec() Crud {
+func (c *Mysql) Exec() Crud {
 	c.common()
 
 	//clone := c.clone()
@@ -258,7 +257,7 @@ func (c *DBCrud) Exec() Crud {
 	return c
 }
 
-func (c *DBCrud) Error() error {
+func (c *Mysql) Error() error {
 
 	if c.err != nil {
 		return c.err
@@ -272,17 +271,17 @@ func (c *DBCrud) Error() error {
 	return c.err
 }
 
-func (c *DBCrud) RowsAffected() int64 {
+func (c *Mysql) RowsAffected() int64 {
 
 	return c.dbTool.RowsAffected
 }
 
-func (c *DBCrud) Pager() result.Pager {
+func (c *Mysql) Pager() result.Pager {
 
 	return c.pager
 }
 
-func (c *DBCrud) Begin() Crud {
+func (c *Mysql) Begin() Crud {
 	clone := c.clone()
 	clone.isTrans = 1
 	clone.dbTool.DB = clone.dbTool.Begin()
@@ -294,7 +293,7 @@ func (c *DBCrud) Begin() Crud {
 	return clone
 }
 
-func (c *DBCrud) Commit() Crud {
+func (c *Mysql) Commit() Crud {
 	if c.dbTool.res.Error != nil {
 		c.dbTool.Rollback()
 	}
@@ -303,12 +302,12 @@ func (c *DBCrud) Commit() Crud {
 	return c
 }
 
-func (c *DBCrud) Rollback() Crud {
+func (c *Mysql) Rollback() Crud {
 	c.dbTool.Rollback()
 	return c
 }
 
-func (c *DBCrud) clone() (dbCrud *DBCrud) {
+func (c *Mysql) clone() (dbCrud *Mysql) {
 
 	// default table
 	if c.param.Table == "" &&
@@ -316,7 +315,7 @@ func (c *DBCrud) clone() (dbCrud *DBCrud) {
 		c.param.Table = hump.HumpToLine(reflect.StructToString(c.param.Model))
 	}
 
-	dbCrud = &DBCrud{
+	dbCrud = &Mysql{
 		dbTool:    c.dbTool,
 		param:     c.param,
 		selectSQL: c.selectSQL,
@@ -335,13 +334,13 @@ func (c *DBCrud) clone() (dbCrud *DBCrud) {
 	return
 }
 
-func (c *DBCrud) common() {
+func (c *Mysql) common() {
 	if c.dbTool.log {
 		c.line()
 	}
 }
 
-func (c *DBCrud) line() {
+func (c *Mysql) line() {
 	_, fullFile, line, ok := runtime.Caller(3) // 3 skip
 	file := fullFile
 	if file != "" {

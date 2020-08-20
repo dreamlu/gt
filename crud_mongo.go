@@ -7,173 +7,222 @@ import (
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/hump"
 	"github.com/dreamlu/gt/tool/util/str"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"time"
 )
 
+// implement Crud
 type Mongo struct {
 	// crud param
 	param *Params
 	// mongo
-	m   *mongo.Database
+	m       *mongo.Database
+	rowANum int64
+	// err
 	err error
+
+	// pager
+	pager result.Pager
 }
 
-func (c *Mongo) initCrud(param *Params) {
+func (m *Mongo) initCrud(param *Params) {
 
-	c.param = param
-	c.m = mongoDB
+	m.param = param
+	m.m = mongoDB
 	return
 }
 
-func (c *Mongo) DB() *DBTool {
+func (m *Mongo) DB() *DBTool {
 	return nil
 }
 
-func (c *Mongo) AutoMigrate(values ...interface{}) Crud {
-	return c
+func (m *Mongo) AutoMigrate(values ...interface{}) Crud {
+	return m
 }
 
-func (c *Mongo) Params(params ...Param) Crud {
+func (m *Mongo) Params(params ...Param) Crud {
 
 	for _, p := range params {
-		p(c.param)
+		p(m.param)
 	}
-	return c
+	return m
 }
 
 // search
 // pager info
-func (c *Mongo) GetBySearch(params cmap.CMap) Crud {
+func (m *Mongo) GetBySearch(params cmap.CMap) Crud {
+	clone := m.clone()
 
-	return c
+	cur, err := m.GetByDataSearch(params)
+	if err != nil {
+		clone.err = err
+		return clone
+	}
+	m.CursorScan(cur, clone.param.Data)
+	cur.Close(context.TODO())
+	return clone
 }
 
-func (c *Mongo) GetByData(params cmap.CMap) Crud {
-	return c
+func (m *Mongo) GetByData(params cmap.CMap) Crud {
+	clone := m.clone()
+
+	filter := bson.M{}
+	params.Struct(&filter)
+	cur, err := clone.m.Collection(clone.param.Table).Find(context.TODO(), filter)
+	if err != nil {
+		clone.err = err
+		return clone
+	}
+	m.CursorScan(cur, clone.param.Data)
+	cur.Close(context.TODO())
+	return clone
 }
 
+// must be mongodb primitive.ObjectID
 // by id
-func (c *Mongo) GetByID(id interface{}) Crud {
-	return c
+func (m *Mongo) GetByID(id interface{}) Crud {
+	clone := m.clone()
+
+	res := clone.m.Collection(clone.param.Table).FindOne(context.TODO(), bson.M{"_id": id.(primitive.ObjectID)})
+	m.err = res.Err()
+	if m.err == nil {
+		res.Decode(clone.param.Data)
+	}
+	return clone
 }
 
 // the same as search
 // more tables
-func (c *Mongo) GetMoreBySearch(params cmap.CMap) Crud {
-	return c
+func (m *Mongo) GetMoreBySearch(params cmap.CMap) Crud {
+	return m
 }
 
 // delete
-func (c *Mongo) Delete(id interface{}) Crud {
-	return c
+func (m *Mongo) Delete(id interface{}) Crud {
+	clone := m.clone()
+
+	res, err := clone.m.Collection(clone.param.Table).DeleteMany(context.TODO(), bson.M{"_id": id.(primitive.ObjectID)})
+	m.err = err
+	if err == nil {
+		m.rowANum = res.DeletedCount
+	}
+	return clone
 }
 
 // === form data ===
 
 // update
-func (c *Mongo) UpdateForm(params cmap.CMap) error {
+func (m *Mongo) UpdateForm(params cmap.CMap) error {
 	return nil
 }
 
 // create
-func (c *Mongo) CreateForm(params cmap.CMap) error {
+func (m *Mongo) CreateForm(params cmap.CMap) error {
 	return nil
 }
 
 // create res insert id
-func (c *Mongo) CreateResID(params cmap.CMap) (str.ID, error) {
+func (m *Mongo) CreateResID(params cmap.CMap) (str.ID, error) {
 	return str.ID{}, nil
 }
 
 // == json data ==
 
-// create more
-func (c *Mongo) CreateMore() Crud {
-	return c
-}
-
 // update
-func (c *Mongo) Update() Crud {
-	return c
-}
-
-// create
-func (c *Mongo) Create() Crud {
-	clone := c.clone()
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	clone.m.Collection(clone.param.Table).InsertOne(ctx, clone.param.Data)
+// TODO update filter
+func (m *Mongo) Update() Crud {
+	clone := m.clone()
+	clone.m.Collection(clone.param.Table).UpdateOne(context.TODO(), clone.param.Data, bson.D{{"$set", clone.param.Data}})
 	return clone
 }
 
 // create
-func (c *Mongo) Select(q interface{}, args ...interface{}) Crud {
-
-	return c
+func (m *Mongo) Create() Crud {
+	clone := m.clone()
+	_, err := clone.m.Collection(clone.param.Table).InsertOne(context.TODO(), clone.param.Data)
+	m.err = err
+	if err == nil {
+		//m.rowANum = res.InsertedID
+	}
+	return clone
 }
 
-func (c *Mongo) From(query string) Crud {
-
-	return c
+// create more
+func (m *Mongo) CreateMore() Crud {
+	clone := m.clone()
+	clone.m.Collection(clone.param.Table).InsertMany(context.TODO(), reflect.ToSlice(clone.param.Data))
+	return clone
 }
 
-func (c *Mongo) Group(query string) Crud {
+// create
+func (m *Mongo) Select(q interface{}, args ...interface{}) Crud {
 
-	return c
+	return m
 }
 
-func (c *Mongo) Search(params cmap.CMap) Crud {
-	return c
+func (m *Mongo) From(query string) Crud {
+
+	return m
 }
 
-func (c *Mongo) Single() Crud {
-	return c
+func (m *Mongo) Group(query string) Crud {
+
+	return m
 }
 
-func (c *Mongo) Exec() Crud {
-	return c
+func (m *Mongo) Search(params cmap.CMap) Crud {
+	return m
 }
 
-func (c *Mongo) Error() error {
-
-	return nil
+func (m *Mongo) Single() Crud {
+	return m
 }
 
-func (c *Mongo) RowsAffected() int64 {
-
-	return 0
+func (m *Mongo) Exec() Crud {
+	return m
 }
 
-func (c *Mongo) Pager() result.Pager {
+func (m *Mongo) Error() error {
+
+	return m.err
+}
+
+func (m *Mongo) RowsAffected() int64 {
+
+	return m.rowANum
+}
+
+func (m *Mongo) Pager() result.Pager {
 
 	return result.Pager{}
 }
 
-func (c *Mongo) Begin() Crud {
-	return c
+func (m *Mongo) Begin() Crud {
+	return m
 }
 
-func (c *Mongo) Commit() Crud {
-	return c
+func (m *Mongo) Commit() Crud {
+	return m
 }
 
-func (c *Mongo) Rollback() Crud {
-	return c
+func (m *Mongo) Rollback() Crud {
+	return m
 }
 
-func (c *Mongo) clone() (mongo *Mongo) {
+// TODO print filter.. params
+func (m *Mongo) clone() (mongo *Mongo) {
 
 	// default table
-	if c.param.Table == "" &&
-		c.param.Model != nil {
-		c.param.Table = hump.HumpToLine(reflect.StructToString(c.param.Model))
+	if m.param.Table == "" &&
+		m.param.Model != nil {
+		m.param.Table = hump.HumpToLine(reflect.StructToString(m.param.Model))
 	}
 
 	mongo = &Mongo{
-		param: c.param,
-		err:   c.err,
-		m:     c.m,
+		param: m.param,
+		err:   m.err,
+		m:     m.m,
 	}
 	return
 }

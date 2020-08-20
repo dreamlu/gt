@@ -76,6 +76,7 @@ type Crud interface {
 // crud params
 type Params struct {
 	// db type
+	// default ""(mysql)
 	D string
 
 	// attributes
@@ -105,7 +106,7 @@ func NewCrud(params ...Param) (crud Crud) {
 		crud.initCrud(p)
 	default:
 		DB()
-		crud = new(DBCrud)
+		crud = new(Mysql)
 		crud.initCrud(p)
 	}
 	return
