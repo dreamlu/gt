@@ -51,11 +51,6 @@ func (c *Mysql) DB() *DBTool {
 	return c.dbTool
 }
 
-func (c *Mysql) AutoMigrate(values ...interface{}) Crud {
-	c.dbTool.AutoMigrate(values...)
-	return c
-}
-
 func (c *Mysql) Params(params ...Param) Crud {
 
 	for _, p := range params {

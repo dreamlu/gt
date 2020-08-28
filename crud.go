@@ -27,8 +27,6 @@ type Crud interface {
 	// DB
 	// Deprecated, use gt.DB() replace
 	DB() *DBTool
-	// Auto create/update table
-	AutoMigrate(values ...interface{}) Crud
 	// new/replace param
 	// return param
 	Params(param ...Param) Crud

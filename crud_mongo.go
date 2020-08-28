@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/result"
+	sq "github.com/dreamlu/gt/tool/sql"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/hump"
 	"github.com/dreamlu/gt/tool/util/str"
@@ -22,6 +23,9 @@ type Mongo struct {
 	// err
 	err error
 
+	// select
+	selectSQL string // select/or if
+
 	// pager
 	pager result.Pager
 }
@@ -35,10 +39,6 @@ func (m *Mongo) initCrud(param *Params) {
 
 func (m *Mongo) DB() *DBTool {
 	return nil
-}
-
-func (m *Mongo) AutoMigrate(values ...interface{}) Crud {
-	return m
 }
 
 func (m *Mongo) Params(params ...Param) Crud {
@@ -130,10 +130,24 @@ func (m *Mongo) CreateResID(params cmap.CMap) (str.ID, error) {
 // == json data ==
 
 // update
-// TODO update filter
+// must id string
 func (m *Mongo) Update() Crud {
 	clone := m.clone()
-	clone.m.Collection(clone.param.Table).UpdateOne(context.TODO(), clone.param.Data, bson.D{{"$set", clone.param.Data}})
+
+	data := bson.M{}
+	_ = dataToBSON(m.param.Data, &data)
+	_id, _ := primitive.ObjectIDFromHex(data["_id"].(string))
+	delete(data, "_id")
+	res, err := clone.m.Collection(clone.param.Table).
+		UpdateOne(
+			context.TODO(),
+			bson.M{"_id": _id},
+			bson.D{{"$set", data}},
+		)
+	m.err = err
+	if err == nil {
+		m.rowANum = res.UpsertedCount
+	}
 	return clone
 }
 
@@ -158,7 +172,24 @@ func (m *Mongo) CreateMore() Crud {
 // create
 func (m *Mongo) Select(q interface{}, args ...interface{}) Crud {
 
-	return m
+	clone := m
+	if m.selectSQL == "" {
+		clone = m.clone()
+	}
+
+	var query string
+	switch q.(type) {
+	case string:
+		query = q.(string)
+	//case cmap.CMap:
+	//	query, args = sq.CMapWhereSQL(q.(cmap.CMap))
+	case interface{}:
+		query, args = sq.StructWhereSQL(q)
+	}
+
+	clone.selectSQL += query + " "
+	//clone.args = append(clone.args, args...)
+	return clone
 }
 
 func (m *Mongo) From(query string) Crud {
@@ -176,6 +207,8 @@ func (m *Mongo) Search(params cmap.CMap) Crud {
 }
 
 func (m *Mongo) Single() Crud {
+	//m.m.Client().
+	//m.err = m.m.RunCommand(context.TODO(), m.selectSQL).Decode(&m.param.Data)
 	return m
 }
 
@@ -195,7 +228,7 @@ func (m *Mongo) RowsAffected() int64 {
 
 func (m *Mongo) Pager() result.Pager {
 
-	return result.Pager{}
+	return m.pager
 }
 
 func (m *Mongo) Begin() Crud {
@@ -220,9 +253,10 @@ func (m *Mongo) clone() (mongo *Mongo) {
 	}
 
 	mongo = &Mongo{
-		param: m.param,
-		err:   m.err,
-		m:     m.m,
+		param:     m.param,
+		err:       m.err,
+		m:         m.m,
+		selectSQL: m.selectSQL,
 	}
 	return
 }

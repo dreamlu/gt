@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 // ===== search data =========
@@ -33,17 +34,19 @@ func (m *Mongo) GetByDataSearch(params cmap.CMap) (cur *mongo.Cursor, err error)
 		//clientPage, everyPage int64
 		filter = bson.M{}
 		opt    = options.Find()
+		order  string
 	)
 
-	for k, v := range params {
+	for k, _ := range params {
 		switch k {
 		case str.GtClientPage, str.GtClientPageUnderLine:
-			m.pager.ClientPage, _ = strconv.ParseInt(v[0], 10, 64)
-			params.Del(k)
+			m.pager.ClientPage, _ = strconv.ParseInt(params.Pop(k), 10, 64)
 			continue
 		case str.GtEveryPage, str.GtEveryPageUnderLine:
-			m.pager.EveryPage, _ = strconv.ParseInt(v[0], 10, 64)
-			params.Del(k)
+			m.pager.EveryPage, _ = strconv.ParseInt(params.Pop(k), 10, 64)
+			continue
+		case str.GtOrder:
+			order = params.Pop(k)
 			continue
 		}
 	}
@@ -55,14 +58,41 @@ func (m *Mongo) GetByDataSearch(params cmap.CMap) (cur *mongo.Cursor, err error)
 	c := m.m.Collection(m.param.Table)
 
 	// filter
-	params.Struct(&filter)
+	_ = dataToBSON(params, &filter)
+	if order != "" {
+		i := 1
+		os := strings.Split(order, " ")
+		o := os[0]
+		if len(os) > 1 && os[1] == "desc" {
+			i = -1
+		}
+		if o == "id" {
+			o = "_id"
+		}
+		opt.SetSort(bson.D{{o, i}})
+	}
 
 	// pager
 	m.pager.TotalNum, err = c.CountDocuments(context.TODO(), filter)
-	return c.Find(context.TODO(), filter, options.Find(), opt)
+	return c.Find(context.TODO(), filter, opt)
 }
 
-// ====== delete =====
-func (m *Mongo) DeleteData() {
+// ====== other =====
+// data to bson value
+func dataToBSON(data, value interface{}) error {
 
+	switch data.(type) {
+	case cmap.CMap:
+		data = data.(cmap.CMap).BSON()
+	}
+
+	b, err := bson.Marshal(data)
+	if err != nil {
+		return err
+	}
+	err = bson.Unmarshal(b, value)
+	if err != nil {
+		return err
+	}
+	return nil
 }

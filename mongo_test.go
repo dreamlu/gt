@@ -5,20 +5,22 @@ import (
 	"github.com/dreamlu/gt/tool/type/time"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
+	time2 "time"
 )
 
 type Client struct {
-	ID         primitive.ObjectID `json:"id"`
-	Name       string             `json:"name" gt:"valid:len=3-5;trans:名称"`
-	BirthDate  time.CDate         `json:"birth_date" gorm:"type:date"` // data
-	CreateTime time.CTime         `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
-	Account    float64            `json:"account" gorm:"type:decimal(10,2)"`
+	ID         string  `json:"id" bson:"_id,omitempty"`
+	Name       string  `json:"name" gt:"valid:len=3-5;trans:名称"`
+	BirthDate  string  `json:"birth_date" gorm:"type:date"` // data
+	CreateTime string  `json:"create_time"`
+	Account    float64 `json:"account" gorm:"type:decimal(10,2)"`
 }
 
 func TestMongo_Create(t *testing.T) {
 
 	var user = Client{
-		Name: "test",
+		Name:       "test",
+		CreateTime: time.CTime(time2.Now()).String(),
 	}
 	cd := NewCrud(
 		D("mongo"),
@@ -33,10 +35,9 @@ func TestMongo_Create(t *testing.T) {
 func TestMongo_Update(t *testing.T) {
 
 	var user = Client{
-		//ID:         "5f3cd15cf2f80b74c05f5033",
-		Name:       "",
-		BirthDate:  time.CDate{},
-		CreateTime: time.CTime{},
+		ID:         "5f4372d5b7f7ce9d6e6ba479",
+		Name:       "new_update",
+		CreateTime: time.CTime(time2.Now()).String(),
 		Account:    0,
 	}
 	cd := NewCrud(
@@ -52,6 +53,7 @@ func TestMongo_Update(t *testing.T) {
 	//	}},
 	//}
 	cd.Update()
+	t.Log(cd.Error())
 }
 
 func TestMongo_GetByData(t *testing.T) {
@@ -97,9 +99,18 @@ func TestMongo_GetBySearch(t *testing.T) {
 		Table("client"),
 		Data(&client),
 	)
-	cd.GetBySearch(cmap.NewCMap().Set("clientPage", "1").Set("everyPage", "3"))
+	cd.GetBySearch(cmap.NewCMap().
+		Set("clientPage", "1").
+		Set("everyPage", "3").
+		Set("order", "id desc").
+		Set("name", "new_update2"),
+	//Set("create_time", "2020-08-24 16:03:55"),
+	)
 	t.Log(cd.Error())
-	t.Log(client)
+	for _, v := range client {
+		t.Log(v)
+	}
+	t.Log(cd.Pager())
 }
 
 func TestMongo_Delete(t *testing.T) {
@@ -114,4 +125,14 @@ func TestMongo_Delete(t *testing.T) {
 	cd.Delete(objID)
 	t.Log(cd.Error())
 	t.Log(cd.RowsAffected())
+}
+
+func TestMongo_Select(t *testing.T) {
+	var client Client
+	cd := NewCrud(
+		D("mongo"),
+		Data(&client),
+	).Select("client.find()").Single()
+	t.Log(client)
+	t.Log(cd.Error())
 }

@@ -2,7 +2,9 @@ package cmap
 
 import (
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson"
 	"net/url"
+	"strings"
 )
 
 type CMap map[string][]string
@@ -72,8 +74,29 @@ func (v CMap) Struct(value interface{}) error {
 }
 
 // url.Values to CMap
+// Deprecated
 func (v CMap) CMap(values url.Values) CMap {
 	return CMap(values)
+}
+
+// url.Values to mongo bson CMap
+func (v CMap) BSON() (bm bson.M) {
+	bm = make(bson.M)
+	for k, v2 := range v {
+		if k == "id" {
+			v.Del(k)
+			bm["_id"] = v2[0]
+			continue
+		}
+		if strings.Contains(k, "_") {
+			v.Del(k)
+			k = strings.Replace(k, "_", "", -1)
+			//bm[k] = v2[0]
+			//continue
+		}
+		bm[k] = v2[0]
+	}
+	return
 }
 
 // new cmap
