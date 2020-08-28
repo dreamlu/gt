@@ -238,11 +238,14 @@ type GT struct {
 	CMaps cmap.CMap // params
 
 	// select sql
-	Select string // select sql
-	From   string // only once
-	Group  string // the last group
-	Args   []interface{}
-	ArgsNt []interface{}
+	Select     string // select sql
+	From       string // only once
+	Group      string // the last group
+	Args       []interface{}
+	sql        string
+	sqlNt      string
+	clientPage int64
+	everyPage  int64
 
 	// mock data
 	isMock bool
@@ -256,15 +259,16 @@ type GT struct {
 // params: leftTables is left join tables
 // return: select sql
 // table1 as main table, include other tables_id(foreign key)
-func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args []interface{}) {
+func GetMoreDataSQL(gt *GT) {
 
-	sqlNt, tables := moreSql(gt)
+	var tables []string
+	gt.sqlNt, tables = moreSql(gt)
 	// select* 变为对应的字段名
-	sql = strings.Replace(sqlNt, "count(`"+tables[0]+"`.id) as total_num", GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
+	gt.sql = strings.Replace(gt.sqlNt, "count(`"+tables[0]+"`.id) as total_num", GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
 	var (
 		order = "`" + tables[0] + "`.id desc" // order by
 		key   = ""                            // key like binary search
-		bufW  bytes.Buffer                    // sql bytes connect
+		bufW  bytes.Buffer                    // gt.sql bytes connect
 	)
 	for k, v := range gt.CMaps {
 		if v[0] == "" {
@@ -272,10 +276,10 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 		}
 		switch k {
 		case str.GtClientPage, str.GtClientPageUnderLine:
-			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
+			gt.clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
 		case str.GtEveryPage, str.GtEveryPageUnderLine:
-			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
+			gt.everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
 		case str.GtOrder:
 			order = v[0]
@@ -292,7 +296,7 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 			// more tables key search
 			sqlKey, argsKey := sq.GetMoreKeySQL(key, gt.KeyModel, tablens[:]...)
 			bufW.WriteString(sqlKey)
-			args = append(args, argsKey[:]...)
+			gt.Args = append(gt.Args, argsKey[:]...)
 			continue
 		case str.GtMock:
 			mock.Mock(gt.Data)
@@ -310,22 +314,22 @@ func GetMoreSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, a
 			bufW.WriteString(k)
 			bufW.WriteString("` = ? and ")
 		}
-		args = append(args, v[0])
+		gt.Args = append(gt.Args, v[0])
 		//into:
 	}
 
 	if bufW.Len() != 0 {
-		sql += fmt.Sprintf("where %s ", bufW.Bytes()[:bufW.Len()-4])
-		sqlNt += fmt.Sprintf("where %s", bufW.Bytes()[:bufW.Len()-4])
+		gt.sql += fmt.Sprintf("where %s ", bufW.Bytes()[:bufW.Len()-4])
+		gt.sqlNt += fmt.Sprintf("where %s", bufW.Bytes()[:bufW.Len()-4])
 		if gt.SubWhereSQL != "" {
-			sql += fmt.Sprintf("and %s ", gt.SubWhereSQL)
-			sqlNt += fmt.Sprintf("and %s", gt.SubWhereSQL)
+			gt.sql += fmt.Sprintf("and %s ", gt.SubWhereSQL)
+			gt.sqlNt += fmt.Sprintf("and %s", gt.SubWhereSQL)
 		}
 	} else if gt.SubWhereSQL != "" {
-		sql += fmt.Sprintf("where %s ", gt.SubWhereSQL)
-		sqlNt += fmt.Sprintf("where %s", gt.SubWhereSQL)
+		gt.sql += fmt.Sprintf("where %s ", gt.SubWhereSQL)
+		gt.sqlNt += fmt.Sprintf("where %s", gt.SubWhereSQL)
 	}
-	sql += fmt.Sprintf(" order by %s ", order)
+	gt.sql += fmt.Sprintf(" order by %s ", order)
 
 	return
 }
@@ -828,12 +832,12 @@ func (db *DBTool) GetDataByID(gt *GT, id interface{}) {
 // table1 as main table, include other tables_id(foreign key)
 func (db *DBTool) GetMoreDataBySearch(gt *GT) (pager result.Pager) {
 	// more table search
-	sqlNt, sql, clientPage, everyPage, args := GetMoreSearchSQL(gt)
+	GetMoreDataSQL(gt)
 	// isMock
 	if gt.isMock {
 		return
 	}
-	return db.GetDataBySQLSearch(gt.Data, sql, sqlNt, clientPage, everyPage, args, args)
+	return db.GetDataBySQLSearch(gt.Data, gt.sql, gt.sqlNt, gt.clientPage, gt.everyPage, gt.Args)
 }
 
 // 获得数据,分页/查询
@@ -844,7 +848,7 @@ func (db *DBTool) GetDataBySearch(gt *GT) (pager result.Pager) {
 	if gt.isMock {
 		return
 	}
-	return db.GetDataBySQLSearch(gt.Data, sql, sqlNt, clientPage, everyPage, args, args)
+	return db.GetDataBySQLSearch(gt.Data, sql, sqlNt, clientPage, everyPage, args)
 }
 
 // 获得数据, no search
@@ -858,18 +862,29 @@ func (db *DBTool) GetData(gt *GT) {
 	db.GetDataBySQL(gt.Data, sql, args[:]...)
 }
 
+// 获得数据, no search
+func (db *DBTool) GetMoreData(gt *GT) {
+
+	GetMoreDataSQL(gt)
+	// isMock
+	if gt.isMock {
+		return
+	}
+	db.GetDataBySQL(gt.Data, gt.sql, gt.Args...)
+}
+
 // select sql search
 func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
 
 	sqlNt, sql, clientPage, everyPage := GetSelectSearchSQL(gt)
 
-	return db.GetDataBySQLSearch(gt.Data, sql, sqlNt, clientPage, everyPage, gt.Args, gt.ArgsNt)
+	return db.GetDataBySQLSearch(gt.Data, sql, sqlNt, clientPage, everyPage, gt.Args)
 }
 
 // 获得数据,根据sql语句,分页
 // args : sql参数'？'
 // sql, sqlNt args 相同, 共用args
-func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}, argsNt []interface{}) (pager result.Pager) {
+func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}) (pager result.Pager) {
 
 	// if no clientPage or everyPage
 	// return all data
@@ -877,7 +892,7 @@ func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, client
 		sql += fmt.Sprintf("limit %d, %d", (clientPage-1)*everyPage, everyPage)
 	}
 	// sqlNt += limit
-	db.res = db.DB.Raw(sqlNt, argsNt[:]...).Scan(&pager)
+	db.res = db.DB.Raw(sqlNt, args[:]...).Scan(&pager)
 	if db.res.Error == nil {
 		db.res = db.DB.Raw(sql, args[:]...).Scan(data)
 		// pager data

@@ -69,4 +69,5 @@ TODO
 68.~~create自动参数验证~~  
 69.~~基本类型解析支持(非数组)~~  
 70.getbysearch()数组类型和single()暂无数据问题,用nil  
+71.~~getbydata支持多表或新增getMorebydata~~  
 n.xxx  

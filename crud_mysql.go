@@ -82,6 +82,16 @@ func (c *Mysql) GetByData(params cmap.CMap) Crud {
 	return clone
 }
 
+func (c *Mysql) GetMoreByData(params cmap.CMap) Crud {
+	c.common()
+	clone := c.clone()
+	clone.dbTool.GetMoreData(&GT{
+		Params: clone.param,
+		CMaps:  params,
+	})
+	return clone
+}
+
 // by id
 func (c *Mysql) GetByID(id interface{}) Crud {
 	c.common()
@@ -226,7 +236,6 @@ func (c *Mysql) Search(params cmap.CMap) Crud {
 		Params: c.param,
 		Select: c.selectSQL,
 		Args:   c.args,
-		ArgsNt: c.argsNt,
 		From:   c.from,
 		Group:  c.group,
 		CMaps:  params,

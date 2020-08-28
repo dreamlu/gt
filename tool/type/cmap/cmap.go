@@ -91,8 +91,6 @@ func (v CMap) BSON() (bm bson.M) {
 		if strings.Contains(k, "_") {
 			v.Del(k)
 			k = strings.Replace(k, "_", "", -1)
-			//bm[k] = v2[0]
-			//continue
 		}
 		bm[k] = v2[0]
 	}

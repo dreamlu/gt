@@ -179,7 +179,7 @@ func TestSqlSearch(t *testing.T) {
 	sql = string([]byte(sql)[:len(sql)-4]) //去and
 	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
 	sql += "order by a.id "
-	t.Log(DB().GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage, nil, nil))
+	t.Log(DB().GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage, nil))
 	//t.Log(ui[0].Userinfo.String())
 }
 
@@ -213,7 +213,6 @@ func TestGetSearchSql(t *testing.T) {
 		From:   "",
 		Group:  "",
 		Args:   nil,
-		ArgsNt: nil,
 	})
 	t.Log("SQLNOLIMIT:", sqlNt, "\nSQL:", sql)
 
@@ -276,7 +275,9 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	if err != nil {
 		log.Println(err)
 	}
-	t.Log("\n[User Info]:", or)
+	for _, v := range or {
+		t.Log(v)
+	}
 }
 
 func TestGetMoreSearchSQL(t *testing.T) {
@@ -299,9 +300,9 @@ func TestGetMoreSearchSQL(t *testing.T) {
 			Model:      CVBDe{},
 		},
 	}
-	sqlNt, sql, _, _, _ := GetMoreSearchSQL(gt)
-	t.Log(sqlNt)
-	t.Log(sql)
+	GetMoreDataSQL(gt)
+	t.Log(gt.sqlNt)
+	t.Log(gt.sql)
 }
 
 // 批量创建
@@ -606,4 +607,24 @@ func TestDBDouble10to2(t *testing.T) {
 		Model(User{}),
 	).Select("select *from `user` where id = ?", 1).Single()
 	t.Log(user2)
+}
+
+func TestMysql_GetMoreByData(t *testing.T) {
+	var or []*OrderD
+	cd := NewCrud(
+		// 支持同一个mysql多数据库跨库查询
+		Inner("order", "gt.user"),
+		Left("order", "service"),
+		Model(OrderD{}),
+		Data(&or),
+		KeyModel(OrderD{}),
+		//SubWhereSQL("1 = 1", "2 = 2", ""),
+	)
+	err := cd.GetMoreByData(cmap.NewCMap()).Error()
+	if err != nil {
+		t.Error(err)
+	}
+	for _, v := range or {
+		t.Log(v)
+	}
 }

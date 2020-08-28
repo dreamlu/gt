@@ -60,7 +60,7 @@ func (m *Mongo) GetBySearch(params cmap.CMap) Crud {
 		return clone
 	}
 	m.CursorScan(cur, clone.param.Data)
-	cur.Close(context.TODO())
+	m.err = cur.Close(context.TODO())
 	return clone
 }
 
@@ -68,15 +68,19 @@ func (m *Mongo) GetByData(params cmap.CMap) Crud {
 	clone := m.clone()
 
 	filter := bson.M{}
-	params.Struct(&filter)
+	m.err = params.Struct(&filter)
 	cur, err := clone.m.Collection(clone.param.Table).Find(context.TODO(), filter)
 	if err != nil {
 		clone.err = err
 		return clone
 	}
 	m.CursorScan(cur, clone.param.Data)
-	cur.Close(context.TODO())
+	m.err = cur.Close(context.TODO())
 	return clone
+}
+
+func (m *Mongo) GetMoreByData(params cmap.CMap) Crud {
+	return m
 }
 
 // must be mongodb primitive.ObjectID
@@ -87,7 +91,7 @@ func (m *Mongo) GetByID(id interface{}) Crud {
 	res := clone.m.Collection(clone.param.Table).FindOne(context.TODO(), bson.M{"_id": id.(primitive.ObjectID)})
 	m.err = res.Err()
 	if m.err == nil {
-		res.Decode(clone.param.Data)
+		m.err = res.Decode(clone.param.Data)
 	}
 	return clone
 }
@@ -165,7 +169,7 @@ func (m *Mongo) Create() Crud {
 // create more
 func (m *Mongo) CreateMore() Crud {
 	clone := m.clone()
-	clone.m.Collection(clone.param.Table).InsertMany(context.TODO(), reflect.ToSlice(clone.param.Data))
+	_, m.err = clone.m.Collection(clone.param.Table).InsertMany(context.TODO(), reflect.ToSlice(clone.param.Data))
 	return clone
 }
 

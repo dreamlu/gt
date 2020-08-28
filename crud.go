@@ -36,6 +36,7 @@ type Crud interface {
 	// like form data
 	GetBySearch(params cmap.CMap) Crud     // search
 	GetByData(params cmap.CMap) Crud       // get data no search
+	GetMoreByData(params cmap.CMap) Crud   // get data more table no search
 	GetByID(id interface{}) Crud           // by id
 	GetMoreBySearch(params cmap.CMap) Crud // more search
 
