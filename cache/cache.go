@@ -3,6 +3,7 @@
 package cache
 
 import (
+	"encoding/json"
 	"github.com/dreamlu/gt"
 )
 
@@ -12,6 +13,15 @@ type CacheModel struct {
 	Time int64 `json:"time"`
 	// data
 	Data interface{} `json:"data"`
+}
+
+// c.Data to data
+func (c CacheModel) Struct(data interface{}) error {
+	b, err := json.Marshal(c.Data)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(b, data)
 }
 
 // cache manager

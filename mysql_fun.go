@@ -799,26 +799,6 @@ func (db *DBTool) GetDataByName(data interface{}, name, value string) (err error
 	return
 }
 
-//// inner join
-//// 查询数据约定,表名_字段名(若有重复)
-//// 获得数据,根据id,两张表连接尝试
-//func (db *DBTool) GetDoubleTableDataByID(model, data interface{}, id, table1, table2 string) error {
-//	sql := fmt.Sprintf("select %s from `%s` inner join `%s` "+
-//		"on `%s`.%s_id=`%s`.id where `%s`.id=? limit 1", GetDoubleTableColumnSQL(model, table1, table2), table1, table2, table1, table2, table2, table1)
-//
-//	return db.GetDataBySQL(data, sql, id)
-//}
-//
-//// left join
-//// 查询数据约定,表名_字段名(若有重复)
-//// 获得数据,根据id,两张表连接
-//func (db *DBTool) GetLeftDoubleTableDataByID(model, data interface{}, id, table1, table2 string) error {
-//
-//	sql := fmt.Sprintf("select %s from `%s` left join `%s` on `%s`.%s_id=`%s`.id where `%s`.id=? limit 1", GetDoubleTableColumnSQL(model, table1, table2), table1, table2, table1, table2, table2, table1)
-//
-//	return db.GetDataBySQL(data, sql, id)
-//}
-
 // 获得数据,根据id
 func (db *DBTool) GetDataByID(gt *GT, id interface{}) {
 

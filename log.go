@@ -100,13 +100,13 @@ func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationT
 
 // Default file log
 // maintain 7 days data, every 24 hour split file
+// if use static as file system root, you can visit it in browser static/log/xx.log
 func (l *Log) DefaultFileLog() {
 
 	var (
-		//projectPath, _ = os.Getwd()
 		projectName = Configger().GetString("app.db.name") // use db name replace
 	)
-	l.FileLog("log/", projectName+".log", 7, time2.Day)
+	l.FileLog("static/log/", projectName+".log", 7, time2.Day)
 }
 
 // gt log formatter

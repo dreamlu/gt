@@ -70,4 +70,5 @@ TODO
 69.~~基本类型解析支持(非数组)~~  
 70.getbysearch()数组类型和single()暂无数据问题,用nil  
 71.~~getbydata支持多表或新增getMorebydata~~  
+72.~~日志直接生成在文件上传目录下,在线访问~~  
 n.xxx  

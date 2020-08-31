@@ -59,8 +59,10 @@ func TestCacheRedis(t *testing.T) {
 	t.Log("set err: ", err)
 
 	// get
+	var user2 User
 	reply, _ := ce.Get(user)
-	t.Log("user data :", reply.Data)
+	reply.Struct(&user2)
+	t.Log("user data :", user2)
 
 }
 
