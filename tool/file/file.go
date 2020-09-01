@@ -13,6 +13,7 @@ import (
 	"mime/multipart"
 	"os"
 	"strings"
+	"time"
 )
 
 // example
@@ -34,11 +35,14 @@ type File struct {
 	// file name
 	Name string
 	// path
-	Path    string
-	NewPath string
+	path string
 	// img attributes
 	Width  int
 	Height int
+
+	// format 2006-01-02 15:04:05
+	Format string
+
 	IsComp int8 // is img compress
 }
 
@@ -73,7 +77,7 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 		fType = strings.ToLower(fType)
 		switch fType {
 		case "jpeg", "jpg", "png":
-			f.Path = path
+			f.path = path
 			_ = f.CompressImage(fType)
 		default:
 			//处理其他类型文件
@@ -86,7 +90,7 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 func (f *File) CompressImage(imageType string) error {
 	//图片压缩
 	var img image.Image
-	ImgFile, err := os.Open(f.Path)
+	ImgFile, err := os.Open(f.path)
 	if err != nil {
 		return err
 	}
@@ -104,13 +108,9 @@ func (f *File) CompressImage(imageType string) error {
 		return err
 	}
 
-	if f.NewPath == "" {
-		f.NewPath = f.Path
-	}
-
 	m := resize.Resize(uint(f.Width), uint(f.Height), img, resize.Lanczos3)
 
-	out, err := os.Create(f.NewPath)
+	out, err := os.Create(f.path)
 	if err != nil {
 		return err
 	}
@@ -130,7 +130,10 @@ func (f *File) CompressImage(imageType string) error {
 // save file
 func (f *File) SaveUploadedFile(file *multipart.FileHeader, filename string) (path string, err error) {
 
-	filepath := gt.Configger().GetString("app.filepath")
+	if f.Format == "" {
+		f.Format = "20060102"
+	}
+	filepath := gt.Configger().GetString("app.filepath") + time.Now().Format(f.Format) + "/"
 	if !file_func.Exists(filepath) {
 		err = os.Mkdir(filepath, os.ModePerm)
 		if err != nil {
