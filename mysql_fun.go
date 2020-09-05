@@ -207,25 +207,50 @@ func GetReflectTag(reflectType reflect.Type, buf *bytes.Buffer) {
 // get col ?
 func GetColParamSQL(model interface{}) (sql string) {
 	var buf bytes.Buffer
+	getColParamSQLByType(reflect.TypeOf(model), &buf)
+	return string(buf.Bytes()[:buf.Len()-1])
+}
 
-	typ := reflect.TypeOf(model)
+// get col ? type
+func getColParamSQLByType(typ reflect.Type, buf *bytes.Buffer) {
+	if typ.Kind() != reflect.Struct {
+		return
+	}
 	for i := 0; i < typ.NumField(); i++ {
+		if typ.Field(i).Tag.Get("json") == "" {
+			// why this is error ?
+			// typ = typ.Field(i).Type
+			// getColParamSQLByType(typ.Field(i).Type, buf)
+			getColParamSQLByType(typ.Field(i).Type, buf)
+			continue
+		}
 		buf.WriteString("?,")
 	}
-	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
-	return sql
 }
 
 // get data value
 // like GetColSQL
 func GetParams(data interface{}) (params []interface{}) {
 
-	typ := reflect.ValueOf(data)
+	params = append(params, getParamsType(reflect.ValueOf(data))...)
+	return
+}
+
+// get params ? type
+func getParamsType(typ reflect.Value) (params []interface{}) {
 	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
 	}
+	if typ.Kind() != reflect.Struct {
+		return
+	}
 	for i := 0; i < typ.NumField(); i++ {
-		value := typ.Field(i).Interface() //.Tag.Get("json")
+		// reflect.ValueOf().Type() == reflect.TypeOf()
+		if typ.Type().Field(i).Tag.Get("json") == "" {
+			params = append(params, getParamsType(typ.Field(i))...)
+			continue
+		}
+		value := typ.Field(i).Interface()
 		params = append(params, value)
 	}
 	return
@@ -1020,11 +1045,12 @@ func (db *DBTool) CreateMoreData(table string, model interface{}, data interface
 
 	// array data
 	arrayData := reflect2.ToSlice(data)
+	colPSQL := GetColParamSQL(model)
 
 	for _, v := range arrayData {
 		// buf
 		buf.WriteString("(")
-		buf.WriteString(GetColParamSQL(model))
+		buf.WriteString(colPSQL)
 		buf.WriteString("),")
 		// params
 		params = append(params, GetParams(v)[:]...)

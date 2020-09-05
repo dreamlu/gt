@@ -309,21 +309,28 @@ func TestGetMoreSearchSQL(t *testing.T) {
 func TestCreateMoreData(t *testing.T) {
 
 	type UserPar struct {
-		Name       string     `json:"name" gt:"valid:len=5-10"`
+		Name       string     `json:"name" gt:"valid:len=2-10"`
 		CreateTime time.CTime `json:"create_time"`
 	}
 	type User struct {
 		ID uint64 `json:"id"`
 		UserPar
 	}
+	type UserParP struct {
+		UserPar
+	}
 
-	var up = []UserPar{
-		{Name: "测试1", CreateTime: time.CTime(time2.Now())},
-		{Name: "测试2"},
+	var up = []UserParP{
+		{
+			UserPar{Name: "测试1", CreateTime: time.CTime(time2.Now())},
+		},
+		{
+			UserPar{Name: "测试2"},
+		},
 	}
 	crud := NewCrud(
 		Table("user"),
-		Model(UserPar{}),
+		Model(UserParP{}),
 		Data(up),
 		//SubSQL("(asdf) as a","(asdfa) as b"),
 	)
