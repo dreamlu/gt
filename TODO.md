@@ -71,3 +71,7 @@ TODO
 - [x] 70.getbysearch()数组类型和single()暂无数据问题,用nil  
 - [x] 71.getbydata支持多表或新增getMorebydata  
 - [x] 72.文件上传存储优化  
+- [ ] 73.gorm v2.0  
+- [ ] 74.微服务模块间调用  
+- [ ] 75.批量创建继承解析问题  
+- [ ] 76.日志打印Info() prod问题  

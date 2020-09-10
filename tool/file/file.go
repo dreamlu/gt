@@ -35,7 +35,8 @@ type File struct {
 	// file name
 	Name string
 	// path
-	path string
+	Path    string
+	NewPath string
 	// img attributes
 	Width  int
 	Height int
@@ -77,7 +78,7 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 		fType = strings.ToLower(fType)
 		switch fType {
 		case "jpeg", "jpg", "png":
-			f.path = path
+			f.Path = path
 			_ = f.CompressImage(fType)
 		default:
 			//处理其他类型文件
@@ -90,7 +91,7 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 func (f *File) CompressImage(imageType string) error {
 	//图片压缩
 	var img image.Image
-	ImgFile, err := os.Open(f.path)
+	ImgFile, err := os.Open(f.Path)
 	if err != nil {
 		return err
 	}
@@ -108,9 +109,13 @@ func (f *File) CompressImage(imageType string) error {
 		return err
 	}
 
+	if f.NewPath == "" {
+		f.NewPath = f.Path
+	}
+
 	m := resize.Resize(uint(f.Width), uint(f.Height), img, resize.Lanczos3)
 
-	out, err := os.Create(f.path)
+	out, err := os.Create(f.NewPath)
 	if err != nil {
 		return err
 	}
