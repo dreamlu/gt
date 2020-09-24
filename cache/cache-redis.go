@@ -8,7 +8,7 @@ import (
 	"errors"
 	"github.com/dreamlu/gt"
 	redis2 "github.com/dreamlu/gt/cache/redis"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 )
 
 // impl cache manager

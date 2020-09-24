@@ -3,7 +3,8 @@
 package redis
 
 import (
-	"github.com/go-redis/redis"
+	"context"
+	"github.com/go-redis/redis/v8"
 	"log"
 )
 
@@ -38,7 +39,7 @@ func (p *ConnPool) Close() {
 func (p *ConnPool) Do(args ...interface{}) *redis.Cmd {
 	// close problem
 	//defer p.Close()
-	return p.redisDB.Do(args[:]...)
+	return p.redisDB.Do(context.TODO(), args[:]...)
 }
 
 // Set
