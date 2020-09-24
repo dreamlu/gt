@@ -51,6 +51,34 @@ func (v CMap) Del(key string) CMap {
 	return v
 }
 
+// Obtain get all values associated with the given key.
+func (v CMap) Obtain(key string) []string {
+	if v == nil {
+		return []string{}
+	}
+	return v[key]
+}
+
+// Append set the key to value if it doesn't exists. append if it exists.
+func (v CMap) Append(key, value string) CMap {
+	vs := v.Get(key)
+	if vs == "" || len(strings.Trim(vs, " ")) == 0 {
+		v.Set(key, value)
+		return v
+	}
+	return v.Set(key, vs+value)
+}
+
+// Append set the key to value if it doesn't exists. insert if it exists.
+func (v CMap) Insert(key, value string) CMap {
+	vs := v.Get(key)
+	if vs == "" || len(strings.Trim(vs, " ")) == 0 {
+		v.Set(key, value)
+		return v
+	}
+	return v.Set(key, value+vs)
+}
+
 // CMap to struct data
 // value like
 // type Te struct {
