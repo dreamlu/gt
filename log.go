@@ -23,6 +23,11 @@ type Log struct {
 	LogWriter
 }
 
+// LogWriter log writer interface
+type LogWriter interface {
+	Println(v ...interface{})
+}
+
 // log level
 const (
 	Debug = "debug" // default level

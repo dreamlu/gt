@@ -73,13 +73,11 @@ func TestDB(t *testing.T) {
 	// return create id
 	DB().CreateData("", &user)
 	t.Log("user: ", user)
-	t.Log(DB().RowsAffected)
 	user.Name = "haha"
 	DB().CreateData("", &user)
 	t.Log("user: ", user)
-	t.Log(DB().RowsAffected)
 	var user2 User
-	crud.Params(Data(&user2)).GetByID(1)
+	crud.Params(Model(User{}), Data(&user2)).GetByID(1)
 	t.Log(user2)
 }
 
@@ -104,8 +102,9 @@ func TestCrud(t *testing.T) {
 	crud.Update()
 
 	// get by id
-	info := crud.GetByID(10000)
-	t.Log(info, "\n[GetByID]:", info.Error())
+	var user2 User
+	crud.Params(Data(&user2)).GetByID(2)
+	t.Log(user2, "\n[GetByID]:", crud.Error())
 
 	// get by search
 	//var args = url.Values{}
@@ -234,8 +233,6 @@ func TestGetDataBySql(t *testing.T) {
 
 func TestGetDataBySearch(t *testing.T) {
 	var args = make(cmap.CMap)
-	args.Add("id", "2")
-	args["name"] = append(args["name"], "梦")
 	args["key"] = append(args["key"], "梦")
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
@@ -249,7 +246,9 @@ func TestGetDataBySearch(t *testing.T) {
 		},
 	})
 	t.Log(DB().res.Error)
-	t.Log(user[0])
+	if len(user) > 0 {
+		t.Log(user[0])
+	}
 }
 
 // 测试多表连接
@@ -401,19 +400,20 @@ func TestDBCrud_Select(t *testing.T) {
 // test update/delete
 func TestDBCrud_Update(t *testing.T) {
 
-	type UserPar struct {
-		Name string `json:"name"`
-	}
 	crud := crud.Params(
 		//Table("user"),
-		//Model(User{}),
-		Data(&UserPar{
-			//ID:   1,
-			Name: "梦S",
+		Model(User{}),
+		Data(&User{
+			ID:   1,
+			Name: "梦sql",
 		}),
 	)
-	t.Log(crud.Update().RowsAffected())
-	t.Log(crud.Select("`name` = ?", "梦").Update().RowsAffected())
+	cd := crud.Update()
+	t.Log(cd.Error(), cd.RowsAffected())
+	t.Log(crud.Params(Data(User{
+		ID:   1,
+		Name: "梦sql",
+	})).Select("name = ?", "梦sql").Update().RowsAffected())
 	t.Log(crud.Error())
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/dreamlu/gt/tool/type/te"
 	"github.com/dreamlu/gt/tool/util"
 	"github.com/dreamlu/gt/tool/util/str"
+	"gorm.io/gorm"
 	"reflect"
 	. "reflect"
 	"strconv"
@@ -765,7 +766,7 @@ func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}
 func (db *DBTool) GetBasicTypesData(typ reflect.Type, data interface{}, sql string, args ...interface{}) {
 	rows, err := db.Raw(sql, args).Rows() // (*sql.Rows, error)
 	if err != nil {
-		db.res = db.New()
+		db.res = db.Session(&gorm.Session{})
 		_ = db.res.AddError(err)
 		return
 	}
@@ -1069,10 +1070,8 @@ func (db *DBTool) UpdateData(gt *GT) {
 	}
 
 	if gt.Select != "" {
-		db.res = db.Table(gt.Table).Model(gt.Model).Where(gt.Select, gt.Args).Update(gt.Data)
+		db.res = db.Table(gt.Table).Model(gt.Model).Where(gt.Select, gt.Args).Updates(gt.Data)
 	} else {
-		db.res = db.Table(gt.Table).Model(gt.Data).Update(gt.Data)
+		db.res = db.Table(gt.Table).Model(gt.Data).Updates(gt.Data)
 	}
-
-	//db.res = db.Update(gt.Data)
 }

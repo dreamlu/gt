@@ -477,7 +477,9 @@ func TestId(t *testing.T) {
 ```
 
 #### Use Gorm
-> 模型定义需遵循:[模型定义](https://gorm.io/zh_CN/docs/models.html)
+> 模型定义需遵循:  
+> gt v1.20以前参考[模型定义v1](https://v1.gorm.io/zh_CN/docs/models.html)  
+> gt v1.20+参考[模型定义v2](https://gorm.io/zh_CN/docs/models.html)
 ```go
 // example 1:
 // 根据模型定义自动生成表

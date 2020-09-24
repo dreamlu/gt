@@ -37,7 +37,7 @@ func (t *CTime) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// insert problem https://github.com/jinzhu/gorm/issues/1611#issuecomment-329654638%E3%80%82
+// insert problem https://github.com/go-gorm/gorm/issues/1611#issuecomment-329654638
 func (t CTime) Value() (driver.Value, error) {
 	var zeroTime time.Time
 	var ti = time.Time(t)

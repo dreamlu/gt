@@ -277,7 +277,10 @@ func (c *Mysql) Error() error {
 
 func (c *Mysql) RowsAffected() int64 {
 
-	return c.dbTool.RowsAffected
+	if c.dbTool.res == nil {
+		return 0
+	}
+	return c.dbTool.res.RowsAffected
 }
 
 func (c *Mysql) Pager() result.Pager {

@@ -4,8 +4,12 @@ package gt
 
 import (
 	"fmt"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	logger2 "gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
+	"log"
+	"os"
 	"sync"
 	"time"
 )
@@ -42,37 +46,40 @@ func (db *DBTool) NewDB() {
 	)
 
 	// auto create database
-	db.DB = db.open(sql)
+	db.DB = db.open(sql, dbS)
 	err := db.DB.Exec("create database if not exists `" + dbS.Name + "`").Error
-	if err == nil {
-		err = db.DB.Close()
-		if err != nil {
-			Logger().Info("[mysql根连接]:", err)
-		}
-	} else {
+	if err != nil {
 		Logger().Info("[mysql自动连接根数据库失败,尝试直接连接]")
 	}
 
 	sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
-	db.DB = db.open(sql)
+	db.DB = db.open(sql, dbS)
 	// Globally disable table names
 	// use name replace names
-	db.DB.SingularTable(true)
+	db.NamingStrategy = schema.NamingStrategy{
+		SingularTable: true,
+	}
+	//db.DB.SingularTable(true)
 
-	db.DB.LogMode(dbS.Log)
-	db.DB.SetLogger(defaultLog)
+	//if l := dbS.Log; l {
+	//	db.DB.Logger.LogMode(logger2.Error)
+	//}
+	//db.DB.SetLogger(defaultLog)
 	// connection pool
 	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
-	db.DB.DB().SetMaxIdleConns(dbS.MaxIdleConn)
+	sdb, _ := db.DB.DB()
+	sdb.SetMaxIdleConns(dbS.MaxIdleConn)
 	// SetMaxOpenConns sets the maximum number of open connections to the database.
-	db.DB.DB().SetMaxOpenConns(dbS.MaxOpenConn)
+	sdb.SetMaxOpenConns(dbS.MaxOpenConn)
 
 	return
 }
 
-func (db *DBTool) open(sql string) *gorm.DB {
+func (db *DBTool) open(sql string, dbS *dba) *gorm.DB {
 	// database, initialize once
-	DB, err := gorm.Open("mysql", sql)
+	DB, err := gorm.Open(mysql.Open(sql), &gorm.Config{
+		Logger: logInfo(dbS),
+	})
 	//defer db.DB.Close()
 	if err != nil {
 		//if strings.Contains(err.Error(), "Unknown database"){
@@ -85,7 +92,9 @@ func (db *DBTool) open(sql string) *gorm.DB {
 			// go is so fast
 			// try it every 5s
 			time.Sleep(5 * time.Second)
-			DB, err = gorm.Open("mysql", sql)
+			DB, err = gorm.Open(mysql.Open(sql), &gorm.Config{
+				Logger: logInfo(dbS),
+			})
 			//defer DB.Close()
 			if err != nil {
 				Logger().Error("[mysql连接错误]:", err)
@@ -96,6 +105,22 @@ func (db *DBTool) open(sql string) *gorm.DB {
 		}
 	}
 	return DB
+}
+
+// log info
+func logInfo(dbS *dba) logger2.Interface {
+	lv := logger2.Error
+	if l := dbS.Log; l {
+		lv = logger2.Info
+	}
+	return logger2.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger2.Config{
+			SlowThreshold: time.Second, // 慢 SQL 阈值
+			LogLevel:      lv,          // Log level
+			Colorful:      false,       // 禁用彩色打印
+		},
+	)
 }
 
 // init DBTool
