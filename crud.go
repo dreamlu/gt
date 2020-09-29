@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const Version = "1.10.0+"
+const Version = "1.20.0+"
 
 func init() {
 	println("[gt version]:", Version)

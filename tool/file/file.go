@@ -140,7 +140,7 @@ func (f *File) SaveUploadedFile(file *multipart.FileHeader, filename string) (pa
 	}
 	filepath := gt.Configger().GetString("app.filepath") + time.Now().Format(f.Format) + "/"
 	if !file_func.Exists(filepath) {
-		err = os.Mkdir(filepath, os.ModePerm)
+		err = os.MkdirAll(filepath, os.ModePerm)
 		if err != nil {
 			return
 		}

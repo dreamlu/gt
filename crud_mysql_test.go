@@ -599,7 +599,7 @@ func TestTransaction(t *testing.T) {
 
 func TestDBDouble10to2(t *testing.T) {
 	var user User
-	NewCrud(
+	cd := NewCrud(
 		Data(&user),
 		Model(User{}),
 	).
@@ -607,6 +607,7 @@ func TestDBDouble10to2(t *testing.T) {
 			Set("id", "1"),
 		)
 	t.Log(user)
+	t.Log(cd.Error())
 
 	var user2 User
 	NewCrud(
