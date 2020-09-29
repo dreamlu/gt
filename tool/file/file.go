@@ -13,6 +13,7 @@ import (
 	"mime/multipart"
 	"os"
 	"strings"
+	"time"
 )
 
 // example
@@ -39,6 +40,10 @@ type File struct {
 	// img attributes
 	Width  int
 	Height int
+
+	// format 2006-01-02 15:04:05
+	Format string
+
 	IsComp int8 // is img compress
 }
 
@@ -130,9 +135,12 @@ func (f *File) CompressImage(imageType string) error {
 // save file
 func (f *File) SaveUploadedFile(file *multipart.FileHeader, filename string) (path string, err error) {
 
-	filepath := gt.Configger().GetString("app.filepath")
+	if f.Format == "" {
+		f.Format = "20060102"
+	}
+	filepath := gt.Configger().GetString("app.filepath") + time.Now().Format(f.Format) + "/"
 	if !file_func.Exists(filepath) {
-		err = os.Mkdir(filepath, os.ModePerm)
+		err = os.MkdirAll(filepath, os.ModePerm)
 		if err != nil {
 			return
 		}
