@@ -74,10 +74,6 @@ type Crud interface {
 
 // crud params
 type Params struct {
-	// db type
-	// default ""(mysql)
-	D string
-
 	// attributes
 	InnerTable []string    // inner join tables
 	LeftTable  []string    // left join tables
@@ -97,17 +93,9 @@ type Param func(*Params)
 // new crud
 func NewCrud(params ...Param) (crud Crud) {
 
-	p := newParam(params...)
-	switch p.D {
-	case "mongo":
-		MongoDB()
-		crud = new(Mongo)
-		crud.initCrud(p)
-	default:
-		DB()
-		crud = new(Mysql)
-		crud.initCrud(p)
-	}
+	DB()
+	crud = new(Mysql)
+	crud.initCrud(newParam(params...))
 	return
 }
 
@@ -118,13 +106,6 @@ func newParam(params ...Param) *Params {
 		p(param)
 	}
 	return param
-}
-
-func D(d string) Param {
-
-	return func(params *Params) {
-		params.D = d
-	}
 }
 
 func Inner(InnerTables ...string) Param {

@@ -1,4 +1,4 @@
-package gt
+package mongo
 
 import (
 	"context"

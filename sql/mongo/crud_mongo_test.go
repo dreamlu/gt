@@ -1,4 +1,4 @@
-package gt
+package mongo
 
 import (
 	"github.com/dreamlu/gt/tool/type/cmap"
@@ -23,7 +23,6 @@ func TestMongo_Create(t *testing.T) {
 		CreateTime: time.CTime(time2.Now()).String(),
 	}
 	cd := NewCrud(
-		D("mongo"),
 		Model(Client{}),
 		Data(user),
 	)
@@ -41,7 +40,6 @@ func TestMongo_Update(t *testing.T) {
 		Account:    0,
 	}
 	cd := NewCrud(
-		D("mongo"),
 		Table("client"),
 		Data(user),
 	)
@@ -60,7 +58,7 @@ func TestMongo_GetByData(t *testing.T) {
 
 	var client []*Client
 	cd := NewCrud(
-		D("mongo"),
+
 		Table("client"),
 		Data(&client),
 	)
@@ -69,7 +67,7 @@ func TestMongo_GetByData(t *testing.T) {
 
 	var client2 Client
 	cd = NewCrud(
-		D("mongo"),
+
 		Table("client"),
 		Data(&client2),
 	)
@@ -81,7 +79,7 @@ func TestMongo_GetByID(t *testing.T) {
 
 	var client Client
 	cd := NewCrud(
-		D("mongo"),
+
 		Table("client"),
 		Data(&client),
 	)
@@ -95,7 +93,7 @@ func TestMongo_GetBySearch(t *testing.T) {
 
 	var client []*Client
 	cd := NewCrud(
-		D("mongo"),
+
 		Table("client"),
 		Data(&client),
 	)
@@ -117,7 +115,7 @@ func TestMongo_Delete(t *testing.T) {
 
 	var client []*Client
 	cd := NewCrud(
-		D("mongo"),
+
 		Model(Client{}),
 		Data(&client),
 	)
@@ -130,7 +128,7 @@ func TestMongo_Delete(t *testing.T) {
 func TestMongo_Select(t *testing.T) {
 	var client Client
 	cd := NewCrud(
-		D("mongo"),
+
 		Data(&client),
 	).Select("client.find()").Single()
 	t.Log(client)

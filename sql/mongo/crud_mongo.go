@@ -1,4 +1,4 @@
-package gt
+package mongo
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	sq "github.com/dreamlu/gt/tool/sql"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/hump"
-	"github.com/dreamlu/gt/tool/util/str"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -37,11 +36,7 @@ func (m *Mongo) initCrud(param *Params) {
 	return
 }
 
-func (m *Mongo) DB() *DBTool {
-	return nil
-}
-
-func (m *Mongo) Params(params ...Param) Crud {
+func (m *Mongo) Params(params ...Param) *Mongo {
 
 	for _, p := range params {
 		p(m.param)
@@ -51,7 +46,7 @@ func (m *Mongo) Params(params ...Param) Crud {
 
 // search
 // pager info
-func (m *Mongo) GetBySearch(params cmap.CMap) Crud {
+func (m *Mongo) GetBySearch(params cmap.CMap) *Mongo {
 	clone := m.clone()
 
 	cur, err := m.GetByDataSearch(params)
@@ -64,7 +59,7 @@ func (m *Mongo) GetBySearch(params cmap.CMap) Crud {
 	return clone
 }
 
-func (m *Mongo) GetByData(params cmap.CMap) Crud {
+func (m *Mongo) GetByData(params cmap.CMap) *Mongo {
 	clone := m.clone()
 
 	filter := bson.M{}
@@ -79,13 +74,9 @@ func (m *Mongo) GetByData(params cmap.CMap) Crud {
 	return clone
 }
 
-func (m *Mongo) GetMoreByData(params cmap.CMap) Crud {
-	return m
-}
-
 // must be mongodb primitive.ObjectID
 // by id
-func (m *Mongo) GetByID(id interface{}) Crud {
+func (m *Mongo) GetByID(id interface{}) *Mongo {
 	clone := m.clone()
 
 	res := clone.m.Collection(clone.param.Table).FindOne(context.TODO(), bson.M{"_id": id.(primitive.ObjectID)})
@@ -96,14 +87,8 @@ func (m *Mongo) GetByID(id interface{}) Crud {
 	return clone
 }
 
-// the same as search
-// more tables
-func (m *Mongo) GetMoreBySearch(params cmap.CMap) Crud {
-	return m
-}
-
 // delete
-func (m *Mongo) Delete(id interface{}) Crud {
+func (m *Mongo) Delete(id interface{}) *Mongo {
 	clone := m.clone()
 
 	res, err := clone.m.Collection(clone.param.Table).DeleteMany(context.TODO(), bson.M{"_id": id.(primitive.ObjectID)})
@@ -114,28 +99,9 @@ func (m *Mongo) Delete(id interface{}) Crud {
 	return clone
 }
 
-// === form data ===
-
-// update
-func (m *Mongo) UpdateForm(params cmap.CMap) error {
-	return nil
-}
-
-// create
-func (m *Mongo) CreateForm(params cmap.CMap) error {
-	return nil
-}
-
-// create res insert id
-func (m *Mongo) CreateResID(params cmap.CMap) (str.ID, error) {
-	return str.ID{}, nil
-}
-
-// == json data ==
-
 // update
 // must id string
-func (m *Mongo) Update() Crud {
+func (m *Mongo) Update() *Mongo {
 	clone := m.clone()
 
 	data := bson.M{}
@@ -156,7 +122,7 @@ func (m *Mongo) Update() Crud {
 }
 
 // create
-func (m *Mongo) Create() Crud {
+func (m *Mongo) Create() *Mongo {
 	clone := m.clone()
 	_, err := clone.m.Collection(clone.param.Table).InsertOne(context.TODO(), clone.param.Data)
 	m.err = err
@@ -167,14 +133,14 @@ func (m *Mongo) Create() Crud {
 }
 
 // create more
-func (m *Mongo) CreateMore() Crud {
+func (m *Mongo) CreateMore() *Mongo {
 	clone := m.clone()
 	_, m.err = clone.m.Collection(clone.param.Table).InsertMany(context.TODO(), reflect.ToSlice(clone.param.Data))
 	return clone
 }
 
 // create
-func (m *Mongo) Select(q interface{}, args ...interface{}) Crud {
+func (m *Mongo) Select(q interface{}, args ...interface{}) *Mongo {
 
 	clone := m
 	if m.selectSQL == "" {
@@ -196,27 +162,9 @@ func (m *Mongo) Select(q interface{}, args ...interface{}) Crud {
 	return clone
 }
 
-func (m *Mongo) From(query string) Crud {
-
-	return m
-}
-
-func (m *Mongo) Group(query string) Crud {
-
-	return m
-}
-
-func (m *Mongo) Search(params cmap.CMap) Crud {
-	return m
-}
-
-func (m *Mongo) Single() Crud {
+func (m *Mongo) Single() *Mongo {
 	//m.m.Client().
 	//m.err = m.m.RunCommand(context.TODO(), m.selectSQL).Decode(&m.param.Data)
-	return m
-}
-
-func (m *Mongo) Exec() Crud {
 	return m
 }
 
@@ -233,18 +181,6 @@ func (m *Mongo) RowsAffected() int64 {
 func (m *Mongo) Pager() result.Pager {
 
 	return m.pager
-}
-
-func (m *Mongo) Begin() Crud {
-	return m
-}
-
-func (m *Mongo) Commit() Crud {
-	return m
-}
-
-func (m *Mongo) Rollback() Crud {
-	return m
 }
 
 // TODO print filter.. params
