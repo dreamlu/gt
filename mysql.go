@@ -77,9 +77,11 @@ func (db *DBTool) NewDB() {
 
 func (db *DBTool) open(sql string, dbS *dba) *gorm.DB {
 	// database, initialize once
-	DB, err := gorm.Open(mysql.Open(sql), &gorm.Config{
-		Logger: logInfo(dbS),
-	})
+	cf := &gorm.Config{
+		Logger:                 logInfo(dbS),
+		SkipDefaultTransaction: true,
+	}
+	DB, err := gorm.Open(mysql.Open(sql), cf)
 	//defer db.DB.Close()
 	if err != nil {
 		//if strings.Contains(err.Error(), "Unknown database"){
@@ -92,9 +94,7 @@ func (db *DBTool) open(sql string, dbS *dba) *gorm.DB {
 			// go is so fast
 			// try it every 5s
 			time.Sleep(5 * time.Second)
-			DB, err = gorm.Open(mysql.Open(sql), &gorm.Config{
-				Logger: logInfo(dbS),
-			})
+			DB, err = gorm.Open(mysql.Open(sql), cf)
 			//defer DB.Close()
 			if err != nil {
 				Logger().Error("[mysql连接错误]:", err)

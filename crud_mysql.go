@@ -314,6 +314,16 @@ func (c *Mysql) Rollback() Crud {
 	return c
 }
 
+func (c *Mysql) SavePoint(name string) Crud {
+	c.dbTool.SavePoint(name)
+	return c
+}
+
+func (c *Mysql) RollbackTo(name string) Crud {
+	c.dbTool.RollbackTo(name)
+	return c
+}
+
 func (c *Mysql) clone() (dbCrud *Mysql) {
 
 	// default table

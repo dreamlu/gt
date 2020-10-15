@@ -3,6 +3,7 @@
 package gt
 
 import (
+	sql2 "database/sql"
 	json2 "encoding/json"
 	"fmt"
 	"github.com/dreamlu/gt/tool/result"
@@ -22,7 +23,7 @@ import (
 // user model
 type User struct {
 	ID         uint64     `json:"id"`
-	Name       string     `json:"name" gt:"valid:len=3-5;trans:名称"`
+	Name       string     `json:"name" gt:"valid:len=3-5;trans:名称" gorm:"<-:update"`
 	BirthDate  time.CDate `json:"birth_date" gorm:"type:date"` // data
 	CreateTime time.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
 	Account    float64    `json:"account" gorm:"type:decimal(10,2)"`
@@ -137,7 +138,7 @@ func TestCrud(t *testing.T) {
 func TestCrudSQL(t *testing.T) {
 	var cMap = cmap.NewCMap()
 	cMap.Add("112", "1234")
-	sql := "update `user` set name=? where id=?"
+	sql := "update `user` set name=? where id=@id"
 	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Select("and 1=1 and").
 		Select(cMap).
 		Select("and").
@@ -145,7 +146,7 @@ func TestCrudSQL(t *testing.T) {
 			ID:   11234,
 			Name: "梦S",
 		}).Exec())
-	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
+	t.Log("[Info]:", crud.Select(sql, "梦sql", sql2.Named("id", 1)).Exec())
 	t.Log("[Info]:", crud.RowsAffected())
 	var user []User
 	sql = "select * from `user` where name=? and id=?"

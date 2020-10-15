@@ -70,6 +70,8 @@ type Crud interface {
 	Begin() Crud                                    // start a transaction
 	Commit() Crud                                   // commit a transaction
 	Rollback() Crud                                 // rollback a transaction
+	SavePoint(name string) Crud                     // save a point
+	RollbackTo(name string) Crud                    // rollback to point
 }
 
 // crud params
