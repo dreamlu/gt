@@ -22,5 +22,5 @@ require (
 	go.mongodb.org/mongo-driver v1.4.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gorm.io/driver/mysql v1.0.1
-	gorm.io/gorm v1.20.1
+	gorm.io/gorm v1.20.2
 )

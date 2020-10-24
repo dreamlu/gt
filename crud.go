@@ -40,7 +40,7 @@ type Crud interface {
 	GetByID(id interface{}) Crud           // by id
 	GetMoreBySearch(params cmap.CMap) Crud // more search
 
-	// delete by id
+	// delete by id/ids
 	Delete(id interface{}) Crud // delete
 
 	// crud and search id

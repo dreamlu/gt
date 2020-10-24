@@ -11,8 +11,9 @@ import (
 const (
 	Day        = 24 * time.Minute
 	Week       = 7 * Day
-	Layout     = "2006-01-02 15:04:05"
-	LayoutDate = "2006-01-02"
+	Layout     = "2006-01-02 15:04:05"     // mysql: datetime
+	LayoutN    = "2006-01-02 15:04:05.000" // mysql: datetime(3)
+	LayoutDate = "2006-01-02"              // mysql: date
 )
 
 // china time/date
@@ -60,6 +61,52 @@ func (t *CTime) Scan(v interface{}) error {
 // to string
 func (t CTime) String() string {
 	return time.Time(t).Format(Layout)
+}
+
+// 时间格式化2006-01-02 15:04:05.000
+type CNTime time.Time
+
+// 实现它的json序列化方法
+func (t CNTime) MarshalJSON() ([]byte, error) {
+	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format(LayoutN))
+	return []byte(stamp), nil
+}
+
+// 反序列化方法 https://stackoverflow.com/questions/45303326/how-to-parse-non-standard-time-format-from-json-in-golang
+func (t *CNTime) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	loc, _ := time.LoadLocation("Local")
+	ti, err := time.ParseInLocation(LayoutN, s, loc)
+	if err != nil {
+		return err
+	}
+	*t = CNTime(ti)
+	return nil
+}
+
+// insert problem https://github.com/go-gorm/gorm/issues/1611#issuecomment-329654638
+func (t CNTime) Value() (driver.Value, error) {
+	var zeroTime time.Time
+	var ti = time.Time(t)
+	if ti.UnixNano() == zeroTime.UnixNano() {
+		return nil, nil
+	}
+	return ti, nil
+}
+
+func (t *CNTime) Scan(v interface{}) error {
+	value, ok := v.(time.Time)
+	if ok {
+		*t = CNTime(value)
+		return nil
+	}
+	return fmt.Errorf("can not convert %v to CTime", v)
+}
+
+// must sure MarshalJSON is right
+// to string
+func (t CNTime) String() string {
+	return time.Time(t).Format(LayoutN)
 }
 
 // 时间格式化2006-01-02
