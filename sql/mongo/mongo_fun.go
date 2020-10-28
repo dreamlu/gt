@@ -3,7 +3,7 @@ package mongo
 import (
 	"context"
 	"github.com/dreamlu/gt/tool/type/cmap"
-	"github.com/dreamlu/gt/tool/util/str"
+	"github.com/dreamlu/gt/tool/util/cons"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -39,13 +39,13 @@ func (m *Mongo) GetByDataSearch(params cmap.CMap) (cur *mongo.Cursor, err error)
 
 	for k, _ := range params {
 		switch k {
-		case str.GtClientPage, str.GtClientPageUnderLine:
+		case cons.GtClientPage, cons.GtClientPageUnderLine:
 			m.pager.ClientPage, _ = strconv.ParseInt(params.Pop(k), 10, 64)
 			continue
-		case str.GtEveryPage, str.GtEveryPageUnderLine:
+		case cons.GtEveryPage, cons.GtEveryPageUnderLine:
 			m.pager.EveryPage, _ = strconv.ParseInt(params.Pop(k), 10, 64)
 			continue
-		case str.GtOrder:
+		case cons.GtOrder:
 			order = params.Pop(k)
 			continue
 		}

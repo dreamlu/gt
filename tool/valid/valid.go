@@ -7,7 +7,7 @@ import (
 	myReflect "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/te"
-	"github.com/dreamlu/gt/tool/util/str"
+	"github.com/dreamlu/gt/tool/util/cons"
 	"log"
 	"net/url"
 	"reflect"
@@ -133,11 +133,11 @@ func valid(data interface{}, typ reflect.Type) ValidError {
 		}
 		gtFields := strings.Split(gtTag, ";")
 		for _, v := range gtFields {
-			if strings.Contains(v, str.GtValid) {
+			if strings.Contains(v, cons.GtValid) {
 				rule.Valid = string([]byte(v)[6:]) //strings.Trim(v, str.GtValid+":")
 				//break
 			}
-			if strings.Contains(v, str.GtTrans) {
+			if strings.Contains(v, cons.GtTrans) {
 				rule.Trans = string([]byte(v)[6:]) //strings.TrimLeft(v, str.GtTrans+":")
 				//break
 			}

@@ -4,6 +4,7 @@ package gt
 
 import (
 	"fmt"
+	log2 "github.com/dreamlu/gt/sql/mysql/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	logger2 "gorm.io/gorm/logger"
@@ -113,12 +114,12 @@ func logInfo(dbS *dba) logger2.Interface {
 	if l := dbS.Log; l {
 		lv = logger2.Info
 	}
-	return logger2.New(
+	return log2.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-		logger2.Config{
-			SlowThreshold: time.Second, // 慢 SQL 阈值
-			LogLevel:      lv,          // Log level
-			Colorful:      false,       // 禁用彩色打印
+		log2.Config{
+			SlowThreshold: 200 * time.Millisecond, // 慢 SQL 阈值
+			LogLevel:      lv,                     // Log level
+			Colorful:      true,                   // 彩色打印
 		},
 	)
 }

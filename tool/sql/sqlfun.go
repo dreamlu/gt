@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	reflect2 "github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/util/str"
+	"github.com/dreamlu/gt/tool/util/cons"
 	"reflect"
 	"strings"
 )
@@ -19,13 +19,14 @@ func GtTag(structTag reflect.StructTag, curTag string) (oTag, tag, tagTable stri
 	gtFields := strings.Split(gtTag, ";")
 	for _, v := range gtFields {
 		// gt:"sub_sql"
-		if v == str.GtSubSQL {
+		if v == cons.GtSubSQL ||
+			v == cons.GtIgnore {
 			b = true
 			return
 		}
 		// gt:"field:xx"
 		oTag = curTag
-		if strings.Contains(v, str.GtField) {
+		if strings.Contains(v, cons.GtField) {
 			tagTmp := strings.Split(v, ":")
 			tag = tagTmp[1]
 			if a := strings.Split(tag, "."); len(a) > 1 { // include table
@@ -49,7 +50,7 @@ func GetReflectTags(ref reflect.Type) (tags []string) {
 	)
 	for i := 0; i < ref.NumField(); i++ {
 		tag = ref.Field(i).Tag.Get("json")
-		if tag == "" {
+		if tag == "" || tag == "-" {
 			tags = append(tags, GetReflectTags(ref.Field(i).Type)...)
 			continue
 		}

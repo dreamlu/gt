@@ -12,7 +12,7 @@ import (
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/te"
 	"github.com/dreamlu/gt/tool/util"
-	"github.com/dreamlu/gt/tool/util/str"
+	"github.com/dreamlu/gt/tool/util/cons"
 	"gorm.io/gorm"
 	"reflect"
 	. "reflect"
@@ -58,7 +58,7 @@ func GetReflectTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 	}
 	for i := 0; i < ref.NumField(); i++ {
 		tag = ref.Field(i).Tag.Get("json")
-		if tag == "" {
+		if tag == "" || tag == "-" {
 			GetReflectTagMore(ref.Field(i).Type, buf, tables[:]...)
 			continue
 		}
@@ -148,13 +148,14 @@ func GetReflectTagAlias(ref reflect.Type, buf *bytes.Buffer, alias string) {
 	}
 	for i := 0; i < ref.NumField(); i++ {
 		tag := ref.Field(i).Tag.Get("json")
-		if tag == "" {
+		if tag == "" || tag == "-" {
 			GetReflectTagAlias(ref.Field(i).Type, buf, alias)
 			continue
 		}
 		// sub sql
 		gtTag := ref.Field(i).Tag.Get("gt")
-		if strings.Contains(gtTag, str.GtSubSQL) {
+		if strings.Contains(gtTag, cons.GtSubSQL) ||
+			strings.Contains(gtTag, cons.GtIgnore) {
 			continue
 		}
 		buf.WriteString(alias)
@@ -190,13 +191,14 @@ func GetReflectTag(reflectType reflect.Type, buf *bytes.Buffer) {
 	}
 	for i := 0; i < reflectType.NumField(); i++ {
 		tag := reflectType.Field(i).Tag.Get("json")
-		if tag == "" {
+		if tag == "" || tag == "-" {
 			GetReflectTag(reflectType.Field(i).Type, buf)
 			continue
 		}
 		// sub sql
 		gtTag := reflectType.Field(i).Tag.Get("gt")
-		if strings.Contains(gtTag, str.GtSubSQL) {
+		if strings.Contains(gtTag, cons.GtSubSQL) ||
+			strings.Contains(gtTag, cons.GtIgnore) {
 			continue
 		}
 		buf.WriteString("`")
@@ -301,16 +303,16 @@ func GetMoreDataSQL(gt *GT) {
 			continue
 		}
 		switch k {
-		case str.GtClientPage, str.GtClientPageUnderLine:
+		case cons.GtClientPage, cons.GtClientPageUnderLine:
 			gt.clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case str.GtEveryPage, str.GtEveryPageUnderLine:
+		case cons.GtEveryPage, cons.GtEveryPageUnderLine:
 			gt.everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case str.GtOrder:
+		case cons.GtOrder:
 			order = v[0]
 			continue
-		case str.GtKey:
+		case cons.GtKey:
 			key = v[0]
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
@@ -324,7 +326,7 @@ func GetMoreDataSQL(gt *GT) {
 			bufW.WriteString(sqlKey)
 			gt.Args = append(gt.Args, argsKey[:]...)
 			continue
-		case str.GtMock:
+		case cons.GtMock:
 			mock.Mock(gt.Data)
 			gt.isMock = true
 			return
@@ -539,16 +541,16 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 			continue
 		}
 		switch k {
-		case str.GtClientPage, str.GtClientPageUnderLine:
+		case cons.GtClientPage, cons.GtClientPageUnderLine:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case str.GtEveryPage, str.GtEveryPageUnderLine:
+		case cons.GtEveryPage, cons.GtEveryPageUnderLine:
 			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case str.GtOrder:
+		case cons.GtOrder:
 			order = v[0]
 			continue
-		case str.GtKey:
+		case cons.GtKey:
 			key = v[0]
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
@@ -558,7 +560,7 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 			bufNtW.WriteString(sqlKey)
 			args = append(args, argsKey[:]...)
 			continue
-		case str.GtMock:
+		case cons.GtMock:
 			mock.Mock(gt.Data)
 			gt.isMock = true
 			return
@@ -604,10 +606,10 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 			continue
 		}
 		switch k {
-		case str.GtOrder:
+		case cons.GtOrder:
 			order = v[0]
 			continue
-		case str.GtKey:
+		case cons.GtKey:
 			key = v[0]
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
@@ -616,7 +618,7 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 			bufW.WriteString(sqlKey)
 			args = append(args, argsKey[:]...)
 			continue
-		case str.GtMock:
+		case cons.GtMock:
 			mock.Mock(gt.Data)
 			gt.isMock = true
 			return
@@ -647,10 +649,10 @@ func GetSelectSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64)
 
 	for k, v := range gt.CMaps {
 		switch k {
-		case str.GtClientPage, str.GtClientPageUnderLine:
+		case cons.GtClientPage, cons.GtClientPageUnderLine:
 			clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
-		case str.GtEveryPage, str.GtEveryPageUnderLine:
+		case cons.GtEveryPage, cons.GtEveryPageUnderLine:
 			everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			continue
 		}
@@ -976,7 +978,7 @@ func (db *DBTool) CreateFormData(table string, params cmap.CMap) error {
 // 创建数据,通用
 // 返回id,事务,慎用
 // 业务少可用
-func (db *DBTool) CreateDataResID(table string, params cmap.CMap) (id str.ID, err error) {
+func (db *DBTool) CreateDataResID(table string, params cmap.CMap) (id uint64, err error) {
 
 	//开启事务
 	tx := db.DB.Begin()
@@ -1003,25 +1005,6 @@ func (db *DBTool) CreateDataResID(table string, params cmap.CMap) (id str.ID, er
 	}
 
 	tx.Commit()
-	return
-}
-
-// select检查是否存在
-// == nil 即存在
-func (db *DBTool) ValidateSQL(sql string) (err error) {
-	var num int64 //返回影响的行数
-
-	var ve str.Value
-	dba := db.DB.Raw(sql).Scan(&ve)
-	num = dba.RowsAffected
-	switch {
-	case dba.Error != nil:
-		err = sq.GetSQLError(dba.Error.Error())
-	case num == 0 && dba.Error == nil:
-		err = &te.TextError{Msg: result.MsgExistOrNo}
-	default:
-		err = nil
-	}
 	return
 }
 

@@ -1,28 +1,6 @@
-// package gt
+// package cons
 
-package str
-
-// max upload file size
-var MaxUploadMemory int64
-
-// struct value
-type Value struct {
-	Value string `json:"value"`
-}
-
-type Num struct {
-	Num int `json:"num"`
-}
-
-// ID struct
-type ID struct {
-	ID int64 `json:"id"`
-}
-
-// string
-type String interface {
-	String() (string, error)
-}
+package cons
 
 // devMode const
 // key words
@@ -33,6 +11,7 @@ const (
 	// default config file dir
 	ConfDir = "conf/"
 	// db sql const
+	GtIgnore              = "ignore"
 	GtSubSQL              = "sub_sql"
 	GtClientPage          = "clientPage"
 	GtClientPageUnderLine = "client_page" // 支持下划线

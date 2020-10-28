@@ -26,7 +26,7 @@ type User struct {
 	Name       string     `json:"name" gt:"valid:len=3-5;trans:名称" gorm:"<-:update"`
 	BirthDate  time.CDate `json:"birth_date" gorm:"type:date"` // data
 	CreateTime time.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
-	Account    float64    `json:"account" gorm:"type:decimal(10,2)"`
+	Account    float64    `json:"-" gorm:"type:decimal(10,2)"`
 }
 
 func (u User) String() string {
@@ -181,13 +181,6 @@ func TestSqlSearch(t *testing.T) {
 	sql += "order by a.id "
 	t.Log(DB().GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage, nil))
 	//t.Log(ui[0].Userinfo.String())
-}
-
-// select 数据存在验证
-func TestValidateData(t *testing.T) {
-	sql := "select *from `user` where id=2"
-	ss := DB().ValidateSQL(sql)
-	log.Println(ss)
 }
 
 // 分页搜索中key测试

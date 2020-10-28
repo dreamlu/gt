@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dreamlu/gt/tool/file/file_func"
-	"github.com/dreamlu/gt/tool/util/str"
+	"github.com/dreamlu/gt/tool/util/cons"
 	"log"
 	"os"
 	"runtime"
@@ -42,7 +42,7 @@ func Configger(params ...string) *Config {
 func NewConfig(params ...string) *Config {
 
 	// default param
-	confDir := str.ConfDir
+	confDir := cons.ConfDir
 	if len(params) > 0 {
 		confDir = params[0]
 	}

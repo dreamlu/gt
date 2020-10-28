@@ -10,7 +10,6 @@ import (
 	"github.com/dreamlu/gt/tool/result"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util"
-	"github.com/dreamlu/gt/tool/util/str"
 	"strings"
 )
 
@@ -47,9 +46,8 @@ type Crud interface {
 	// form data
 	// [create/update] future all will use json replace form request
 	// form will not update
-	UpdateForm(params cmap.CMap) error            // update
-	CreateForm(params cmap.CMap) error            // create
-	CreateResID(params cmap.CMap) (str.ID, error) // create res insert id
+	UpdateForm(params cmap.CMap) error // update
+	CreateForm(params cmap.CMap) error // create
 
 	// crud and search id
 	// json data

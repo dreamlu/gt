@@ -10,7 +10,6 @@ import (
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/errors"
 	"github.com/dreamlu/gt/tool/util/hump"
-	"github.com/dreamlu/gt/tool/util/str"
 	"github.com/dreamlu/gt/tool/valid"
 	"runtime"
 	"strings"
@@ -141,15 +140,7 @@ func (c *Mysql) CreateForm(params cmap.CMap) error {
 	return c.dbTool.CreateFormData(c.param.Table, params)
 }
 
-// create res insert id
-func (c *Mysql) CreateResID(params cmap.CMap) (str.ID, error) {
-	c.common()
-
-	return c.dbTool.CreateDataResID(c.param.Table, params)
-}
-
 // == json data ==
-
 // create more
 func (c *Mysql) CreateMore() Crud {
 	c.common()

@@ -95,7 +95,7 @@ PASS
 ```
 
 #### Struct Gt
-> gt:"sub_sql"<忽略该字段解析,<可进行子查询>>  
+> gt:"sub_sql" 或 gt:"ignore"<忽略该字段解析,<可进行子查询>>  
 ```go
 type Client struct {
 	models.AdminCom
