@@ -127,7 +127,7 @@ func otherTableTagSQL(oTag, tag string, buf *bytes.Buffer, tables ...string) boo
 // 增加别名,表连接问题
 func GetColSQLAlias(model interface{}, alias string) (sql string) {
 	typ := reflect.TypeOf(model)
-	key := typ.PkgPath() + typ.Name()
+	key := fmt.Sprintf("%s%s-%s", typ.PkgPath(), typ.Name(), alias)
 	sql = coMap.Get(key)
 	if sql != "" {
 		//Logger().Info("[USE coMap GET ColumnSQL]")
