@@ -38,7 +38,7 @@ type Mysql struct {
 }
 
 // init DBTool tool
-func (c *Mysql) initCrud(param *Params) {
+func (c *Mysql) Init(param *Params) {
 
 	c.dbTool = dbTool
 	c.param = param
@@ -363,9 +363,8 @@ func (c *Mysql) line() {
 	}
 	if ok {
 		buf := new(strings.Builder)
-
 		fmt.Fprintf(buf, "\n\033[35m[gt]\033[0m: ")
-		fmt.Fprintf(buf, "%s:%d\n", fullFile, line)
+		fmt.Fprintf(buf, "%s:%d", fullFile, line)
 		fmt.Print(buf.String())
 	}
 }

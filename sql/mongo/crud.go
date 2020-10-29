@@ -23,7 +23,7 @@ func NewCrud(params ...Param) (crud *Mongo) {
 
 	MongoDB()
 	crud = &Mongo{}
-	crud.initCrud(newParam(params...))
+	crud.Init(newParam(params...))
 	return
 }
 

@@ -29,7 +29,7 @@ type Mongo struct {
 	pager result.Pager
 }
 
-func (m *Mongo) initCrud(param *Params) {
+func (m *Mongo) Init(param *Params) {
 
 	m.param = param
 	m.m = mongoDB

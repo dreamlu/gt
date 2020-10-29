@@ -56,12 +56,13 @@ type OrderD struct {
 	Info        json.CJSON `json:"info" gt:"sub_sql" faker:"cjson"` // json
 }
 
+// 局部
+var crud Crud
+
 func init() {
 	DB().AutoMigrate(User{}, Order{}, Service{})
+	crud = NewCrud()
 }
-
-// 局部
-var crud = NewCrud()
 
 func TestDB(t *testing.T) {
 

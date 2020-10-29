@@ -22,7 +22,7 @@ func init() {
 // crud is db driver extend
 type Crud interface {
 	// init crud
-	initCrud(param *Params)
+	Init(param *Params)
 	// DB
 	// Deprecated, use gt.DB() replace
 	DB() *DBTool
@@ -95,7 +95,7 @@ func NewCrud(params ...Param) (crud Crud) {
 
 	DB()
 	crud = new(Mysql)
-	crud.initCrud(newParam(params...))
+	crud.Init(newParam(params...))
 	return
 }
 
