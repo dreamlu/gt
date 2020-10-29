@@ -4,7 +4,7 @@ package cache
 
 import (
 	"encoding/json"
-	"github.com/dreamlu/gt"
+	"github.com/dreamlu/gt/tool/log"
 )
 
 // data model
@@ -42,6 +42,8 @@ type Cache interface {
 	// check value
 	// flush the time
 	Check(key interface{}) error
+	// expire key time
+	ExpireKey(key interface{}, t int64) bool
 }
 
 // time for cache unit
@@ -64,7 +66,7 @@ func NewCache(params ...interface{}) (cache Cache) {
 		cache = new(RedisManager)
 		err := cache.NewCache()
 		if err != nil {
-			gt.Logger().Error(err.Error())
+			log.Error(err.Error())
 		}
 		return
 	}
@@ -72,7 +74,7 @@ func NewCache(params ...interface{}) (cache Cache) {
 	cache = params[0].(Cache)
 	err := cache.NewCache(params[1:]...)
 	if err != nil {
-		gt.Logger().Error(err.Error())
+		log.Error(err.Error())
 	}
 	return
 }

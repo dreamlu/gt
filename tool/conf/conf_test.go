@@ -1,6 +1,6 @@
 // package gt
 
-package gt
+package conf
 
 import (
 	"log"
@@ -25,7 +25,7 @@ type dbas struct {
 
 func TestConfig_GetStruct(t *testing.T) {
 	dba := &dbas{}
-	Configger().GetStruct("app.db", dba)
+	GetStruct("app.db", dba)
 	t.Log(dba)
 }
 
@@ -34,6 +34,6 @@ func TestConfigger(t *testing.T) {
 	dir, _ := os.Getwd()
 	t.Log(dir)
 	t.Log(os.Getenv("GOPATH"))
-	mode := Configger().GetString("app.devMode")
+	mode := GetString("app.devMode")
 	t.Log(mode)
 }

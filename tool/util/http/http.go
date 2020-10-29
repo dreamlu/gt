@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/dreamlu/gt"
+	"github.com/dreamlu/gt/tool/log"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -26,7 +26,7 @@ type Request struct {
 func NewRequest(method, url string, body io.Reader) *Request {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
-		gt.Logger().Error(req)
+		log.Error(req)
 		return nil
 	}
 	return &Request{

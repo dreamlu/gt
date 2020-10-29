@@ -5,6 +5,8 @@ package gt
 import (
 	"fmt"
 	log2 "github.com/dreamlu/gt/sql/mysql/log"
+	"github.com/dreamlu/gt/tool/conf"
+	log3 "github.com/dreamlu/gt/tool/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	logger2 "gorm.io/gorm/logger"
@@ -40,7 +42,7 @@ type dba struct {
 func (db *DBTool) NewDB() {
 
 	dbS := &dba{}
-	Configger().GetStruct("app.db", dbS)
+	conf.Configger().GetStruct("app.db", dbS)
 	db.log = dbS.Log
 	var (
 		sql = fmt.Sprintf("%s:%s@%s/?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host)
@@ -50,7 +52,7 @@ func (db *DBTool) NewDB() {
 	db.DB = db.open(sql, dbS)
 	err := db.DB.Exec("create database if not exists `" + dbS.Name + "`").Error
 	if err != nil {
-		Logger().Info("[mysql自动连接根数据库失败,尝试直接连接]")
+		log3.Info("[mysql自动连接根数据库失败,尝试直接连接]")
 	}
 
 	sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
@@ -88,8 +90,8 @@ func (db *DBTool) open(sql string, dbS *dba) *gorm.DB {
 		//if strings.Contains(err.Error(), "Unknown database"){
 		//	DB.Exec("create database 'coupon'")
 		//}
-		Logger().Error("[mysql连接错误]:", err)
-		Logger().Error("[mysql开始尝试重连中]: try it every 5s...")
+		log3.Error("[mysql连接错误]:", err)
+		log3.Error("[mysql开始尝试重连中]: try it every 5s...")
 		// try to reconnect
 		for {
 			// go is so fast
@@ -98,10 +100,10 @@ func (db *DBTool) open(sql string, dbS *dba) *gorm.DB {
 			DB, err = gorm.Open(mysql.Open(sql), cf)
 			//defer DB.Close()
 			if err != nil {
-				Logger().Error("[mysql连接错误]:", err)
+				log3.Error("[mysql连接错误]:", err)
 				continue
 			}
-			Logger().Info("[mysql重连成功]")
+			log3.Info("[mysql重连成功]")
 			break
 		}
 	}

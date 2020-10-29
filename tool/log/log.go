@@ -1,9 +1,10 @@
-// package gt
+// package log
 
-package gt
+package log
 
 import (
 	"fmt"
+	"github.com/dreamlu/gt/tool/conf"
 	time2 "github.com/dreamlu/gt/tool/type/time"
 	os2 "github.com/dreamlu/gt/tool/util/os"
 	"github.com/lestrrat-go/file-rotatelogs"
@@ -30,10 +31,10 @@ type LogWriter interface {
 
 // log level
 const (
-	Debug = "debug" // default level
-	Info  = "info"
-	Warn  = "warn"
-	Error = "error"
+	DebugLevel = "debug" // default level
+	InfoLevel  = "info"
+	WarnLevel  = "warn"
+	ErrorLevel = "error"
 )
 
 var (
@@ -43,12 +44,17 @@ var (
 )
 
 // one single log
-func Logger() *Log {
-
+func init() {
 	onceLog.Do(func() {
 		l = NewLog()
 	})
+}
 
+// one single log
+func Logger() *Log {
+	//onceLog.Do(func() {
+	//	l = NewLog()
+	//})
 	return l
 }
 
@@ -82,19 +88,19 @@ func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationT
 		l.Errorf("日志文件系统配置错误. %+v", errors.WithStack(err))
 	}
 
-	level := Configger().GetString("app.log.level")
+	level := conf.Configger().GetString("app.log.level")
 	wm := lfshook.WriterMap{}
 	switch level {
-	case Debug, "":
+	case DebugLevel, "":
 		wm[logrus.DebugLevel] = writer
 		fallthrough
-	case Info:
+	case InfoLevel:
 		wm[logrus.InfoLevel] = writer
 		fallthrough
-	case Warn:
+	case WarnLevel:
 		wm[logrus.WarnLevel] = writer
 		fallthrough
-	case Error:
+	case ErrorLevel:
 		wm[logrus.ErrorLevel] = writer
 		wm[logrus.FatalLevel] = writer
 		wm[logrus.PanicLevel] = writer
@@ -105,11 +111,11 @@ func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationT
 
 // Default file log
 // maintain 7 days data, every 24 hour split file
-func (l *Log) DefaultFileLog() {
+func DefaultFileLog() {
 
 	var (
 		//projectPath, _ = os.Getwd()
-		projectName = Configger().GetString("app.db.name") // use db name replace
+		projectName = conf.Configger().GetString("app.db.name") // use db name replace
 	)
 	l.FileLog("log/", projectName+".log", 7, time2.Day)
 }
@@ -131,4 +137,17 @@ func (s *myFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 // print error line
 func (l *Log) ErrorLine(args ...interface{}) {
 	l.Error(fmt.Sprintf("%+v\n", args))
+}
+
+// sugar
+func Error(args ...interface{}) {
+	l.ErrorLine(args...)
+}
+
+func Info(args ...interface{}) {
+	l.Info(args...)
+}
+
+func Warn(args ...interface{}) {
+	l.Warn(args...)
 }

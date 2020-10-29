@@ -6,8 +6,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/dreamlu/gt"
 	redis2 "github.com/dreamlu/gt/cache/redis"
+	"github.com/dreamlu/gt/tool/conf"
+	"github.com/dreamlu/gt/tool/log"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -23,11 +24,11 @@ type RedisManager struct {
 // other cache maybe like this
 func (r *RedisManager) NewCache(params ...interface{}) error {
 
-	var config *gt.Config
+	var config *conf.Config
 	if len(params) > 0 {
-		config = gt.Configger(params[0].(string))
+		config = conf.Configger(params[0].(string))
 	} else {
-		config = gt.Configger()
+		config = conf.Configger()
 	}
 
 	// read config
@@ -152,4 +153,12 @@ func (r *RedisManager) Check(key interface{}) error {
 	}
 
 	return r.Rc.ExpireKey(keyS, reply.Time*60).Err()
+}
+
+func (r *RedisManager) ExpireKey(key interface{}, t int64) bool {
+	b, err := r.Rc.ExpireKey(key, t).Bool()
+	if err != nil {
+		log.Error(err)
+	}
+	return b
 }

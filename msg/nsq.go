@@ -3,7 +3,8 @@ package msg
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dreamlu/gt"
+	"github.com/dreamlu/gt/tool/conf"
+	"github.com/dreamlu/gt/tool/log"
 	"github.com/nsqio/go-nsq"
 	"strings"
 )
@@ -18,7 +19,7 @@ type Nsg struct {
 func (n *Nsg) NewProducer() Msg {
 
 	config := nsq.NewConfig()
-	producer, err := nsq.NewProducer(gt.Configger().GetString("app.nsq.producer_addr"), config)
+	producer, err := nsq.NewProducer(conf.Configger().GetString("app.nsq.producer_addr"), config)
 	if err != nil {
 		fmt.Printf("[gt]:create producer failed, err:%v\n", err)
 		return nil
@@ -76,9 +77,9 @@ func (n *Nsg) Sub(handler HandlerFunc) error {
 	}))
 	// use ',' split address
 	// ConnectToNSQD/ConnectToNSQLookupd
-	err := n.consumer.ConnectToNSQDs(strings.Split(gt.Configger().GetString("app.nsq.consumer_addr"), ","))
+	err := n.consumer.ConnectToNSQDs(strings.Split(conf.Configger().GetString("app.nsq.consumer_addr"), ","))
 	if err != nil {
-		gt.Logger().Error("[gt]:MSG Consumer ConnectToNSQD err: ", err)
+		log.Error("[gt]:MSG Consumer ConnectToNSQD err: ", err)
 		return err
 	}
 

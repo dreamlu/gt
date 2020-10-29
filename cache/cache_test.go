@@ -28,6 +28,10 @@ func init() {
 
 }
 
+func TestCacheExpireKey(t *testing.T) {
+	t.Log(ce.ExpireKey("test1", CacheHour))
+}
+
 // redis method set test
 func TestRedis(t *testing.T) {
 	err := r.Rc.Set("test", "testValue").Err()

@@ -1,6 +1,6 @@
 // package gt
 
-package gt
+package conf
 
 import (
 	"errors"
@@ -11,31 +11,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"sync"
 )
-
-// config
-type Config struct {
-	// different devMode yaml data
-	YamlS map[string]*Yaml
-	// yaml dir
-	dir string
-}
-
-var (
-	onceConfig sync.Once
-	// global log
-	config *Config
-)
-
-// single config
-func Configger(params ...string) *Config {
-
-	onceConfig.Do(func() {
-		config = NewConfig(params[:]...)
-	})
-	return config
-}
 
 // new Config
 // load all devMode yaml data

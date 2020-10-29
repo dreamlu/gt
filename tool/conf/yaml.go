@@ -1,11 +1,11 @@
 // package gt
 
-package gt
+package conf
 
 import (
 	"errors"
 	"fmt"
-	"github.com/go-yaml/yaml"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"reflect"

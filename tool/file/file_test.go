@@ -1,7 +1,7 @@
 package file
 
 import (
-	"github.com/dreamlu/gt"
+	"github.com/dreamlu/gt/tool/conf"
 	"os"
 	"testing"
 	"time"
@@ -9,12 +9,12 @@ import (
 
 // test upload
 func TestFile_GetUploadFile(t *testing.T) {
-	t.Log(gt.Configger().GetString("app.filepath") + time.Now().Format("20060102") + "/")
+	t.Log(conf.Configger().GetString("app.filepath") + time.Now().Format("20060102") + "/")
 }
 
 func TestCompressImage(t *testing.T) {
 	fileImg := File{
-		path:   "../../test/file/呵呵.jpg",
+		Path:   "../../test/file/呵呵.jpg",
 		Width:  200,
 		Height: 0,
 	}
@@ -28,6 +28,6 @@ func TestCompressImage(t *testing.T) {
 func TestConfigger(t *testing.T) {
 	dir, _ := os.Getwd()
 	t.Log(dir)
-	mode := gt.Configger().GetString("app.devMode")
+	mode := conf.Configger().GetString("app.devMode")
 	t.Log(mode)
 }

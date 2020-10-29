@@ -1,7 +1,7 @@
 package daemon
 
 import (
-	"github.com/dreamlu/gt"
+	"github.com/dreamlu/gt/tool/conf"
 	"github.com/dreamlu/gt/tool/type/time"
 	"sync"
 	time2 "time"
@@ -62,7 +62,7 @@ func newDaemon() *Daemon {
 
 	// default num
 	//nums := make([]int, 2)
-	num := gt.Configger().GetInt("app.daemon.task_num")
+	num := conf.Configger().GetInt("app.daemon.task_num")
 	//time_num := gt.Configger().GetInt("app.daemon.task_time_num")
 	//if time_num == 0 {
 	//	time_num = num

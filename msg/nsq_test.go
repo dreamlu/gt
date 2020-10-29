@@ -1,7 +1,7 @@
 package msg
 
 import (
-	"github.com/dreamlu/gt"
+	"github.com/dreamlu/gt/tool/log"
 	"testing"
 	"time"
 )
@@ -30,6 +30,6 @@ func TestNsg(t *testing.T) {
 
 func B(message *Message) error {
 
-	gt.Logger().Info(string(message.Body))
+	log.Info(string(message.Body))
 	return nil
 }

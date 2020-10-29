@@ -1,16 +1,13 @@
-package gt
+package log
 
 import (
 	"github.com/dreamlu/gt/tool/type/errors"
-	"os"
 	"testing"
 	"time"
 )
 
-var projectPath, _ = os.Getwd()
-
 func init() {
-	Logger().FileLog(projectPath+"/test/log/", "gt.log", 3, time.Minute)
+	Logger().FileLog("../../test/log/", "gt.log", 3, time.Minute)
 }
 
 func TestNewFileLog(t *testing.T) {
@@ -21,9 +18,9 @@ func TestNewFileLog(t *testing.T) {
 		if i > 3 {
 			break
 		}
-		Logger().Info("this is info")
+		Info("this is info")
 		time.Sleep(1 * time.Second)
-		Logger().Error("this is error")
+		Error("this is error")
 	}
 	t.Log("log over")
 }
@@ -34,6 +31,6 @@ func TestErrorLine(t *testing.T) {
 	err3 := errors.Wrap(err2, "new err2")
 	t.Log(err3)
 	//s := fmt.Sprintf("%+v\n", err3)
+	Error(err3)
 	Logger().Error(err3)
-	Logger().ErrorLine(err3)
 }

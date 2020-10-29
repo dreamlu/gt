@@ -3,7 +3,8 @@ package mongo
 import (
 	"context"
 	"fmt"
-	"github.com/dreamlu/gt"
+	"github.com/dreamlu/gt/tool/conf"
+	"github.com/dreamlu/gt/tool/log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"sync"
@@ -31,14 +32,14 @@ type dba struct {
 func newMongoDB() *mongo.Database {
 
 	dbS := &dba{}
-	gt.Configger().GetStruct("app.mongo", dbS)
+	conf.Configger().GetStruct("app.mongo", dbS)
 	//url := fmt.Sprintf("mongodb://%s:%s@%s", dbS.User, dbS.Password, dbS.Host)
 	url := fmt.Sprintf("mongodb://%s", dbS.Host)
 	ctx, _ := context.WithCancel(context.Background())
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
 	if err != nil {
-		gt.Logger().Error("[mongodb连接错误]:", err)
-		gt.Logger().Error("[mongodb开始尝试重连中]: try it every 5s...")
+		log.Error("[mongodb连接错误]:", err)
+		log.Error("[mongodb开始尝试重连中]: try it every 5s...")
 		// try to reconnect
 		for {
 			// go is so fast
@@ -47,15 +48,15 @@ func newMongoDB() *mongo.Database {
 			client, err = mongo.Connect(ctx, options.Client().ApplyURI(url))
 			//defer DB.Close()
 			if err != nil {
-				gt.Logger().Error("[mongodb连接错误]:", err)
+				log.Error("[mongodb连接错误]:", err)
 				continue
 			}
-			gt.Logger().Info("[mongodb重连成功]")
+			log.Info("[mongodb重连成功]")
 			break
 		}
 	}
 
-	return client.Database(gt.Configger().GetString("app.mongo.name"))
+	return client.Database(conf.Configger().GetString("app.mongo.name"))
 }
 
 // single db
