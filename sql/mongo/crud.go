@@ -13,7 +13,7 @@ type Params struct {
 	// count
 	SubSQL string // SubQuery SQL
 	// where
-	SubWhereSQL string // SubWhere SQL
+	WhereSQL string // SubWhere SQL
 }
 
 type Param func(*Params)

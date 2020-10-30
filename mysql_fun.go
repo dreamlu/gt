@@ -343,19 +343,20 @@ func GetMoreDataSQL(gt *GT) {
 			bufW.WriteString("` = ? and ")
 		}
 		gt.Args = append(gt.Args, v[0])
-		//into:
 	}
 
 	if bufW.Len() != 0 {
 		gt.sql += fmt.Sprintf("where %s ", bufW.Bytes()[:bufW.Len()-4])
 		gt.sqlNt += fmt.Sprintf("where %s", bufW.Bytes()[:bufW.Len()-4])
-		if gt.SubWhereSQL != "" {
-			gt.sql += fmt.Sprintf("and %s ", gt.SubWhereSQL)
-			gt.sqlNt += fmt.Sprintf("and %s", gt.SubWhereSQL)
+		if gt.WhereSQL != "" {
+			gt.Args = append(gt.Args, gt.wArgs...)
+			gt.sql += fmt.Sprintf("and %s ", gt.WhereSQL)
+			gt.sqlNt += fmt.Sprintf("and %s", gt.WhereSQL)
 		}
-	} else if gt.SubWhereSQL != "" {
-		gt.sql += fmt.Sprintf("where %s ", gt.SubWhereSQL)
-		gt.sqlNt += fmt.Sprintf("where %s", gt.SubWhereSQL)
+	} else if gt.WhereSQL != "" {
+		gt.Args = append(gt.Args, gt.wArgs...)
+		gt.sql += fmt.Sprintf("where %s ", gt.WhereSQL)
+		gt.sqlNt += fmt.Sprintf("where %s", gt.WhereSQL)
 	}
 	gt.sql += fmt.Sprintf(" order by %s ", order)
 
@@ -577,13 +578,15 @@ func GetSearchSQL(gt *GT) (sqlNt, sql string, clientPage, everyPage int64, args 
 	if bufW.Len() != 0 {
 		sql += fmt.Sprintf("where %s ", bufW.Bytes()[:bufW.Len()-4])
 		sqlNt += fmt.Sprintf("where %s", bufNtW.Bytes()[:bufNtW.Len()-4])
-		if gt.SubWhereSQL != "" {
-			sql += fmt.Sprintf("and %s ", gt.SubWhereSQL)
-			sqlNt += fmt.Sprintf("and %s", gt.SubWhereSQL)
+		if gt.WhereSQL != "" {
+			gt.Args = append(gt.Args, gt.wArgs...)
+			sql += fmt.Sprintf("and %s ", gt.WhereSQL)
+			sqlNt += fmt.Sprintf("and %s", gt.WhereSQL)
 		}
-	} else if gt.SubWhereSQL != "" {
-		sql += fmt.Sprintf(" where %s ", gt.SubWhereSQL)
-		sqlNt += fmt.Sprintf(" where %s", gt.SubWhereSQL)
+	} else if gt.WhereSQL != "" {
+		gt.Args = append(gt.Args, gt.wArgs...)
+		sql += fmt.Sprintf(" where %s ", gt.WhereSQL)
+		sqlNt += fmt.Sprintf(" where %s", gt.WhereSQL)
 	}
 	sql += fmt.Sprintf(" order by %s ", order)
 	return
@@ -632,11 +635,13 @@ func GetDataSQL(gt *GT) (sql string, args []interface{}) {
 
 	if bufW.Len() != 0 {
 		sql += fmt.Sprintf(" where %s ", bufW.Bytes()[:bufW.Len()-4])
-		if gt.SubWhereSQL != "" {
-			sql += fmt.Sprintf("and %s ", gt.SubWhereSQL)
+		if gt.WhereSQL != "" {
+			gt.Args = append(gt.Args, gt.wArgs...)
+			sql += fmt.Sprintf("and %s ", gt.WhereSQL)
 		}
-	} else if gt.SubWhereSQL != "" {
-		sql += fmt.Sprintf(" where %s ", gt.SubWhereSQL)
+	} else if gt.WhereSQL != "" {
+		gt.Args = append(gt.Args, gt.wArgs...)
+		sql += fmt.Sprintf(" where %s ", gt.WhereSQL)
 	}
 	if order != "" {
 		sql += fmt.Sprintf(" order by %s ", order)

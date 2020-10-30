@@ -263,7 +263,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		Model(OrderD{}),
 		Data(&or),
 		KeyModel(OrderD{}),
-		//SubWhereSQL("1 = 1", "2 = 2", ""),
+		WhereSQL("1 = ?", 1).WhereSQL("2 = ?", 2),
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {
@@ -559,6 +559,8 @@ func TestTransaction(t *testing.T) {
 	user.Name = "testUpdate"
 	cd.Params(Data(user)).Update()
 
+	cd.SavePoint("point1")
+
 	params.Set("id", "1")
 	cd.Params(Data(&user)).GetByData(params)
 	t.Log("step2: ", user)
@@ -572,6 +574,11 @@ func TestTransaction(t *testing.T) {
 	cd.Select("update user set name = 'testExec' where id = 1").Exec()
 	cd.Params(Data(&user)).GetByID(1)
 	t.Log("step4: ", user)
+
+	cd.RollbackTo("point1")
+	params.Set("id", "1")
+	cd.Params(Data(&user)).GetByData(params)
+	t.Log("point1: ", user)
 
 	err := cd.Params(Data(user)).Create().Error()
 	t.Log("error", err)

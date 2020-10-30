@@ -82,10 +82,11 @@ type Params struct {
 	KeyModel   interface{} // key like model
 	Data       interface{} // table model data, like var user User{}, it is 'user', it store real data
 
-	// count
+	// sub query
 	SubSQL string // SubQuery SQL
 	// where
-	SubWhereSQL string // SubWhere SQL
+	WhereSQL string        // Where SQL
+	wArgs    []interface{} // Where args
 }
 
 type Param func(*Params)
@@ -177,13 +178,38 @@ func SubSQL(SubSQL ...string) Param {
 	}
 }
 
-func SubWhereSQL(SubWhereSQL ...string) Param {
+// Deprecated
+func SubWhereSQL(WhereSQL ...string) Param {
 
 	return func(params *Params) {
-		SubWhereSQL = util.RemoveStrings(SubWhereSQL, "")
-		if len(SubWhereSQL) == 0 {
+		WhereSQL = util.RemoveStrings(WhereSQL, "")
+		if len(WhereSQL) == 0 {
 			return
 		}
-		params.SubWhereSQL = strings.Join(SubWhereSQL[:], " and ")
+		params.WhereSQL = strings.Join(WhereSQL[:], " and ")
+	}
+}
+
+// where sql and args, can not coexists with SubWhereSQL
+func WhereSQL(WhereSQL string, args ...interface{}) Param {
+
+	return func(params *Params) {
+		if WhereSQL == "" {
+			return
+		}
+		params.wArgs = args
+		params.WhereSQL = WhereSQL
+	}
+}
+
+func (p Param) WhereSQL(WhereSQL string, args ...interface{}) Param {
+
+	return func(params *Params) {
+		if WhereSQL == "" {
+			return
+		}
+		p(params)
+		params.wArgs = append(params.wArgs, args...)
+		params.WhereSQL += " and " + WhereSQL
 	}
 }
