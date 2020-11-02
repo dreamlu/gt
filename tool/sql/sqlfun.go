@@ -77,13 +77,10 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 	var (
 		tags = GetTags(model)
 		keys = strings.Split(key, " ") // 空格隔开
-		buf  bytes.Buffer
+		buf  = bytes.NewBuffer(nil)
 	)
 
 	for _, key := range keys {
-		if key == "" {
-			continue
-		}
 		buf.WriteString("(")
 		for _, tag := range tags {
 			switch {
@@ -98,9 +95,10 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 			}
 
 		}
-		sqlKey = buf.String()
-		sqlKey = string([]byte(sqlKey)[:len(sqlKey)-4]) + ") and "
+		buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
+		buf.WriteString(") and ")
 	}
+	sqlKey = buf.String()
 	return
 }
 
@@ -113,19 +111,16 @@ func GetMoreKeySQL(key string, searModel interface{}, tables ...string) (sqlKey 
 	var (
 		tags = GetTags(searModel)
 		keys = strings.Split(key, " ") // 空格隔开
-		buf  bytes.Buffer
+		buf  = &bytes.Buffer{}
 	)
 	for _, key := range keys {
-		if key == "" {
-			continue
-		}
 		buf.WriteString("(")
 		for _, tag := range tags {
 			// 排除_id结尾字段
 			if !strings.HasSuffix(tag, "_id") &&
 				!strings.HasPrefix(tag, "id") {
 
-				if b := otherTableKeySql(tag, &buf, tables...); b == true {
+				if b := otherTableKeySql(tag, buf, tables...); b == true {
 					argsKey = append(argsKey, "%"+key+"%")
 					continue
 				}
@@ -141,9 +136,10 @@ func GetMoreKeySQL(key string, searModel interface{}, tables ...string) (sqlKey 
 				argsKey = append(argsKey, "%"+key+"%")
 			}
 		}
-		sqlKey = buf.String()
-		sqlKey = string([]byte(sqlKey)[:len(sqlKey)-4]) + ") and "
+		buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
+		buf.WriteString(") and ")
 	}
+	sqlKey = buf.String()
 	return
 }
 

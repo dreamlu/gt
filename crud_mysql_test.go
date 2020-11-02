@@ -118,7 +118,7 @@ func TestCrud(t *testing.T) {
 		Data(&users),
 		//SubWhereSQL("1=1"),
 	)
-	crud = crud.Params(Table("gt.user")).GetBySearch(cmap.NewCMap().Set("id", "1000"))
+	crud = crud.Params(Table("gt.user")).GetBySearch(cmap.NewCMap().Set("id", "1000").Set("key", "梦 1"))
 	t.Log("\n[User Info]:", users)
 	t.Log(crud.Error())
 
@@ -248,10 +248,15 @@ func TestGetDataBySearch(t *testing.T) {
 
 // 测试多表连接
 func TestGetMoreDataBySearch(t *testing.T) {
+
+	type Key struct {
+		UserName string `json:"user_name"`
+		//Name     string `json:"name"`
+	}
 	// 多表查询
 	// get more search
 	var params = cmap.NewCMap().
-		Set("key", "梦"). // key work
+		Set("key", "梦 1"). // key work
 		Set("clientPage", "1").
 		Set("everyPage", "2")
 	//params.Add("mock", "1") // mock data
@@ -262,7 +267,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		Left("order", "service"),
 		Model(OrderD{}),
 		Data(&or),
-		KeyModel(OrderD{}),
+		KeyModel(Key{}),
 		WhereSQL("1 = ?", 1).WhereSQL("2 = ?", 2),
 	)
 	err := crud.GetMoreBySearch(params).Error()
@@ -380,7 +385,7 @@ func TestDBCrud_Select(t *testing.T) {
 		Data(&user),
 	).
 		Select("select *from user")
-	cd2.Single()
+	t.Log(cd2.Single().Error())
 	_, file, line, ok := runtime.Caller(1)
 	if ok {
 		t.Log(file, "[]", line)
