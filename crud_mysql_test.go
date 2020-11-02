@@ -250,8 +250,8 @@ func TestGetDataBySearch(t *testing.T) {
 func TestGetMoreDataBySearch(t *testing.T) {
 
 	type Key struct {
-		UserName string `json:"user_name"`
-		//Name     string `json:"name"`
+		UserName    string `json:"user_name"`
+		UserAccount string `json:"user_account"`
 	}
 	// 多表查询
 	// get more search

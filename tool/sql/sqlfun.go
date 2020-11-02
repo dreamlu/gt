@@ -78,25 +78,36 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 		tags = GetTags(model)
 		keys = strings.Split(key, " ") // 空格隔开
 		buf  = bytes.NewBuffer(nil)
+		v    = keys[0]
 	)
 
-	for _, key := range keys {
-		buf.WriteString("(")
-		for _, tag := range tags {
-			switch {
-			// 排除_id结尾字段
-			case !strings.HasSuffix(tag, "_id") &&
-				!strings.HasPrefix(tag, "id"):
-				buf.WriteString(alias)
-				buf.WriteString(".`")
-				buf.WriteString(tag)
-				buf.WriteString("` like binary ? or ")
-				argsKey = append(argsKey, "%"+key+"%")
-			}
-
+	buf.WriteString("(")
+	for _, tag := range tags {
+		switch {
+		// 排除_id结尾字段
+		case !strings.HasSuffix(tag, "_id") &&
+			!strings.HasPrefix(tag, "id"):
+			buf.WriteString(alias)
+			buf.WriteString(".`")
+			buf.WriteString(tag)
+			buf.WriteString("` like binary ? or ")
+			argsKey = append(argsKey, "%"+v+"%")
 		}
-		buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
-		buf.WriteString(") and ")
+
+	}
+	buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
+	buf.WriteString(") and ")
+
+	// copy and
+	if kn := len(keys); kn > 1 {
+		sqlKey = buf.String()
+		num := len(argsKey)
+		for i := 1; i < kn; i++ {
+			buf.WriteString(sqlKey)
+			for k := 0; k < num; k++ {
+				argsKey = append(argsKey, keys[i])
+			}
+		}
 	}
 	sqlKey = buf.String()
 	return
@@ -112,32 +123,43 @@ func GetMoreKeySQL(key string, searModel interface{}, tables ...string) (sqlKey 
 		tags = GetTags(searModel)
 		keys = strings.Split(key, " ") // 空格隔开
 		buf  = &bytes.Buffer{}
+		v    = keys[0]
 	)
-	for _, key := range keys {
-		buf.WriteString("(")
-		for _, tag := range tags {
-			// 排除_id结尾字段
-			if !strings.HasSuffix(tag, "_id") &&
-				!strings.HasPrefix(tag, "id") {
+	buf.WriteString("(")
+	for _, tag := range tags {
+		// 排除_id结尾字段
+		if !strings.HasSuffix(tag, "_id") &&
+			!strings.HasPrefix(tag, "id") {
 
-				if b := otherTableKeySql(tag, buf, tables...); b == true {
-					argsKey = append(argsKey, "%"+key+"%")
-					continue
-				}
+			if b := otherTableKeySql(tag, buf, tables...); b == true {
+				argsKey = append(argsKey, "%"+v+"%")
+				continue
+			}
 
-				// 主表
-				ts := strings.Split(tables[0], ":")
-				alias := ts[1]
-				buf.WriteString("`")
-				buf.WriteString(alias)
-				buf.WriteString("`.`")
-				buf.WriteString(tag)
-				buf.WriteString("` like binary ? or ")
-				argsKey = append(argsKey, "%"+key+"%")
+			// 主表
+			ts := strings.Split(tables[0], ":")
+			alias := ts[1]
+			buf.WriteString("`")
+			buf.WriteString(alias)
+			buf.WriteString("`.`")
+			buf.WriteString(tag)
+			buf.WriteString("` like binary ? or ")
+			argsKey = append(argsKey, "%"+v+"%")
+		}
+	}
+	buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
+	buf.WriteString(") and ")
+
+	// copy and
+	if kn := len(keys); kn > 1 {
+		sqlKey = buf.String()
+		num := len(argsKey)
+		for i := 1; i < kn; i++ {
+			buf.WriteString(sqlKey)
+			for k := 0; k < num; k++ {
+				argsKey = append(argsKey, keys[i])
 			}
 		}
-		buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
-		buf.WriteString(") and ")
 	}
 	sqlKey = buf.String()
 	return
