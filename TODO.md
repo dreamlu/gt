@@ -29,8 +29,8 @@ TODO
 - [x] 28.支持mock假数据  
 - [x] 29.subWhereSQL同一个变量clone问题(弃)  
 - [x] 30.仅仅左连接LeftTable() bug  
-- [ ] 31.文档介绍关于crud中常用方法关联Model()/clone等信息  
-- [ ] 32.优化key搜索(更快搜索)  
+- [x] 31.文档介绍关于crud中常用方法关联Model()/clone等信息  
+- [x] 32.优化key搜索(更快搜索)  
 - [x] 33.日志大统一  
 - [x] 34.增加数据不存在详细内容(无法~)  
 - [x] 35.打印错误所在行数[ErrorLine](log.go)  
@@ -65,17 +65,18 @@ TODO
 - [x] 64.解析使用驼峰替代json(暂弃)  
 - [ ] 65.gt命令,自动生成crud文件  
 - [x] 66.参数验证问题  
-- [ ] 67.cmp new/参数解析Search使用优化  
+- [x] 67.cmp new参数解析Search使用优化  
 - [x] 68.create自动参数验证  
 - [x] 69.基本类型解析支持(非数组)  
-- [x] 70.getbysearch()数组类型和single()暂无数据问题,用nil  
+- [x] 70.getbydata()数组类型和single()暂无数据问题,用nil  
 - [x] 71.getbydata支持多表或新增getMorebydata  
 - [x] 72.文件上传存储优化  
 - [x] 73.gorm v2.0  
-- [ ] 74.微服务模块间调用  
+- [x] 74.微服务模块间调用(弃)  
 - [x] 75.批量创建继承解析问题  
 - [x] 77.事务point测试  
 - [x] 78.增加参数?解析，解决subWhereSql等直接拼接参数问题  
 - [ ] 80.支持table别名，多表连接自己  
 - [x] 81.json:'-'不忽略问题,sub_sql语义化ignore问题  
 - [x] 82.增加http常用请求方法封装  
+- [x] 83.自定义时间类型没值返回""  

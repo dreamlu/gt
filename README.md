@@ -227,9 +227,10 @@ func (c *Client) Create(data *Client) (*Client, error) {
 ```
 
 #### Crud More
-多表查询支持多表/同一个mysql跨数据库查询/mock假数据等等
+多表查询支持多表/同一个mysql跨数据库查询/mock假数据等等  
+1.GetMoreBySearch
 ```go
-    // 多表查询
+	// 多表查询
 	// get more search
 	var params = make(cmap.CMap)
 	//params.Add("user_id", "1")
@@ -251,6 +252,22 @@ func (c *Client) Create(data *Client) (*Client, error) {
 		log.Println(err)
 	}
 	t.Log("\n[User Info]:", or)
+```
+2.GetMoreByData   
+```go
+	var or []*OrderD
+	cd := NewCrud(
+		// 支持同一个mysql多数据库跨库查询
+		Inner("order", "gt.user"),
+		Left("order", "service"),
+		Model(OrderD{}),
+		Data(&or),
+		KeyModel(OrderD{}),
+	)
+	err := cd.GetMoreByData(cmap.NewCMap()).Error()
+	if err != nil {
+		t.Error(err)
+	}
 ```
 
 #### CreateMore
@@ -509,7 +526,7 @@ ps:
 ```
 
 - 约定  
-1.模型结构体json 内容与表字段保持一致  
+1.必须json tag, 模型结构体json 内容与表字段保持一致  
 2.返回格式参考[result](tool/result/result.go)    
 3.多表关联命名, 模型中其他表字段命名: `他表名 + "_" + 他表字段名`  
-n....  
+n.crud更多用法参考[crud_mysql_test](crud_mysql_test.go)  
