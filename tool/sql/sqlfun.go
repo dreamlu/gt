@@ -9,6 +9,13 @@ import (
 	"strings"
 )
 
+type Key struct {
+	sql     string
+	argsNum int
+}
+
+var sm = make(map[string]Key)
+
 // get tag
 func GtTag(structTag reflect.StructTag, curTag string) (oTag, tag, tagTable string, b bool) {
 	gtTag := structTag.Get("gt")
@@ -71,12 +78,41 @@ func GetTags(model interface{}) []string {
 	return GetReflectTags(reflect.TypeOf(model))
 }
 
+// copy and
+func keyAnd(keys []string, buf *bytes.Buffer, num int) (argsKey []interface{}) {
+	var (
+		sqlKey = buf.String()
+		kn     = len(keys)
+	)
+	for i := 0; i < kn; i++ {
+		if i > 0 {
+			buf.WriteString(sqlKey)
+		}
+		for k := 0; k < num; k++ {
+			argsKey = append(argsKey, "%"+keys[i]+"%")
+		}
+	}
+	return
+}
+
 // key search sql
 func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, argsKey []interface{}) {
 
 	var (
-		tags = GetTags(model)
 		keys = strings.Split(key, " ") // 空格隔开
+		typ  = reflect.TypeOf(model)
+		ks   = typ.PkgPath() + typ.Name()
+	)
+	sqlKey = sm[ks].sql
+	if sqlKey != "" {
+		var buf = bytes.NewBuffer([]byte(sqlKey))
+		argsKey = keyAnd(keys, buf, sm[ks].argsNum)
+		sqlKey = buf.String()
+		return
+	}
+
+	var (
+		tags = GetTags(model)
 		buf  = bytes.NewBuffer(nil)
 		v    = keys[0]
 	)
@@ -98,17 +134,14 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 	buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
 	buf.WriteString(") and ")
 
-	// copy and
-	if kn := len(keys); kn > 1 {
-		sqlKey = buf.String()
-		num := len(argsKey)
-		for i := 1; i < kn; i++ {
-			buf.WriteString(sqlKey)
-			for k := 0; k < num; k++ {
-				argsKey = append(argsKey, keys[i])
-			}
-		}
+	// add sm
+	sm[ks] = Key{
+		sql:     buf.String(),
+		argsNum: len(argsKey),
 	}
+
+	// copy and
+	argsKey = keyAnd(keys, buf, len(argsKey))
 	sqlKey = buf.String()
 	return
 }
@@ -117,12 +150,24 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 // key search sql
 // tables [table1:table1_alias]
 // searModel : 搜索字段模型
-func GetMoreKeySQL(key string, searModel interface{}, tables ...string) (sqlKey string, argsKey []interface{}) {
+func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey string, argsKey []interface{}) {
 
 	var (
-		tags = GetTags(searModel)
 		keys = strings.Split(key, " ") // 空格隔开
-		buf  = &bytes.Buffer{}
+		typ  = reflect.TypeOf(model)
+		ks   = typ.PkgPath() + "/more/" + typ.Name()
+	)
+	sqlKey = sm[ks].sql
+	if sqlKey != "" {
+		var buf = bytes.NewBuffer([]byte(sqlKey))
+		argsKey = keyAnd(keys, buf, sm[ks].argsNum)
+		sqlKey = buf.String()
+		return
+	}
+
+	var (
+		tags = GetTags(model)
+		buf  = bytes.NewBuffer(nil)
 		v    = keys[0]
 	)
 	buf.WriteString("(")
@@ -150,17 +195,14 @@ func GetMoreKeySQL(key string, searModel interface{}, tables ...string) (sqlKey 
 	buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
 	buf.WriteString(") and ")
 
-	// copy and
-	if kn := len(keys); kn > 1 {
-		sqlKey = buf.String()
-		num := len(argsKey)
-		for i := 1; i < kn; i++ {
-			buf.WriteString(sqlKey)
-			for k := 0; k < num; k++ {
-				argsKey = append(argsKey, keys[i])
-			}
-		}
+	// add sm
+	sm[ks] = Key{
+		sql:     buf.String(),
+		argsNum: len(argsKey),
 	}
+
+	// copy and
+	argsKey = keyAnd(keys, buf, len(argsKey))
 	sqlKey = buf.String()
 	return
 }

@@ -274,6 +274,10 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	if err != nil {
 		log.Println(err)
 	}
+	err = crud.GetMoreBySearch(params).Error()
+	if err != nil {
+		log.Println(err)
+	}
 	for _, v := range or {
 		t.Log(v)
 	}
