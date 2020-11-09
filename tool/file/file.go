@@ -1,6 +1,7 @@
 package file
 
 import (
+	"bytes"
 	"errors"
 	"github.com/dreamlu/gt/tool/conf"
 	"github.com/dreamlu/gt/tool/file/file_func"
@@ -10,7 +11,9 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -44,7 +47,8 @@ type File struct {
 	// format 2006-01-02 15:04:05
 	Format string
 
-	IsComp int8 // is img compress
+	IsComp  int8 // is img compress
+	Quality int  // default 80, 1-100
 }
 
 // 获得文件上传路径
@@ -75,9 +79,10 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 		if f.IsComp == 0 {
 			return
 		}
-		fType = strings.ToLower(fType)
+		data, _ := ioutil.ReadFile(path)
+		fType = GetImageType(data[:512])
 		switch fType {
-		case "jpeg", "jpg", "png":
+		case "jpeg", "png":
 			f.Path = path
 			_ = f.CompressImage(fType)
 		default:
@@ -91,17 +96,18 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 func (f *File) CompressImage(imageType string) error {
 	//图片压缩
 	var img image.Image
-	ImgFile, err := os.Open(f.Path)
+	//imgFile, err := os.Open(f.Path), jpeg.Decode(imgFile)
+	imgFile, err := ioutil.ReadFile(f.Path)
 	if err != nil {
 		return err
 	}
-	defer ImgFile.Close()
+	//defer ImgFile.Close()
 
 	switch imageType {
-	case "jpeg", "jpg":
-		img, err = jpeg.Decode(ImgFile)
+	case "jpeg":
+		img, err = jpeg.Decode(bytes.NewReader(imgFile))
 	case "png":
-		img, err = png.Decode(ImgFile)
+		img, err = png.Decode(bytes.NewReader(imgFile))
 	default:
 		return errors.New("[gt] not support img type:" + imageType)
 	}
@@ -122,11 +128,19 @@ func (f *File) CompressImage(imageType string) error {
 	defer out.Close()
 
 	switch imageType {
-	case "jpeg", "jpg":
+	case "jpeg":
 		// write new image to file
-		_ = jpeg.Encode(out, m, nil)
+		var q *jpeg.Options
+		if f.Quality > 0 {
+			q = &jpeg.Options{Quality: f.Quality}
+		}
+		_ = jpeg.Encode(out, m, q)
 	case "png":
-		_ = png.Encode(out, m) // write new image to file
+		if ContainsTransparent(m) {
+			_ = png.Encode(out, m) // write new image to file
+		} else {
+			_ = PngToJpeg(m, out, f.Quality)
+		}
 	}
 
 	return nil
@@ -161,4 +175,27 @@ func (f *File) SaveUploadedFile(file *multipart.FileHeader, filename string) (pa
 
 	_, err = io.Copy(out, src)
 	return
+}
+
+// jpeg,png
+func GetImageType(buffer []byte) string {
+	contentType := GetFileContentType(buffer)
+
+	switch contentType {
+	case "image/jpeg":
+		return "jpeg"
+	case "image/png":
+		return "png"
+	default:
+		return ""
+	}
+}
+
+// file byte data[:512]
+// image type: "image/jpeg","image/png"
+func GetFileContentType(buffer []byte) string {
+	// Use the net/http package's handy DectectContentType function. Always returns a valid
+	// content-type by returning "application/octet-stream" if no others seemed to match.
+	contentType := http.DetectContentType(buffer)
+	return contentType
 }
