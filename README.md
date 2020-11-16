@@ -5,7 +5,7 @@ api快速开发业务框架,模型生成
 通用增删改查，支持多表连接  
 
 ##### demo:  
-[deercoder-gin](https://github.com/dreamlu/deercoder-gin) (单机)  
+[gt-crud](https://github.com/dreamlu/gt-crud) (单机)  
 [micro-go](https://github.com/dreamlu/micro-go) (微服务)  
 
 ##### API
@@ -496,7 +496,7 @@ func TestId(t *testing.T) {
 #### Use Gorm
 > 模型定义需遵循:  
 > gt v1.20以前参考[模型定义v1](https://v1.gorm.io/zh_CN/docs/models.html)  
-> gt v1.20+参考[模型定义v2](https://gorm.io/zh_CN/docs/models.html)
+> gt v1.20+参考[模型定义v2](https://gorm.io/zh_CN/docs/models.html#%E5%AD%97%E6%AE%B5%E6%A0%87%E7%AD%BE)  
 ```go
 // example 1:
 // 根据模型定义自动生成表

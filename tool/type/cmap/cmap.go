@@ -2,8 +2,10 @@ package cmap
 
 import (
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"net/url"
+	"reflect"
 	"strings"
 )
 
@@ -99,6 +101,32 @@ func (v CMap) Struct(value interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// struct to CMap, maybe use Encode
+func StructToMap(v interface{}) (values CMap) {
+	values = NewCMap()
+	el := reflect.ValueOf(v)
+	if el.Kind() == reflect.Ptr {
+		el = el.Elem()
+	}
+	iVal := el
+	typ := iVal.Type()
+	for i := 0; i < iVal.NumField(); i++ {
+		fi := typ.Field(i)
+		name := fi.Tag.Get("json")
+		if name == "" {
+			name = fi.Name
+		}
+		values.Set(name, fmt.Sprint(iVal.Field(i)))
+	}
+	return
+}
+
+// Encode encodes the values into ``URL encoded'' form
+// ("bar=baz&foo=quux") sorted by key.
+func (v CMap) Encode() string {
+	return url.Values(v).Encode()
 }
 
 // url.Values to CMap
