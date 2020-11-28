@@ -27,7 +27,7 @@ func TestStructToMap(t *testing.T) {
 		A    int
 	}
 
-	cm := StructToMap(&Name{
+	cm := StructToCMap(&Name{
 		Name: "test",
 		A:    1,
 	})

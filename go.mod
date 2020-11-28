@@ -18,6 +18,7 @@ require (
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/sirupsen/logrus v1.6.0
 	github.com/tebeka/strftime v0.1.4 // indirect
+	github.com/xjh22222228/ip v1.0.1
 	go.mongodb.org/mongo-driver v1.4.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v2 v2.3.0

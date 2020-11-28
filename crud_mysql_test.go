@@ -311,9 +311,14 @@ func TestGetMoreSearchSQL(t *testing.T) {
 // 批量创建
 func TestCreateMoreData(t *testing.T) {
 
+	type Par struct {
+		Account float64 `json:"account"`
+	}
+
 	type UserPar struct {
 		Name       string     `json:"name" gt:"valid:len=2-10"`
 		CreateTime time.CTime `json:"create_time"`
+		Par
 	}
 	type User struct {
 		ID uint64 `json:"id"`

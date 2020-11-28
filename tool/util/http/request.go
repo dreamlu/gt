@@ -94,7 +94,7 @@ func (m *Request) SetParam(key, value string) {
 // SetStructParams struct to Params
 func (m *Request) SetStructParams(v interface{}) {
 
-	m.params = cmap.StructToMap(v)
+	m.params = cmap.StructToCMap(v)
 }
 
 //SetParams 设定Get请求参数

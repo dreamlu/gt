@@ -104,7 +104,7 @@ func (v CMap) Struct(value interface{}) error {
 }
 
 // struct to CMap, maybe use Encode
-func StructToMap(v interface{}) (values CMap) {
+func StructToCMap(v interface{}) (values CMap) {
 	values = NewCMap()
 	el := reflect.ValueOf(v)
 	if el.Kind() == reflect.Ptr {
