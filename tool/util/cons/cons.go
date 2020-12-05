@@ -25,3 +25,9 @@ const (
 	GtValid = "valid"
 	GtTrans = "trans"
 )
+
+// default page
+const (
+	ClientPage = 1
+	EveryPage  = 10
+)

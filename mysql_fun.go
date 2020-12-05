@@ -899,9 +899,15 @@ func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
 // sql, sqlNt args 相同, 共用args
 func (db *DBTool) GetDataBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}) (pager result.Pager) {
 
-	// if no clientPage or everyPage
+	// if clientPage or everyPage < 0
 	// return all data
-	if clientPage != 0 && everyPage != 0 {
+	if clientPage == 0 {
+		clientPage = cons.ClientPage
+	}
+	if everyPage == 0 {
+		everyPage = cons.EveryPage
+	}
+	if clientPage > 0 && everyPage > 0 {
 		sql += fmt.Sprintf("limit %d, %d", (clientPage-1)*everyPage, everyPage)
 	}
 	// sqlNt += limit

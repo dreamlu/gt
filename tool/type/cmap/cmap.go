@@ -1,6 +1,7 @@
 package cmap
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -117,6 +118,19 @@ func StructToCMap(v interface{}) (values CMap) {
 		name := fi.Tag.Get("json")
 		if name == "" {
 			name = fi.Name
+		}
+		// add support slice
+		if iVal.Field(i).Kind() == reflect.Slice {
+			var buf bytes.Buffer
+			buf.WriteString("[")
+			iValArr := iVal.Field(i)
+			for j := 0; j < iValArr.Len(); j++ {
+				buf.WriteString(fmt.Sprint(`"`, iValArr.Index(j), `",`))
+			}
+			val := string(buf.Bytes()[:buf.Len()-1])
+			val += "]"
+			values.Set(name, val)
+			continue
 		}
 		values.Set(name, fmt.Sprint(iVal.Field(i)))
 	}
