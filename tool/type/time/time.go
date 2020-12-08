@@ -23,7 +23,7 @@ type CTime time.Time
 // 实现它的json序列化方法
 func (t CTime) MarshalJSON() ([]byte, error) {
 	if t.IsZero() {
-		return []byte(""), nil
+		return []byte(`""`), nil
 	}
 	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format(Layout))
 	return []byte(stamp), nil
@@ -78,7 +78,7 @@ type CNTime time.Time
 // 实现它的json序列化方法
 func (t CNTime) MarshalJSON() ([]byte, error) {
 	if t.IsZero() {
-		return []byte(""), nil
+		return []byte(`""`), nil
 	}
 	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format(LayoutN))
 	return []byte(stamp), nil
@@ -133,7 +133,7 @@ type CDate time.Time
 // 实现它的json序列化方法
 func (t CDate) MarshalJSON() ([]byte, error) {
 	if t.IsZero() {
-		return []byte(""), nil
+		return []byte(`""`), nil
 	}
 	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format(LayoutDate))
 	return []byte(stamp), nil
