@@ -771,7 +771,7 @@ func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}
 }
 
 func (db *DBTool) GetBasicTypesData(typ reflect.Type, data interface{}, sql string, args ...interface{}) {
-	rows, err := db.Raw(sql, args).Rows() // (*sql.Rows, error)
+	rows, err := db.Raw(sql, args...).Rows() // (*sql.Rows, error)
 	if err != nil {
 		db.res = db.Session(&gorm.Session{})
 		_ = db.res.AddError(err)
