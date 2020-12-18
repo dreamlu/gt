@@ -179,6 +179,7 @@ func SubSQL(SubSQL ...string) Param {
 }
 
 // Deprecated
+// use WhereSQL replace
 func SubWhereSQL(WhereSQL ...string) Param {
 
 	return func(params *Params) {
@@ -205,11 +206,14 @@ func WhereSQL(WhereSQL string, args ...interface{}) Param {
 func (p Param) WhereSQL(WhereSQL string, args ...interface{}) Param {
 
 	return func(params *Params) {
+		p(params)
 		if WhereSQL == "" {
 			return
 		}
-		p(params)
+		if params.WhereSQL != "" {
+			params.WhereSQL += " and "
+		}
 		params.wArgs = append(params.wArgs, args...)
-		params.WhereSQL += " and " + WhereSQL
+		params.WhereSQL += WhereSQL
 	}
 }
