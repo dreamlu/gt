@@ -13,9 +13,7 @@ import (
 	"github.com/dreamlu/gt/tool/type/te"
 	"github.com/dreamlu/gt/tool/util"
 	"github.com/dreamlu/gt/tool/util/cons"
-	"gorm.io/gorm"
 	"reflect"
-	. "reflect"
 	"strconv"
 	"strings"
 )
@@ -743,77 +741,10 @@ func GetInsertSQL(table string, params cmap.CMap) (sql string, args []interface{
 func (db *DBTool) GetDataBySQL(data interface{}, sql string, args ...interface{}) {
 
 	typ := reflect.TypeOf(data)
-	//log.Print(typ.Kind())
 	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
 	}
-	//log.Print(typ.Kind())
-	switch typ.Kind() {
-	case Bool, Int, Int8, Int16, Int32, Int64, Uint, Uint8, Uint16, Uint32, Uint64, Float32, Float64, String:
-		db.GetBasicTypesData(typ, data, sql, args...)
-	//case reflect.Slice:
-	// TODO 数组-基本类型解析
-	//typS := typ.Elem()
-	//if typS.Kind() == reflect.Ptr {
-	//	typS = typS.Elem()
-	//}
-	//if typS.Kind() != reflect.Struct {
-	//	db.GetBasicTypesData(typ, data, sql, args...)
-	//	//log.Print("其他基础类型")
-	//	return
-	//}
-	//log.Print(typS.Kind())
-
-	default:
-		db.res = db.DB.Raw(sql, args[:]...).Scan(data)
-		return
-	}
-}
-
-func (db *DBTool) GetBasicTypesData(typ reflect.Type, data interface{}, sql string, args ...interface{}) {
-	rows, err := db.Raw(sql, args...).Rows() // (*sql.Rows, error)
-	if err != nil {
-		db.res = db.Session(&gorm.Session{})
-		_ = db.res.AddError(err)
-		return
-	}
-	defer rows.Close()
-
-	switch typ.Kind() {
-	//case reflect.Slice:
-	//
-	//	typS := typ.Elem()
-	//	if typS.Kind() == reflect.Ptr {
-	//		typS = typS.Elem()
-	//	}
-	//	//log.Print(typS)
-	//
-	//	value := reflect.ValueOf(data)
-	//	if value.Kind() == reflect.Ptr {
-	//		value = value.Elem()
-	//	}
-	//	//var vs = reflect2.ToSlice(data)
-	//	for rows.Next() {
-	//		// new
-	//		e := reflect.New(typS)
-	//		ev := e.Elem()
-	//		var v interface{}
-	//		rows.Scan(&v) //,&a,&b)
-	//		//ev.SetString("v")
-	//		bs := v.([]byte)
-	//		//log.Print(string(bs))
-	//		println(ev.CanSet())
-	//		ev.SetBytes(bs)
-	//		//vs = append(vs, v)
-	//		value.Set(reflect.Append(value, ev))
-	//	}
-	//log.Print(vs)
-	//data = &vs
-	default:
-		for rows.Next() {
-			rows.Scan(data) //,&a,&b)
-		}
-	}
+	db.res = db.DB.Raw(sql, args[:]...).Scan(data)
 }
 
 // 获得数据,根据name条件

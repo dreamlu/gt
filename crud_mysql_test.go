@@ -400,10 +400,16 @@ func TestDBCrud_Select(t *testing.T) {
 		t.Log(file, "[]", line)
 	}
 
+	// use gorm 2.0 support basic type scan replace
 	var name string
 	cd3 := NewCrud(Data(&name)).Select("select name from user where id > 0").Single()
 	t.Log(cd3.Error())
 	t.Log(name)
+
+	var names []string
+	cd4 := NewCrud(Data(&names)).Select("select name from user where id > 0").Single()
+	t.Log(cd4.Error())
+	t.Log(names)
 }
 
 // test update/delete
