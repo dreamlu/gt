@@ -1,8 +1,48 @@
-#### Erwin Schrödinger's Cat  
-gt使用手册 (v1.20.0+)  
+### gt 2.0  
 
-api快速开发业务框架,模型生成  
-通用增删改查，支持多表连接  
+api快速开发业务框架, 模型生成, 通用增删改查, 支持多表连接  
+
+### 解决了什么  
+不仅仅是日常开发中crud，更是解决了绝大多数情况下的多表连接处理逻辑，[三步crud(包含多表)](https://github.com/dreamlu/gt-crud)  
+
+### 如何进行多表的crud  
+
+```go
+// https://github.com/dreamlu/gt-crud/blob/master/models/order/order.go
+// order model
+type Order struct {
+	models.AdminCom
+	ClientID uint64 `json:"client_id" gorm:"type:bigint(20);INDEX:查询索引client_id"` // 客户id
+	// 0待付款(取消支付),1待发货,2待收货,3已完成,4退款完成,5申请退款中,6拒绝退款,7待评价
+	Status     *int8   `json:"status" gorm:"type:tinyint(2);DEFAULT:0"`
+	Money      float64 `json:"money" gorm:"type:decimal(10,2)"`       // 付款金额
+	OutTradeNo string  `json:"out_trade_no" gorm:"type:varchar(50)"` // 商户订单号(退款等用)
+}
+
+// order detail
+type OrderD struct {
+	Order
+	ClientName string `json:"client_name"` // client.name
+}
+
+// 分页列表，搜索和排序等集成
+func (c *Order) GetMoreBySearch(params cmap.CMap) interface{} {
+	var or []OrderD
+	var crud = gt.NewCrud(
+		gt.Inner("order", "client"),
+		//gt.Left("order", "service"),
+		gt.Model(OrderD{}),
+		gt.Data(&or),
+	)
+
+	cd := crud.GetMoreBySearch(params)
+	if cd.Error() != nil {
+		return result.GetError(cd.Error())
+	}
+
+	return result.GetSuccessPager(or, cd.Pager())
+}
+```
 
 ##### demo:  
 [gt-crud](https://github.com/dreamlu/gt-crud) (单机)  
@@ -526,7 +566,8 @@ ps:
 ```
 
 - 约定  
-1.必须json tag, 模型结构体json 内容与表字段保持一致  
-2.返回格式参考[result](tool/result/result.go)    
-3.多表关联命名, 模型中其他表字段命名: `他表名 + "_" + 他表字段名`  
+1.必定有id字段  
+2.模型结构体的json格式内容与表字段保持一致  
+3.返回格式参考[result](tool/result/result.go)    
+4.多表关联命名, 模型中其他表字段命名: `他表名 + "_" + 他表字段名`  
 n.crud更多用法参考[crud_mysql_test](crud_mysql_test.go)  

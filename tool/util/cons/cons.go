@@ -11,7 +11,6 @@ const (
 	// default config file dir
 	ConfDir = "conf/"
 	// db sql const
-	GtIgnore              = "ignore"
 	GtSubSQL              = "sub_sql"
 	GtClientPage          = "clientPage"
 	GtClientPageUnderLine = "client_page" // 支持下划线
@@ -21,9 +20,11 @@ const (
 	GtKey                 = "key"
 	GtMock                = "mock"
 	// gt tag
-	GtField = "field"
-	GtValid = "valid"
-	GtTrans = "trans"
+	GT       = "gt"
+	GtField  = "field"
+	GtValid  = "valid"
+	GtTrans  = "trans"
+	GtIgnore = "ignore"
 )
 
 // default page

@@ -3,6 +3,7 @@ package bmap
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dreamlu/gt/tool/tag"
 	"reflect"
 )
 
@@ -69,11 +70,7 @@ func StructToBMap(v interface{}) (values BMap) {
 	typ := iVal.Type()
 	for i := 0; i < iVal.NumField(); i++ {
 		fi := typ.Field(i)
-		name := fi.Tag.Get("json")
-		if name == "" {
-			name = fi.Name
-		}
-		values.Set(name, fmt.Sprint(iVal.Field(i)))
+		values.Set(tag.GetSQLField(fi), fmt.Sprint(iVal.Field(i)))
 	}
 	return
 }

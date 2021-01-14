@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const Version = "1.20.0+"
+const Version = "2.0.0+"
 
 func init() {
 	println("[gt version]:", Version)

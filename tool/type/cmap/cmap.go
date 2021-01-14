@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/dreamlu/gt/tool/tag"
 	"go.mongodb.org/mongo-driver/bson"
 	"net/url"
 	"reflect"
@@ -115,10 +116,7 @@ func StructToCMap(v interface{}) (values CMap) {
 	typ := iVal.Type()
 	for i := 0; i < iVal.NumField(); i++ {
 		fi := typ.Field(i)
-		name := fi.Tag.Get("json")
-		if name == "" {
-			name = fi.Name
-		}
+		name := tag.GetSQLField(fi)
 		// add support slice
 		if iVal.Field(i).Kind() == reflect.Slice {
 			var buf bytes.Buffer
@@ -127,9 +125,11 @@ func StructToCMap(v interface{}) (values CMap) {
 			for j := 0; j < iValArr.Len(); j++ {
 				buf.WriteString(fmt.Sprint(`"`, iValArr.Index(j), `",`))
 			}
-			val := string(buf.Bytes()[:buf.Len()-1])
-			val += "]"
-			values.Set(name, val)
+			if iValArr.Len() > 0 {
+				val := string(buf.Bytes()[:buf.Len()-1])
+				val += "]"
+				values.Set(name, val)
+			}
 			continue
 		}
 		values.Set(name, fmt.Sprint(iVal.Field(i)))

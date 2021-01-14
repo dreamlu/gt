@@ -24,7 +24,7 @@ import (
 type User struct {
 	ID         uint64     `json:"id"`
 	Name       string     `json:"name" gt:"valid:len=3-5;trans:名称" gorm:"<-:update"`
-	BirthDate  time.CDate `json:"birth_date" gorm:"type:date"` // data
+	BirthDate  time.CDate `gorm:"type:date"` // data
 	CreateTime time.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
 	Account    float64    `json:"-" gorm:"type:decimal(10,2)"`
 }
@@ -73,10 +73,10 @@ func TestDB(t *testing.T) {
 	}
 
 	// return create id
-	DB().CreateData("", &user)
+	DB().Create("", &user)
 	t.Log("user: ", user)
 	user.Name = "haha"
-	DB().CreateData("", &user)
+	DB().Create("", &user)
 	t.Log("user: ", user)
 	var user2 User
 	crud.Params(Model(User{}), Data(&user2)).GetByID(1)
@@ -180,7 +180,7 @@ func TestSqlSearch(t *testing.T) {
 	sql = string([]byte(sql)[:len(sql)-4]) //去and
 	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
 	sql += "order by a.id "
-	t.Log(DB().GetDataBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage, nil))
+	t.Log(DB().GetBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage, nil))
 	//t.Log(ui[0].Userinfo.String())
 }
 
@@ -232,7 +232,7 @@ func TestGetDataBySearch(t *testing.T) {
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
 	var user []*User
-	DB().GetDataBySearch(&GT{
+	DB().GetBySearch(&GT{
 		CMaps: args,
 		Params: &Params{
 			Table: "user",
@@ -303,7 +303,7 @@ func TestGetMoreSearchSQL(t *testing.T) {
 			Model:      CVBDe{},
 		},
 	}
-	GetMoreDataSQL(gt)
+	GetMoreSQL(gt)
 	t.Log(gt.sqlNt)
 	t.Log(gt.sql)
 }
@@ -355,7 +355,7 @@ func TestExtends(t *testing.T) {
 	}
 
 	type UserDeX struct {
-		a []string
+		a []string `gt:"ignore"`
 		UserDe
 		OtherX string `json:"other_x"`
 	}
@@ -475,6 +475,9 @@ func TestGetReflectTagMore(t *testing.T) {
 
 func TestGetColSQLAlias(t *testing.T) {
 	sql := GetColSQLAlias(User{}, "a")
+	t.Log(sql)
+
+	sql = GetColSQLAlias(OrderD{}, "a")
 	t.Log(sql)
 }
 

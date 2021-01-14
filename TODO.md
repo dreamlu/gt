@@ -82,8 +82,9 @@ TODO
 - [x] 83.自定义时间类型没值返回""  
 - [x] 84.CJSON增加对于纯数组的解析,场景:单个id关联改成多个关联,用CJSON存储纯数组,json_contains(field,json_array(v))  
 - [ ] 85.接口设计  
-- [ ] 86.将json tag解析 select换成字段直接解析  
+- [x] 86.将json tag解析 select换成字段直接解析  
 - [x] 87.cmap struct转url参数 url.Values{}.encode()和cmap struct类型对应问题  
 - [ ] 88.excel快速模型导入导出  
 - [ ] 89.maptoStruct  
 - [ ] 90.多表join增加别名支持  
+- [ ] 91.json omitempty问题  

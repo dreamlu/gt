@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	reflect2 "github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/util/cons"
+	"github.com/dreamlu/gt/tool/tag"
 	"reflect"
 	"strings"
 )
@@ -14,69 +14,7 @@ type Key struct {
 	argsNum int
 }
 
-var sm = make(map[string]Key)
-
-// get tag
-func GtTag(structTag reflect.StructTag, curTag string) (oTag, tag, tagTable string, b bool) {
-	gtTag := structTag.Get("gt")
-	tag = curTag
-	if gtTag == "" {
-		return
-	}
-	gtFields := strings.Split(gtTag, ";")
-	for _, v := range gtFields {
-		// gt:"sub_sql"
-		if v == cons.GtSubSQL ||
-			v == cons.GtIgnore {
-			b = true
-			return
-		}
-		// gt:"field:xx"
-		oTag = curTag
-		if strings.Contains(v, cons.GtField) {
-			tagTmp := strings.Split(v, ":")
-			tag = tagTmp[1]
-			if a := strings.Split(tag, "."); len(a) > 1 { // include table
-				tag = a[1]
-				tagTable = a[0]
-			}
-			return
-		}
-	}
-	return
-}
-
-// 层级递增解析tag
-func GetReflectTags(ref reflect.Type) (tags []string) {
-	if ref.Kind() != reflect.Struct {
-		return
-	}
-	var (
-		tag, tagTable string
-		b             bool
-	)
-	for i := 0; i < ref.NumField(); i++ {
-		tag = ref.Field(i).Tag.Get("json")
-		if tag == "" || tag == "-" {
-			tags = append(tags, GetReflectTags(ref.Field(i).Type)...)
-			continue
-		}
-		if _, tag, tagTable, b = GtTag(ref.Field(i).Tag, tag); b == true {
-			continue
-		}
-		if tagTable != "" {
-			tag = tagTable + "_" + tag
-		}
-		tags = append(tags, tag)
-	}
-	return tags
-}
-
-// 根据model中表模型的json标签获取表字段
-// 将select* 变为对应的字段名
-func GetTags(model interface{}) []string {
-	return GetReflectTags(reflect.TypeOf(model))
-}
+var sqlBuffer = make(map[string]Key)
 
 // copy and
 func keyAnd(keys []string, buf *bytes.Buffer, num int) (argsKey []interface{}) {
@@ -103,29 +41,29 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 		typ  = reflect.TypeOf(model)
 		ks   = typ.PkgPath() + typ.Name()
 	)
-	sqlKey = sm[ks].sql
+	sqlKey = sqlBuffer[ks].sql
 	if sqlKey != "" {
 		var buf = bytes.NewBuffer([]byte(sqlKey))
-		argsKey = keyAnd(keys, buf, sm[ks].argsNum)
+		argsKey = keyAnd(keys, buf, sqlBuffer[ks].argsNum)
 		sqlKey = buf.String()
 		return
 	}
 
 	var (
-		tags = GetTags(model)
+		tags = tag.GetTags(model)
 		buf  = bytes.NewBuffer(nil)
 		v    = keys[0]
 	)
 
 	buf.WriteString("(")
-	for _, tag := range tags {
+	for _, t := range tags {
 		switch {
 		// 排除_id结尾字段
-		case !strings.HasSuffix(tag, "_id") &&
-			!strings.HasPrefix(tag, "id"):
+		case !strings.HasSuffix(t, "_id") &&
+			!strings.HasPrefix(t, "id"):
 			buf.WriteString(alias)
 			buf.WriteString(".`")
-			buf.WriteString(tag)
+			buf.WriteString(t)
 			buf.WriteString("` like binary ? or ")
 			argsKey = append(argsKey, "%"+v+"%")
 		}
@@ -134,8 +72,8 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 	buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
 	buf.WriteString(") and ")
 
-	// add sm
-	sm[ks] = Key{
+	// add sqlBuffer
+	sqlBuffer[ks] = Key{
 		sql:     buf.String(),
 		argsNum: len(argsKey),
 	}
@@ -146,7 +84,7 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 	return
 }
 
-// 多张表, 第一个表为主表
+// more tables
 // key search sql
 // tables [table1:table1_alias]
 // searModel : 搜索字段模型
@@ -157,26 +95,26 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 		typ  = reflect.TypeOf(model)
 		ks   = typ.PkgPath() + "/more/" + typ.Name()
 	)
-	sqlKey = sm[ks].sql
+	sqlKey = sqlBuffer[ks].sql
 	if sqlKey != "" {
 		var buf = bytes.NewBuffer([]byte(sqlKey))
-		argsKey = keyAnd(keys, buf, sm[ks].argsNum)
+		argsKey = keyAnd(keys, buf, sqlBuffer[ks].argsNum)
 		sqlKey = buf.String()
 		return
 	}
 
 	var (
-		tags = GetTags(model)
+		tags = tag.GetTags(model)
 		buf  = bytes.NewBuffer(nil)
 		v    = keys[0]
 	)
 	buf.WriteString("(")
-	for _, tag := range tags {
+	for _, t := range tags {
 		// 排除_id结尾字段
-		if !strings.HasSuffix(tag, "_id") &&
-			!strings.HasPrefix(tag, "id") {
+		if !strings.HasSuffix(t, "_id") &&
+			!strings.HasPrefix(t, "id") {
 
-			if b := otherTableKeySql(tag, buf, tables...); b == true {
+			if b := otherTableKeySql(t, buf, tables...); b == true {
 				argsKey = append(argsKey, "%"+v+"%")
 				continue
 			}
@@ -187,7 +125,7 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 			buf.WriteString("`")
 			buf.WriteString(alias)
 			buf.WriteString("`.`")
-			buf.WriteString(tag)
+			buf.WriteString(t)
 			buf.WriteString("` like binary ? or ")
 			argsKey = append(argsKey, "%"+v+"%")
 		}
@@ -195,8 +133,8 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 	buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
 	buf.WriteString(") and ")
 
-	// add sm
-	sm[ks] = Key{
+	// add sqlBuffer
+	sqlBuffer[ks] = Key{
 		sql:     buf.String(),
 		argsNum: len(argsKey),
 	}
@@ -265,18 +203,3 @@ func Table(table string) string {
 
 	return fmt.Sprintf("`%s`", table)
 }
-
-//// cmap to where sql
-//// return key1 = value1 and key2 = value2...
-//func CMapWhereSQL(cm cmap.CMap) (sql string, args []interface{}) {
-//	var buf bytes.Buffer
-//	for k, v := range cm {
-//		buf.WriteString(k)
-//		buf.WriteString(" = ? and ")
-//		args = append(args, v)
-//	}
-//	if len(cm) > 0 {
-//		sql = string(buf.Bytes()[:len(buf.Bytes())-5])
-//	}
-//	return
-//}
