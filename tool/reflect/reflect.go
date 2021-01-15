@@ -22,3 +22,7 @@ func NewArray(v interface{}) interface{} {
 	//log.Println(reflect.MakeSlice(reflect.SliceOf(t), 0, 0))
 	return reflect.New(reflect.SliceOf(t)).Interface()
 }
+
+func IsZero(v interface{}) bool {
+	return reflect.DeepEqual(v, reflect.Zero(reflect.TypeOf(v)).Interface())
+}

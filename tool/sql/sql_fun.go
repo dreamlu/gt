@@ -5,6 +5,8 @@ import (
 	"fmt"
 	reflect2 "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/tag"
+	"github.com/dreamlu/gt/tool/util/cons"
+	"github.com/dreamlu/gt/tool/util/hump"
 	"reflect"
 	"strings"
 )
@@ -37,7 +39,7 @@ func keyAnd(keys []string, buf *bytes.Buffer, num int) (argsKey []interface{}) {
 func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, argsKey []interface{}) {
 
 	var (
-		keys = strings.Split(key, " ") // 空格隔开
+		keys = strings.Split(key, " ")
 		typ  = reflect.TypeOf(model)
 		ks   = typ.PkgPath() + typ.Name()
 	)
@@ -173,11 +175,11 @@ func StructWhereSQL(st interface{}) (sql string, args []interface{}) {
 	)
 
 	for k, v := range m {
-		//if v == "" {
-		//	continue
-		//}
-		buf.WriteString(k)
-		buf.WriteString(" = ? and ")
+		if reflect2.IsZero(v) {
+			continue
+		}
+		buf.WriteString(hump.HumpToLine(k))
+		buf.WriteString(cons.ParamAnd)
 		args = append(args, v)
 	}
 	if len(m) > 0 {
@@ -192,7 +194,7 @@ func Table(table string) string {
 	if table == "" {
 		return table
 	}
-	if []byte(table)[0] == '`' {
+	if table[0] == '`' {
 		return table
 	}
 	if strings.Contains(table, ".") {

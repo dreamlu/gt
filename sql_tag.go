@@ -29,7 +29,7 @@ func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 	var buf bytes.Buffer
 	getTagMore(typ, &buf, tables[:]...)
 	sql = string(buf.Bytes()[:buf.Len()-1])
-	sqlBuffer.Add(key, sql)
+	sqlBuffer.Set(key, sql)
 	return
 }
 
@@ -119,13 +119,12 @@ func GetColSQLAlias(model interface{}, alias string) (sql string) {
 	key := fmt.Sprintf("%s%s-%s", typ.PkgPath(), typ.Name(), alias)
 	sql = sqlBuffer.Get(key)
 	if sql != "" {
-		//Logger().Info("[USE sqlBuffer GET ColumnSQL]")
 		return
 	}
 	var buf bytes.Buffer
 	getTagAlias(typ, &buf, alias)
 	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
-	sqlBuffer.Add(key, sql)
+	sqlBuffer.Set(key, sql)
 	return
 }
 
@@ -159,14 +158,12 @@ func GetColSQL(model interface{}) (sql string) {
 	key := typ.PkgPath() + typ.Name()
 	sql = sqlBuffer.Get(key)
 	if sql != "" {
-		//Logger().Info("[USE sqlBuffer GET ColumnSQL]")
 		return
 	}
 	var buf bytes.Buffer
-	//typ := reflect.TypeOf(model)
 	getTag(reflect.TypeOf(model), &buf)
 	sql = string(buf.Bytes()[:buf.Len()-1]) // remove ,
-	sqlBuffer.Add(key, sql)
+	sqlBuffer.Set(key, sql)
 	return
 }
 
@@ -206,9 +203,6 @@ func getColParamSQLByType(typ reflect.Type, buf *bytes.Buffer) {
 	}
 	for i := 0; i < typ.NumField(); i++ {
 		if typ.Field(i).Anonymous {
-			// why this is error ?
-			// typ = typ.Field(i).Type
-			// getColParamSQLByType(typ.Field(i).Type, buf)
 			getColParamSQLByType(typ.Field(i).Type, buf)
 			continue
 		}
@@ -216,8 +210,7 @@ func getColParamSQLByType(typ reflect.Type, buf *bytes.Buffer) {
 	}
 }
 
-// get data value
-// like GetColSQL
+// get single struct data value
 func GetParams(data interface{}) (params []interface{}) {
 	params = append(params, getParams(reflect.ValueOf(data))...)
 	return

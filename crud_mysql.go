@@ -71,7 +71,7 @@ func (c *Mysql) GetBySearch(params cmap.CMap) Crud {
 	return clone
 }
 
-func (c *Mysql) GetByData(params cmap.CMap) Crud {
+func (c *Mysql) Get(params cmap.CMap) Crud {
 	c.common()
 	clone := c.clone()
 	clone.dbTool.Get(&GT{
@@ -189,8 +189,6 @@ func (c *Mysql) Select(q interface{}, args ...interface{}) Crud {
 	switch q.(type) {
 	case string:
 		query = q.(string)
-	//case cmap.CMap:
-	//	query, args = sq.CMapWhereSQL(q.(cmap.CMap))
 	case interface{}:
 		query, args = sq.StructWhereSQL(q)
 	}
@@ -222,7 +220,6 @@ func (c *Mysql) Search(params cmap.CMap) Crud {
 	if c.argsNt == nil {
 		c.argsNt = c.args
 	}
-	//clone := c
 	c.pager = c.dbTool.GetDataBySelectSQLSearch(&GT{
 		Params: c.param,
 		Select: c.selectSQL,
@@ -236,18 +233,13 @@ func (c *Mysql) Search(params cmap.CMap) Crud {
 
 func (c *Mysql) Single() Crud {
 	c.common()
-
 	c.Select(c.group)
-
-	//clone := c.clone()
-	c.dbTool.GetBySQL(c.param.Data, c.selectSQL, c.args...)
+	c.dbTool.getBySQL(c.param.Data, c.selectSQL, c.args...)
 	return c
 }
 
 func (c *Mysql) Exec() Crud {
 	c.common()
-
-	//clone := c.clone()
 	c.dbTool.ExecSQL(c.selectSQL, c.args...)
 	return c
 }
@@ -363,8 +355,8 @@ func (c *Mysql) line() {
 	}
 	if ok {
 		buf := new(strings.Builder)
-		fmt.Fprintf(buf, "\n\033[35m[gt]\033[0m: ")
-		fmt.Fprintf(buf, "%s:%d", fullFile, line)
+		_, _ = fmt.Fprintf(buf, "\n\033[35m[gt]\033[0m: ")
+		_, _ = fmt.Fprintf(buf, "%s:%d", fullFile, line)
 		fmt.Print(buf.String())
 	}
 }

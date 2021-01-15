@@ -29,6 +29,11 @@ type User struct {
 	Account    float64    `json:"-" gorm:"type:decimal(10,2)"`
 }
 
+type UserInfo struct {
+	ID   uint64 `json:"id"`
+	Some string `json:"some"`
+}
+
 func (u User) String() string {
 	b, _ := json2.Marshal(u)
 	return string(b)
@@ -43,7 +48,8 @@ type Service struct {
 // order model
 type Order struct {
 	ID         uint64     `json:"id"`
-	UserID     int64      `json:"user_id"`    // user id
+	UserID     int64      `json:"user_id"` // user id
+	UserInfoID uint64     `json:"user_info_id"`
 	ServiceID  int64      `json:"service_id"` // service table id
 	CreateTime time.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
 }
@@ -60,7 +66,7 @@ type OrderD struct {
 var crud Crud
 
 func init() {
-	DB().AutoMigrate(User{}, Order{}, Service{})
+	DB().AutoMigrate(User{}, Order{}, Service{}, UserInfo{})
 	crud = NewCrud()
 }
 
@@ -116,9 +122,9 @@ func TestCrud(t *testing.T) {
 	crud.Params(
 		Model(User{}),
 		Data(&users),
-		//SubWhereSQL("1=1"),
+		WhereSQL("1=1"),
 	)
-	crud = crud.Params(Table("gt.user")).GetBySearch(cmap.NewCMap().Set("id", "1000").Set("key", "梦 1"))
+	crud = crud.Params(Table("gt.user")).GetBySearch(cmap.NewCMap().Set("id", "1000"))
 	t.Log("\n[User Info]:", users)
 	t.Log(crud.Error())
 
@@ -137,17 +143,13 @@ func TestCrud(t *testing.T) {
 
 // select sql
 func TestCrudSQL(t *testing.T) {
-	var cMap = cmap.NewCMap()
-	cMap.Add("112", "1234")
-	sql := "update `user` set name=? where id=@id"
+	crud := NewCrud()
+	sql := "update `user` set name=? where id = ?"
 	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Select("and 1=1 and").
-		Select(cMap).
-		Select("and").
 		Select(&User{
-			ID:   11234,
 			Name: "梦S",
 		}).Exec())
-	t.Log("[Info]:", crud.Select(sql, "梦sql", sql2.Named("id", 1)).Exec())
+	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
 	t.Log("[Info]:", crud.RowsAffected())
 	var user []User
 	sql = "select * from `user` where name=? and id=?"
@@ -156,35 +158,6 @@ func TestCrudSQL(t *testing.T) {
 	t.Log("[Info]:", cd.Params(Data(&user)).Select(sql, "梦sql", 1).Exec())
 }
 
-// 通用分页测试
-// 如：
-func TestSqlSearch(t *testing.T) {
-
-	type UserInfo struct {
-		ID       uint64     `json:"id"`
-		UserID   int64      `json:"user_id"`   //用户id
-		UserName string     `json:"user_name"` //用户名
-		Userinfo json.CJSON `json:"userinfo"`
-	}
-	sql := fmt.Sprintf(`select a.id,a.user_id,a.userinfo,b.name as user_name from userinfo a inner join user b on a.user_id=b.id where 1=1 and `)
-	sqlNt := `select
-		count(distinct a.id) as total_num
-		from userinfo a inner join user b on a.user_id=b.id
-		where 1=1 and `
-	var ui []UserInfo
-
-	//页码,每页数量
-	clientPage := int64(1) //默认第1页
-	everyPage := int64(10) //默认10页
-
-	sql = string([]byte(sql)[:len(sql)-4]) //去and
-	sqlNt = string([]byte(sqlNt)[:len(sqlNt)-4])
-	sql += "order by a.id "
-	t.Log(DB().GetBySQLSearch(&ui, sql, sqlNt, clientPage, everyPage, nil))
-	//t.Log(ui[0].Userinfo.String())
-}
-
-// 分页搜索中key测试
 func TestGetSearchSql(t *testing.T) {
 
 	type UserDe struct {
@@ -197,7 +170,7 @@ func TestGetSearchSql(t *testing.T) {
 	args.Add("everyPage", "2")
 	//args["key"] = append(args["key"], "梦 嘿,伙计")
 	//sub_sql := ",(select aa.name from shop aa where aa.user_id = a.id) as shop_name"
-	sqlNt, sql, _, _, _ := GetSearchSQL(&GT{
+	gt := &GT{
 		Params: &Params{
 			Table: "user",
 			Model: User{},
@@ -207,16 +180,11 @@ func TestGetSearchSql(t *testing.T) {
 		From:   "",
 		Group:  "",
 		Args:   nil,
-	})
-	t.Log("SQLNOLIMIT:", sqlNt, "\nSQL:", sql)
-
-	// 两张表，待重新测试
-	// sqlNt, sql, _, _ = GetDoubleSearchSQL(UserInfo{}, "userinfo", "user", args)
-	// log.Println("SQLNOLIMIT==>2:", sqlNt, "\nSQL==>2:", sql)
-
+	}
+	gt.GetSearchSQL()
+	t.Log("SQLNOLIMIT:", gt.sqlNt, "\nSQL:", gt.sql)
 }
 
-// 通用sql以及参数
 func TestGetDataBySql(t *testing.T) {
 	var sql = "select id,name,create_time from `user` where id = ?"
 
@@ -303,7 +271,7 @@ func TestGetMoreSearchSQL(t *testing.T) {
 			Model:      CVBDe{},
 		},
 	}
-	GetMoreSQL(gt)
+	gt.GetMoreSQL()
 	t.Log(gt.sqlNt)
 	t.Log(gt.sql)
 }
@@ -401,13 +369,13 @@ func TestDBCrud_Select(t *testing.T) {
 	}
 
 	// use gorm 2.0 support basic type scan replace
-	var name string
-	cd3 := NewCrud(Data(&name)).Select("select name from user where id > 0").Single()
+	var name sql2.NullString
+	cd3 := NewCrud(Data(&name)).Select("select ifnull(name,'') from user where id = 10").Single()
 	t.Log(cd3.Error())
 	t.Log(name)
 
 	var names []string
-	cd4 := NewCrud(Data(&names)).Select("select name from user where id > 0").Single()
+	cd4 := NewCrud(Data(&names)).Select("select ifnull(name,'') from user where id > 0").Single()
 	t.Log(cd4.Error())
 	t.Log(names)
 }
@@ -452,23 +420,15 @@ func TestDBCrud_Create(t *testing.T) {
 }
 
 func TestGetReflectTagMore(t *testing.T) {
-	//type GroupmealCategory struct {
-	//	ID   int64  `gorm:"type:bigint(20) AUTO_INCREMENT;PRIMARY_KEY;" json:"id"` //编号
-	//	Name string `gorm:"type:varchar(128);NOT NULL;" json:"name"`               //类型
-	//}
-	type Groupmeal struct {
-		ID                  int64  `gorm:"type:bigint(20);AUTO_INCREMENT;PRIMARY_KEY;" json:"id"`
-		GroupmealCategoryID string `gorm:"type:varchar(128);NOT NULL;" json:"groupmeal_category_id"`
+	type UserAndUserInfo struct {
+		UserName     string // will user.name
+		UserInfoSome string `gt:"field:user_info.some"`
 	}
-	type GroupmealModel struct {
-		Groupmeal
-		GroupmealCategoryName string `json:"groupmeal_category_name"`
-	}
-	var data []*GroupmealModel
+	var data []*UserAndUserInfo
 	crud.Params(
 		Data(&data),
-		Model(GroupmealModel{}),
-		Inner("groupmeal", "groupmeal_category"))
+		Model(UserAndUserInfo{}),
+		Inner("order:user_id", "user:id", "order", "user_info"))
 	var params = make(cmap.CMap)
 	crud.GetMoreBySearch(params)
 }
@@ -479,37 +439,6 @@ func TestGetColSQLAlias(t *testing.T) {
 
 	sql = GetColSQLAlias(OrderD{}, "a")
 	t.Log(sql)
-}
-
-func TestGetMoreSQL(t *testing.T) {
-	// table: venuepricets
-	// related table: venue/venuehomestay
-	type Venuepricets struct {
-		ID      int  `json:"id"`
-		VenueID int  `json:"venue_id"` // different table
-		Type    *int `json:"type" gorm:"type:tinyint(2);DEFAULT:0"`
-	}
-	// 后台 特价
-	type VpsInfo struct {
-		Venuepricets
-		VenueName string `json:"venue_name" gt:"field:venuehomestay_name"`
-	}
-	var vsi []VpsInfo
-
-	var param = cmap.NewCMap()
-	param.Add("key", "test")
-	//param.Add()
-	crud := NewCrud(
-		Model(VpsInfo{}),
-		Data(&vsi),
-		Inner("venuepricets:venue_id", "venuehomestay"),
-	)
-	for i := 0; i < 3; i++ {
-		cd := crud.GetMoreBySearch(param)
-		if cd.Error() != nil {
-			t.Log(cd.Error())
-		}
-	}
 }
 
 func httpServerDemo(w http.ResponseWriter, r *http.Request) {
@@ -585,7 +514,7 @@ func TestTransaction(t *testing.T) {
 	cd.SavePoint("point1")
 
 	params.Set("id", "1")
-	cd.Params(Data(&user)).GetByData(params)
+	cd.Params(Data(&user)).Get(params)
 	t.Log("step2: ", user)
 
 	cd.Params(Data(&users)).GetBySearch(params)
@@ -600,7 +529,7 @@ func TestTransaction(t *testing.T) {
 
 	cd.RollbackTo("point1")
 	params.Set("id", "1")
-	cd.Params(Data(&user)).GetByData(params)
+	cd.Params(Data(&user)).Get(params)
 	t.Log("point1: ", user)
 
 	err := cd.Params(Data(user)).Create().Error()
@@ -628,9 +557,7 @@ func TestDBDouble10to2(t *testing.T) {
 		Data(&user),
 		Model(User{}),
 	).
-		GetByData(cmap.NewCMap().
-			Set("id", "1"),
-		)
+		Get(cmap.NewCMap().Set("order", "id desc"))
 	t.Log(user)
 	t.Log(cd.Error())
 

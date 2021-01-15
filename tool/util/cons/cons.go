@@ -32,3 +32,11 @@ const (
 	ClientPage = 1
 	EveryPage  = 10
 )
+
+// part sql
+const (
+	WhereS   = "where %s "
+	AndS     = "and %s "
+	OrderS   = "order by %s "
+	ParamAnd = " = ? and "
+)
