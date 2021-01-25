@@ -39,7 +39,7 @@ func ToSlice(arr interface{}) []interface{} {
 }
 
 // return struct string name
-func StructToString(st interface{}) string {
+func StructName(st interface{}) string {
 	typ := reflect.TypeOf(st)
 	return typ.Name()
 }

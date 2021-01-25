@@ -13,9 +13,9 @@ const (
 	// db sql const
 	GtSubSQL              = "sub_sql"
 	GtClientPage          = "clientPage"
-	GtClientPageUnderLine = "client_page" // 支持下划线
+	GtClientPageUnderLine = "client_page"
 	GtEveryPage           = "everyPage"
-	GtEveryPageUnderLine  = "every_page" // 支持下划线
+	GtEveryPageUnderLine  = "every_page"
 	GtOrder               = "order"
 	GtKey                 = "key"
 	GtMock                = "mock"
@@ -35,8 +35,11 @@ const (
 
 // part sql
 const (
-	WhereS   = "where %s "
-	AndS     = "and %s "
-	OrderS   = "order by %s "
-	ParamAnd = " = ? and "
+	WhereS          = "where %s "
+	AndS            = "and %s "
+	OrderS          = "order by %s "
+	ParamAnd        = " = ? and "
+	SelectFrom      = "select %s from %s "
+	SelectCount     = "select count(*) as total_num "
+	SelectCountFrom = SelectCount + "from %s "
 )

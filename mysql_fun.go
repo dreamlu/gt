@@ -99,8 +99,8 @@ func (gt *GT) GetSearchSQL() {
 	gt.order = "id desc" // default order by
 
 	// select* replace
-	gt.sql = fmt.Sprintf("select %s%s from %s ", GetColSQL(gt.Model), gt.SubSQL, table)
-	gt.sqlNt = fmt.Sprintf("select count(id) as total_num from %s ", table)
+	gt.sql = fmt.Sprintf(cons.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, table)
+	gt.sqlNt = fmt.Sprintf(cons.SelectCountFrom, table)
 
 	gt.whereParams()
 	for k, v := range gt.CMaps {
@@ -131,7 +131,7 @@ func (gt *GT) GetSQL() {
 	)
 
 	// select* replace
-	gt.sql = fmt.Sprintf("select %s%s from %s ", GetColSQL(gt.Model), gt.SubSQL, table)
+	gt.sql = fmt.Sprintf(cons.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, table)
 
 	gt.whereParams()
 	for k, v := range gt.CMaps {
@@ -161,7 +161,7 @@ func (gt *GT) GetSelectSearchSQL() {
 	if gt.From == "" {
 		gt.From = "from"
 	}
-	gt.sqlNt = fmt.Sprintf("select count(*) as total_num %s", gt.From+strings.Join(strings.Split(gt.sql, gt.From)[1:], ""))
+	gt.sqlNt = cons.SelectCount + gt.From + strings.Join(strings.Split(gt.sql, gt.From)[1:], "")
 	if gt.Group != "" {
 		gt.sql += gt.Group
 	}
@@ -208,11 +208,12 @@ func (gt *GT) moreSql() (tables []string) {
 		bufNt bytes.Buffer // sql bytes connect
 	)
 	// sql and sqlCount
-	bufNt.WriteString("select count(`")
-	bufNt.WriteString(tables[0])
-	bufNt.WriteString("`.id) as total_num from ")
+	bufNt.WriteString(cons.SelectCount)
+	bufNt.WriteString("from ")
 	if tb := DBS[tables[0]]; tb != "" {
-		bufNt.WriteString("`" + tb + "`.")
+		bufNt.WriteString("`")
+		bufNt.WriteString(tb)
+		bufNt.WriteString("`.")
 	}
 	bufNt.WriteString("`")
 	bufNt.WriteString(tables[0])

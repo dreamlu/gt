@@ -580,7 +580,7 @@ func TestMysql_GetMoreByData(t *testing.T) {
 		KeyModel(OrderD{}),
 		//SubWhereSQL("1 = 1", "2 = 2", ""),
 	)
-	err := cd.GetMoreByData(cmap.NewCMap()).Error()
+	err := cd.GetMore(cmap.NewCMap()).Error()
 	if err != nil {
 		t.Error(err)
 	}

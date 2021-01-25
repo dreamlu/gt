@@ -81,7 +81,7 @@ func (c *Mysql) Get(params cmap.CMap) Crud {
 	return clone
 }
 
-func (c *Mysql) GetMoreByData(params cmap.CMap) Crud {
+func (c *Mysql) GetMore(params cmap.CMap) Crud {
 	c.common()
 	clone := c.clone()
 	clone.dbTool.GetMoreData(&GT{
@@ -312,7 +312,7 @@ func (c *Mysql) clone() (dbCrud *Mysql) {
 	// default table
 	if c.param.Table == "" &&
 		c.param.Model != nil {
-		c.param.Table = hump.HumpToLine(reflect.StructToString(c.param.Model))
+		c.param.Table = hump.HumpToLine(reflect.StructName(c.param.Model))
 	}
 
 	dbCrud = &Mysql{

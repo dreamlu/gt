@@ -189,7 +189,7 @@ func (m *Mongo) clone() (mongo *Mongo) {
 	// default table
 	if m.param.Table == "" &&
 		m.param.Model != nil {
-		m.param.Table = hump.HumpToLine(reflect.StructToString(m.param.Model))
+		m.param.Table = hump.HumpToLine(reflect.StructName(m.param.Model))
 	}
 
 	mongo = &Mongo{

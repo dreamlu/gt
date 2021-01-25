@@ -185,7 +185,7 @@ func (db *DBTool) getBySQL(data interface{}, sql string, args ...interface{}) {
 // get by id
 func (db *DBTool) GetByID(gt *GT, id interface{}) {
 
-	db.getBySQL(gt.Data, fmt.Sprintf("select %s from %s where id = ?", GetColSQL(gt.Model), sq.Table(gt.Table)), id)
+	db.getBySQL(gt.Data, fmt.Sprintf(cons.SelectFrom+"where id = ?", GetColSQL(gt.Model), sq.Table(gt.Table)), id)
 }
 
 // more table
