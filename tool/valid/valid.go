@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	myReflect "github.com/dreamlu/gt/tool/reflect"
+	"github.com/dreamlu/gt/tool/tag"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/te"
 	"github.com/dreamlu/gt/tool/util/cons"
@@ -125,9 +126,9 @@ func valid(data interface{}, typ reflect.Type) ValidError {
 		rule := DefaultRule{}
 		// 字段名
 		// 使用Name替代json Tag
-		rule.Key = typ.Field(i).Tag.Get("json")
+		rule.Key = tag.GetSQLField(typ.Field(i))
 		// 规则
-		gtTag := typ.Field(i).Tag.Get("gt")
+		gtTag := typ.Field(i).Tag.Get(cons.GT)
 		if gtTag == "" {
 			continue
 		}
@@ -220,7 +221,7 @@ func (v *Validator) Check() (errs ValidError) {
 				typ = typ.Elem()
 			}
 			for i := 0; i < typ.NumField(); i++ {
-				if typ.Field(i).Tag.Get("json") == k {
+				if tag.GetSQLField(typ.Field(i)) == k {
 					//log.Println(reflect.ValueOf(d).Field(i).String())
 					val, _ = myReflect.GetDataByFieldName(d, typ.Field(i).Name)
 					break

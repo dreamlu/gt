@@ -23,5 +23,5 @@ func TestGetDataID(t *testing.T) {
 func TestStructToString(t *testing.T) {
 	type TestDA struct {
 	}
-	t.Log(StructToString(TestDA{}))
+	t.Log(StructName(TestDA{}))
 }

@@ -5,7 +5,6 @@ package cache
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	redis2 "github.com/dreamlu/gt/cache/redis"
 	"github.com/dreamlu/gt/tool/conf"
 	"github.com/dreamlu/gt/tool/log"
@@ -81,7 +80,7 @@ func (r *RedisManager) Get(key interface{}) (CacheModel, error) {
 	// data
 	res := r.Rc.Get(keyS).Val()
 	if res == nil {
-		return reply, errors.New("no such cache key:" + string(keyS))
+		return reply, nil
 	}
 
 	// string to struct data

@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const Version = "1.20.0+"
+const Version = "2.0.0+"
 
 func init() {
 	println("[gt version]:", Version)
@@ -34,8 +34,8 @@ type Crud interface {
 	// get url params
 	// like form data
 	GetBySearch(params cmap.CMap) Crud     // search
-	GetByData(params cmap.CMap) Crud       // get data no search
-	GetMoreByData(params cmap.CMap) Crud   // get data more table no search
+	Get(params cmap.CMap) Crud             // get data no search
+	GetMore(params cmap.CMap) Crud         // get data more table no search
 	GetByID(id interface{}) Crud           // by id
 	GetMoreBySearch(params cmap.CMap) Crud // more search
 
@@ -179,6 +179,7 @@ func SubSQL(SubSQL ...string) Param {
 }
 
 // Deprecated
+// use WhereSQL replace
 func SubWhereSQL(WhereSQL ...string) Param {
 
 	return func(params *Params) {
@@ -205,11 +206,14 @@ func WhereSQL(WhereSQL string, args ...interface{}) Param {
 func (p Param) WhereSQL(WhereSQL string, args ...interface{}) Param {
 
 	return func(params *Params) {
+		p(params)
 		if WhereSQL == "" {
 			return
 		}
-		p(params)
+		if params.WhereSQL != "" {
+			params.WhereSQL += " and "
+		}
 		params.wArgs = append(params.wArgs, args...)
-		params.WhereSQL += " and " + WhereSQL
+		params.WhereSQL += WhereSQL
 	}
 }

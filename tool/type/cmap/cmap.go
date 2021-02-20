@@ -1,9 +1,13 @@
 package cmap
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/dreamlu/gt/tool/tag"
 	"go.mongodb.org/mongo-driver/bson"
 	"net/url"
+	"reflect"
 	"strings"
 )
 
@@ -99,6 +103,44 @@ func (v CMap) Struct(value interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// struct to CMap, maybe use Encode
+func StructToCMap(v interface{}) (values CMap) {
+	values = NewCMap()
+	el := reflect.ValueOf(v)
+	if el.Kind() == reflect.Ptr {
+		el = el.Elem()
+	}
+	iVal := el
+	typ := iVal.Type()
+	for i := 0; i < iVal.NumField(); i++ {
+		fi := typ.Field(i)
+		name := tag.GetSQLField(fi)
+		// add support slice
+		if iVal.Field(i).Kind() == reflect.Slice {
+			var buf bytes.Buffer
+			buf.WriteString("[")
+			iValArr := iVal.Field(i)
+			for j := 0; j < iValArr.Len(); j++ {
+				buf.WriteString(fmt.Sprint(`"`, iValArr.Index(j), `",`))
+			}
+			if iValArr.Len() > 0 {
+				val := string(buf.Bytes()[:buf.Len()-1])
+				val += "]"
+				values.Set(name, val)
+			}
+			continue
+		}
+		values.Set(name, fmt.Sprint(iVal.Field(i)))
+	}
+	return
+}
+
+// Encode encodes the values into ``URL encoded'' form
+// ("bar=baz&foo=quux") sorted by key.
+func (v CMap) Encode() string {
+	return url.Values(v).Encode()
 }
 
 // url.Values to CMap
