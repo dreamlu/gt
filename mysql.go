@@ -5,7 +5,6 @@ package gt
 import (
 	"bytes"
 	"fmt"
-	log2 "github.com/dreamlu/gt/sql/mysql/log"
 	"github.com/dreamlu/gt/tool/conf"
 	log3 "github.com/dreamlu/gt/tool/log"
 	reflect2 "github.com/dreamlu/gt/tool/reflect"
@@ -121,9 +120,9 @@ func logInfo(dbS *dba) logger2.Interface {
 	if l := dbS.Log; l {
 		lv = logger2.Info
 	}
-	return log2.New(
+	return New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-		log2.Config{
+		Config{
 			SlowThreshold: 200 * time.Millisecond, // 慢 SQL 阈值
 			LogLevel:      lv,                     // Log level
 			Colorful:      true,                   // 彩色打印
