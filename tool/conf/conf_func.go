@@ -8,9 +8,6 @@ import (
 	"github.com/dreamlu/gt/tool/file/file_func"
 	"github.com/dreamlu/gt/tool/util/cons"
 	"log"
-	"os"
-	"runtime"
-	"strings"
 )
 
 // new Config
@@ -23,7 +20,6 @@ func NewConfig(params ...string) *Config {
 		confDir = params[0]
 	}
 	confDir = newConf(confDir)
-	//confDir = copyConf(confDir)
 	c := &Config{
 		YamlS: make(map[string]*Yaml, 2),
 		dir:   confDir,
@@ -42,43 +38,8 @@ func NewConfig(params ...string) *Config {
 // change dir to abs /xxx/conf/
 // new abs conf dir
 func newConf(dir string) string {
-	fileDir, _ := os.Getwd()
-	GOPATH := os.Getenv("GOPATH")
-	ss := strings.Split(fileDir, GOPATH)
-	if len(ss) > 1 {
-
-		// default linux/mac os
-		spChar := "/"
-		if runtime.GOOS == "windows" {
-			spChar = "\\"
-		}
-		ss2 := strings.Split(ss[1], spChar)
-
-		newDir := GOPATH
-		for i := 1; i < len(ss2); i++ {
-			newDir += spChar + ss2[i]
-			tmpDir := newDir + spChar + dir
-			if file_func.Exists(tmpDir) {
-				return tmpDir
-			}
-		}
-	}
-
-	// 返回默认
-	return dir
+	return file_func.ProjectPath() + dir
 }
-
-// copy file to home .gt dir
-//func copyConf(dir string) string {
-//
-//	gtDir := os.Getenv("HOME") + "/.gt/"
-//
-//	confDir := gtDir + time2.Now().Format("2006-01-02-15-04-05") + "/conf/"
-//	err := os.MkdirAll(confDir, os.ModePerm)
-//	println(err)
-//	file_func.CopyDir(dir, confDir)
-//	return confDir
-//}
 
 // find yaml dev mode
 // default devMode is app.yaml

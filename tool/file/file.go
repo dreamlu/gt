@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/dreamlu/gt/tool/conf"
-	"github.com/dreamlu/gt/tool/file/file_func"
+	os2 "github.com/dreamlu/gt/tool/file/file_func"
 	"github.com/dreamlu/gt/tool/id"
 	"github.com/dreamlu/resize"
 	"image"
@@ -153,7 +153,7 @@ func (f *File) SaveUploadedFile(file *multipart.FileHeader, filename string) (pa
 		f.Format = "20060102"
 	}
 	filepath := conf.Configger().GetString("app.filepath") + time.Now().Format(f.Format) + "/"
-	if !file_func.Exists(filepath) {
+	if !os2.Exists(filepath) {
 		err = os.MkdirAll(filepath, os.ModePerm)
 		if err != nil {
 			return
