@@ -1,4 +1,4 @@
-### gt 2.0  
+### [gt 2.0](https://github.com/dreamlu/gt)  
 
 api快速开发业务框架, 模型生成, 通用增删改查, 支持多表连接  
 
@@ -397,7 +397,9 @@ log.Println("[解密测试]:", AesDe("lIEbR7cEp2U10gtM0j8dCg=="))
 // 时间格式化2006-01-02 15:04:05
 type CTime time.Time
 // 时间格式化2006-01-02
-type CDate time.Time 
+type CDate time.Time
+// 时间格式化2006-01-02 15:04:05.000
+type CNTime time.Time
 ```  
 
 ### JSONType
@@ -407,7 +409,7 @@ type CJSON []byte
 ```  
 
 ### Validator  
->  
+>  字段验证
 ```go
 func TestValidator(t *testing.T) {
     type Test struct {
@@ -428,6 +430,33 @@ func TestValidator(t *testing.T) {
 	info := ValidForm(maps, Test{})
 	//t.Log(info == nil)
 	t.Log(info)
+}
+```
+> 添加自定义规则  
+```go
+// add your custom rule
+func TestCustomizeValid(t *testing.T) {
+	type Test struct {
+		Name string `json:"name" gt:"valid:required,large=3;trans:用户名"`
+	}
+
+	// json data
+	var test = Test{
+		Name: "梦sss",
+	}
+	t.Log(Valid(test))
+
+	AddRule("large", func(rule string, data interface{}) error {
+		num, _ := strconv.Atoi(rule)
+		if v, ok := data.(string); ok {
+			if length(v) > num {
+				return errors.New("最大" + rule)
+			}
+		}
+		return nil
+	})
+
+	t.Log(Valid(test))
 }
 ```
 

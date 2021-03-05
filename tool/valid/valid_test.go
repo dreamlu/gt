@@ -1,7 +1,9 @@
 package valid
 
 import (
+	"errors"
 	"github.com/dreamlu/gt/tool/type/cmap"
+	"strconv"
 	"testing"
 )
 
@@ -16,7 +18,7 @@ func TestValidator(t *testing.T) {
 
 	// json data
 	var test = Test{
-		ID:   6,
+		//ID:   6,
 		Name: "梦",
 	}
 	t.Log(Valid(test))
@@ -42,4 +44,29 @@ func TestValidator(t *testing.T) {
 	info := ValidModel(maps, Test{})
 	//t.Log(info == nil)
 	t.Log(info)
+}
+
+// add your custom rule
+func TestCustomizeValid(t *testing.T) {
+	type Test struct {
+		Name string `json:"name" gt:"valid:required,large=3;trans:用户名"`
+	}
+
+	// json data
+	var test = Test{
+		Name: "梦sss",
+	}
+	t.Log(Valid(test))
+
+	AddRule("large", func(rule string, data interface{}) error {
+		num, _ := strconv.Atoi(rule)
+		if v, ok := data.(string); ok {
+			if length(v) > num {
+				return errors.New("最大" + rule)
+			}
+		}
+		return nil
+	})
+
+	t.Log(Valid(test))
 }

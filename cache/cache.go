@@ -10,24 +10,24 @@ import (
 // data model
 type CacheModel struct {
 	// seconds
-	Time int64 `json:"time"`
+	Time int64 `json:"time,omitempty"`
 	// data
-	Data interface{} `json:"data"`
+	Data interface{} `json:"data,omitempty"`
 }
 
-// c.Data to data
-func (c CacheModel) Struct(data interface{}) error {
+// c.Data to v
+func (c CacheModel) Struct(v interface{}) error {
 	b, err := json.Marshal(c.Data)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(b, data)
+	return json.Unmarshal(b, v)
 }
 
 // cache manager
 type Cache interface {
 	// init cache
-	NewCache(params ...interface{}) error
+	NewCache() error
 	// operate method
 	// set value
 	// if time != 0 set it
@@ -43,7 +43,7 @@ type Cache interface {
 	// flush the time
 	Check(key interface{}) error
 	// expire key time
-	ExpireKey(key interface{}, t int64) bool
+	ExpireKey(key interface{}, seconds int64) bool
 }
 
 // time for cache unit
@@ -58,7 +58,7 @@ const (
 
 // cache sugar
 // the first param is Cache
-// the second param is confiDir
+// the second param is confDir
 func NewCache(params ...interface{}) (cache Cache) {
 
 	// default set
@@ -72,7 +72,7 @@ func NewCache(params ...interface{}) (cache Cache) {
 	}
 	// init
 	cache = params[0].(Cache)
-	err := cache.NewCache(params[1:]...)
+	err := cache.NewCache()
 	if err != nil {
 		log.Error(err.Error())
 	}

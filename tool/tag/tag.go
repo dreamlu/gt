@@ -45,9 +45,9 @@ func GtTag(sTag reflect.StructTag) (tag, tagTable string, b bool) {
 	return
 }
 
-// get sql field tag
+// get json field tag
 // if no, use HumpToLine
-func GetSQLField(field reflect.StructField) string {
+func GetField(field reflect.StructField) string {
 
 	tag := field.Tag.Get("json")
 	if tag == "" || tag == "-" {
@@ -77,7 +77,7 @@ func getTags(ref reflect.Type) (tags []string) {
 			continue
 		}
 		if tag == "" {
-			tag = GetSQLField(ref.Field(i))
+			tag = GetField(ref.Field(i))
 		}
 		if tagTable != "" {
 			tag = tagTable + "_" + tag

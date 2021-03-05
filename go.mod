@@ -16,7 +16,6 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/xjh22222228/ip v1.0.1
 	go.mongodb.org/mongo-driver v1.4.6
-	golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/gorm v1.20.11

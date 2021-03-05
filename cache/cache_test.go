@@ -15,17 +15,13 @@ type User struct {
 }
 
 var (
-	testConfDir = "../conf/"
-	r           = RedisManager{}
-	ce          = NewCache(new(RedisManager), testConfDir)
+	r  = RedisManager{}
+	ce = NewCache()
 )
 
 func init() {
 	// init redis
-	_ = r.NewCache(testConfDir)
-	// init cache
-	//_ = cache.NewCache()
-
+	_ = r.NewCache()
 }
 
 func TestCacheExpireKey(t *testing.T) {
@@ -65,7 +61,7 @@ func TestCacheRedis(t *testing.T) {
 	// get
 	var user2 User
 	reply, _ := ce.Get(user)
-	reply.Struct(&user2)
+	t.Log(reply.Struct(&user2))
 	t.Log("user data :", user2)
 
 }

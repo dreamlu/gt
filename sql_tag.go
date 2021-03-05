@@ -52,7 +52,7 @@ func getTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 		if tag, tagTable, b = GtTag(ref.Field(i).Tag); b {
 			continue
 		}
-		oTag = GetSQLField(ref.Field(i))
+		oTag = GetField(ref.Field(i))
 		if tag == "" {
 			tag = oTag
 		}
@@ -144,7 +144,7 @@ func getTagAlias(ref reflect.Type, buf *bytes.Buffer, alias string) {
 			continue
 		}
 
-		tag := GetSQLField(ref.Field(i))
+		tag := GetField(ref.Field(i))
 		buf.WriteString(alias)
 		buf.WriteString(".`")
 		buf.WriteString(tag)
@@ -182,7 +182,7 @@ func getTag(ref reflect.Type, buf *bytes.Buffer) {
 		if IsGtIgnore(ref.Field(i).Tag) {
 			continue
 		}
-		tag := GetSQLField(ref.Field(i))
+		tag := GetField(ref.Field(i))
 		buf.WriteString("`")
 		buf.WriteString(tag)
 		buf.WriteString("`,")

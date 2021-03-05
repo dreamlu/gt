@@ -5,6 +5,12 @@ import (
 	"log"
 )
 
+// Resultable interface
+type Resultable interface {
+	Add(key string, value interface{}) (rmp ResultMap) // Add
+	AddStruct(value interface{}) (rmp ResultMap)       // AddStruct
+}
+
 type ResultMap map[string]interface{}
 
 func (c ResultMap) Add(key string, value interface{}) ResultMap {
@@ -27,7 +33,6 @@ func (c ResultMap) AddStruct(value interface{}) ResultMap {
 	if err != nil {
 		return nil
 	}
-	//c[key] = value
 	return c
 }
 
@@ -38,10 +43,4 @@ func (c ResultMap) String() string {
 		log.Println("[ResultMap ERROR]:", err)
 	}
 	return string(b)
-}
-
-// Resultable interface
-type Resultable interface {
-	Add(key string, value interface{}) (rmp ResultMap) // Add
-	AddStruct(value interface{}) (rmp ResultMap)       // AddStruct
 }

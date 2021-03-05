@@ -8,12 +8,12 @@ import (
 )
 
 func TestMapData_Add(t *testing.T) {
-	t.Log(MapCreate.Add("id", 2).Add("test", "3"))
-	t.Log(MapUpdate.Add("id", 7).Add("test", "3eyw"))
+	t.Log(MapSuccess.Add("id", 2).Add("test", "3"))
+	t.Log(MapSuccess.Add("id", 7).Add("test", "3eyw"))
 
 	pager := GetInfoPager{
 		GetInfo: &GetInfo{
-			MapData: MapCreate,
+			MapData: MapSuccess,
 			Data:    "test",
 		},
 		Pager: Pager{
@@ -35,13 +35,13 @@ func TestMapData_AddStruct(t *testing.T) {
 		ID:   0,
 		Name: "test",
 	}
-	t.Log(MapCreate.Add("id", 2).AddStruct(user))
+	t.Log(MapSuccess.Add("id", 2).AddStruct(user))
 }
 
 func httpServerDemo(w http.ResponseWriter, r *http.Request) {
 	pager := GetInfoPager{
 		GetInfo: &GetInfo{
-			MapData: MapCreate,
+			MapData: MapSuccess,
 			Data:    "test",
 		},
 		Pager: Pager{

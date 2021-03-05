@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dreamlu/gt/tool/type/te"
-	"log"
+	errors2 "github.com/dreamlu/gt/tool/type/errors"
 )
 
 // status and msg
@@ -18,38 +17,25 @@ const (
 // 或 通过GetMapData()自定义
 const (
 	CodeSuccess   = 200 // 请求成功
-	CodeCreate    = 201 // 创建成功
 	CodeNoAuth    = 203 // 请求非法
 	CodeNoResult  = 204 // 暂无数据
-	CodeUpdate    = 206 // 修改成功
-	CodeDelete    = 209 // 删除成功
 	CodeValidator = 210 // 字段验证
-	CodeCount     = 211 // 账号相关
 	CodeText      = 271 // 全局文字提示
 	CodeError     = 500 // 系统繁忙
 )
 
 // 约定提示信息
 const (
-	MsgSuccess   = "请求成功"
-	MsgCreate    = "创建成功"
-	MsgNoAuth    = "请求非法"
-	MsgNoResult  = "暂无数据"
-	MsgDelete    = "删除成功"
-	MsgUpdate    = "修改成功"
-	MsgExistOrNo = "数据无变化"
-	MsgCountErr  = "用户账号或密码错误"
+	MsgSuccess  = "请求成功"
+	MsgNoAuth   = "请求非法"
+	MsgNoResult = "暂无数据"
 )
 
 // 约定提示信息
 var (
 	MapSuccess  = GetMapData(CodeSuccess, MsgSuccess)   // 请求成功
-	MapUpdate   = GetMapData(CodeUpdate, MsgUpdate)     // 修改成功
-	MapDelete   = GetMapData(CodeDelete, MsgDelete)     // 删除成功
-	MapCreate   = GetMapData(CodeCreate, MsgCreate)     // 创建成功
 	MapNoResult = GetMapData(CodeNoResult, MsgNoResult) // 暂无数据
 	MapNoAuth   = GetMapData(CodeNoAuth, MsgNoAuth)     // 请求非法
-	MapCountErr = GetMapData(CodeCount, MsgCountErr)    // 用户账号密码错误
 )
 
 // 分页数据信息
@@ -87,7 +73,7 @@ func GetMapData(status int64, msg interface{}) *MapData {
 	}
 }
 
-// 后端提示
+// text
 func GetText(Msg interface{}) *MapData {
 
 	return GetMapData(CodeText, Msg)
@@ -201,7 +187,6 @@ func (m *MapData) AddStruct(value interface{}) (rmp ResultMap) {
 func StructToString(st interface{}) string {
 	s, err := json.Marshal(st)
 	if err != nil {
-		log.Println("struct:[", err, "]:error")
 		return ""
 	}
 	return string(s)
@@ -214,7 +199,7 @@ func StringToStruct(str string, st interface{}) error {
 // error sugar
 // result sugar
 func CError(err error) *MapData {
-	if errors.As(err, &te.TextErr) {
+	if errors.As(err, &errors2.TextErr) {
 		if err.Error() == MsgNoResult {
 			return MapNoResult
 		}
@@ -224,5 +209,5 @@ func CError(err error) *MapData {
 }
 
 func TextError(msg string) error {
-	return fmt.Errorf("%w", &te.TextError{Msg: msg})
+	return fmt.Errorf("%w", &errors2.TextError{Msg: msg})
 }

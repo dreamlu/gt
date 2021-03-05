@@ -3,7 +3,7 @@ package sql
 import (
 	"errors"
 	"fmt"
-	"github.com/dreamlu/gt/tool/type/te"
+	errors2 "github.com/dreamlu/gt/tool/type/errors"
 	"testing"
 )
 
@@ -12,5 +12,5 @@ func TestGetSQLError(t *testing.T) {
 	err := GetSQLError(msg)
 	t.Log(err)
 	///fmt.Println(errors.Unwrap(err))
-	fmt.Println(errors.As(err, &te.TextErr))
+	fmt.Println(errors.As(err, &errors2.TextErr))
 }

@@ -21,19 +21,12 @@ type RedisManager struct {
 
 // new cache by redis
 // other cache maybe like this
-func (r *RedisManager) NewCache(params ...interface{}) error {
-
-	var config *conf.Config
-	if len(params) > 0 {
-		config = conf.Configger(params[0].(string))
-	} else {
-		config = conf.Configger()
-	}
+func (r *RedisManager) NewCache() error {
 
 	// read config
 	r.Rc = redis2.InitRedisPool(
 		func(options *redis.Options) {
-			config.GetStruct("app.redis", options)
+			conf.GetStruct("app.redis", options)
 		})
 	return nil
 }
@@ -151,11 +144,11 @@ func (r *RedisManager) Check(key interface{}) error {
 		return err
 	}
 
-	return r.Rc.ExpireKey(keyS, reply.Time*60).Err()
+	return r.Rc.ExpireKey(keyS, reply.Time).Err()
 }
 
-func (r *RedisManager) ExpireKey(key interface{}, t int64) bool {
-	b, err := r.Rc.ExpireKey(key, t).Bool()
+func (r *RedisManager) ExpireKey(key interface{}, seconds int64) bool {
+	b, err := r.Rc.ExpireKey(key, seconds).Bool()
 	if err != nil {
 		log.Error(err)
 	}
