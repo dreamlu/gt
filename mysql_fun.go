@@ -51,7 +51,7 @@ func (gt *GT) GetMoreSQL() {
 		bufW   bytes.Buffer // gt.sql bytes connect
 	)
 	tables = gt.moreSql()
-	gt.sql = strings.Replace(gt.sqlNt, "count(`"+tables[0]+"`.id) as total_num", GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
+	gt.sql = strings.Replace(gt.sqlNt, "count(*) as total_num", GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
 	// default
 	gt.order = fmt.Sprintf("`%s`.id desc", tables[0])
 

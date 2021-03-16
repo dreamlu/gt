@@ -20,7 +20,6 @@ const (
 // 时间格式化2006-01-02 15:04:05
 type CTime time.Time
 
-// 实现它的json序列化方法
 func (t CTime) MarshalJSON() ([]byte, error) {
 	if t.IsZero() {
 		return []byte(`""`), nil
@@ -29,7 +28,6 @@ func (t CTime) MarshalJSON() ([]byte, error) {
 	return []byte(stamp), nil
 }
 
-// 反序列化方法 https://stackoverflow.com/questions/45303326/how-to-parse-non-standard-time-format-from-json-in-golang
 func (t *CTime) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	if s == "" {
@@ -78,7 +76,6 @@ func (t CTime) IsZero() bool {
 // 时间格式化2006-01-02 15:04:05.000
 type CNTime time.Time
 
-// 实现它的json序列化方法
 func (t CNTime) MarshalJSON() ([]byte, error) {
 	if t.IsZero() {
 		return []byte(`""`), nil
@@ -87,7 +84,6 @@ func (t CNTime) MarshalJSON() ([]byte, error) {
 	return []byte(stamp), nil
 }
 
-// 反序列化方法 https://stackoverflow.com/questions/45303326/how-to-parse-non-standard-time-format-from-json-in-golang
 func (t *CNTime) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	if s == "" {
@@ -136,7 +132,6 @@ func (t CNTime) IsZero() bool {
 // 时间格式化2006-01-02
 type CDate time.Time
 
-// 实现它的json序列化方法
 func (t CDate) MarshalJSON() ([]byte, error) {
 	if t.IsZero() {
 		return []byte(`""`), nil
@@ -145,7 +140,6 @@ func (t CDate) MarshalJSON() ([]byte, error) {
 	return []byte(stamp), nil
 }
 
-// 反序列化
 func (t *CDate) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	if s == "" {
