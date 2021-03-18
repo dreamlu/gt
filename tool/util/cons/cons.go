@@ -37,9 +37,11 @@ const (
 const (
 	WhereS          = "where %s "
 	AndS            = "and %s "
+	OrderDesc       = "%s.id desc"
 	OrderS          = "order by %s "
 	ParamAnd        = " = ? and "
 	SelectFrom      = "select %s from %s "
-	SelectCount     = "select count(*) as total_num "
+	Count           = "count(*) as total_num"
+	SelectCount     = "select " + Count + " "
 	SelectCountFrom = SelectCount + "from %s "
 )

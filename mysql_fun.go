@@ -51,9 +51,9 @@ func (gt *GT) GetMoreSQL() {
 		bufW   bytes.Buffer // gt.sql bytes connect
 	)
 	tables = gt.moreSql()
-	gt.sql = strings.Replace(gt.sqlNt, "count(*) as total_num", GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
+	gt.sql = strings.Replace(gt.sqlNt, cons.Count, GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
 	// default
-	gt.order = fmt.Sprintf("`%s`.id desc", tables[0])
+	gt.order = fmt.Sprintf(cons.OrderDesc, sq.Table(tables[0]))
 
 	gt.whereParams()
 	for k, v := range gt.CMaps {
@@ -96,7 +96,7 @@ func (gt *GT) GetSearchSQL() {
 		table = sq.Table(gt.Table)
 	)
 	// default
-	gt.order = "id desc" // default order by
+	gt.order = fmt.Sprintf(cons.OrderDesc, table)
 
 	// select* replace
 	gt.sql = fmt.Sprintf(cons.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, table)

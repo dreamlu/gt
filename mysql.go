@@ -16,8 +16,6 @@ import (
 	"gorm.io/gorm"
 	logger2 "gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"log"
-	"os"
 	"reflect"
 	"strings"
 	"sync"
@@ -121,7 +119,6 @@ func logInfo(dbS *dba) logger2.Interface {
 		lv = logger2.Info
 	}
 	return New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		Config{
 			SlowThreshold: 200 * time.Millisecond, // 慢 SQL 阈值
 			LogLevel:      lv,                     // Log level

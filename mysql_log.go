@@ -3,11 +3,9 @@ package gt
 import (
 	"context"
 	"fmt"
+	"github.com/dreamlu/gt/tool/log"
 	logger2 "gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
-	"io/ioutil"
-	"log"
-	"os"
 	"time"
 )
 
@@ -33,17 +31,7 @@ type Config struct {
 	LogLevel      logger2.LogLevel
 }
 
-var (
-	Discard = New(log.New(ioutil.Discard, "", log.LstdFlags), Config{})
-	Default = New(log.New(os.Stdout, "\r\n", log.LstdFlags), Config{
-		SlowThreshold: 200 * time.Millisecond,
-		LogLevel:      logger2.Warn,
-		Colorful:      true,
-	})
-	Recorder = traceRecorder{Interface: Default, BeginAt: time.Now()}
-)
-
-func New(writer logger2.Writer, config Config) logger2.Interface {
+func New(config Config) logger2.Interface {
 	var (
 		infoStr      = "%s\n[info] "
 		warnStr      = "%s\n[warn] "
@@ -58,12 +46,12 @@ func New(writer logger2.Writer, config Config) logger2.Interface {
 		warnStr = BlueBold + "%s\n" + Reset + Magenta + "[warn] " + Reset
 		errStr = Magenta + "%s\n" + Reset + Red + "[error] " + Reset
 		traceStr = Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
-		traceWarnStr = Yellow + Reset + RedBold + "[%.3fms] " + Yellow + "[rows:%v]" + Magenta + " %s" + Reset
+		traceWarnStr = Yellow + "%s\n" + Reset + RedBold + "[%.3fms] " + Yellow + "[rows:%v]" + Magenta + " %s" + Reset
 		traceErrStr = RedBold + "%s\n" + Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
 	}
 
 	return &logger{
-		Writer:       writer,
+		Log:          log.Logger(),
 		Config:       config,
 		infoStr:      infoStr,
 		warnStr:      warnStr,
@@ -75,7 +63,7 @@ func New(writer logger2.Writer, config Config) logger2.Interface {
 }
 
 type logger struct {
-	logger2.Writer
+	*log.Log
 	Config
 	infoStr, warnStr, errStr            string
 	traceStr, traceErrStr, traceWarnStr string
@@ -91,21 +79,21 @@ func (l *logger) LogMode(level logger2.LogLevel) logger2.Interface {
 // Info print info
 func (l logger) Info(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= logger2.Info {
-		l.Printf(l.infoStr+msg, append([]interface{}{}, data)...)
+		l.Infof(l.infoStr+msg, append([]interface{}{}, data)...)
 	}
 }
 
 // Warn print warn messages
 func (l logger) Warn(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= logger2.Warn {
-		l.Printf(l.warnStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+		l.Warnf(l.warnStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 	}
 }
 
 // Error print error messages
 func (l logger) Error(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= logger2.Error {
-		l.Printf(l.errStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+		l.Errorf(l.errStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 	}
 }
 
@@ -117,24 +105,24 @@ func (l logger) Trace(ctx context.Context, begin time.Time, fc func() (string, i
 		case err != nil && l.LogLevel >= logger2.Error:
 			sql, rows := fc()
 			if rows == -1 {
-				l.Printf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
+				l.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
 			} else {
-				l.Printf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, rows, sql)
+				l.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 			}
 		case elapsed > l.SlowThreshold && l.SlowThreshold != 0 && l.LogLevel >= logger2.Warn:
 			sql, rows := fc()
 			slowLog := fmt.Sprintf("SLOW SQL >= %v", l.SlowThreshold)
 			if rows == -1 {
-				l.Printf(l.traceWarnStr, slowLog, float64(elapsed.Nanoseconds())/1e6, "-", sql)
+				l.Warnf(l.traceWarnStr, slowLog, float64(elapsed.Nanoseconds())/1e6, "-", sql)
 			} else {
-				l.Printf(l.traceWarnStr, slowLog, float64(elapsed.Nanoseconds())/1e6, rows, sql)
+				l.Warnf(l.traceWarnStr, slowLog, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 			}
 		case l.LogLevel >= logger2.Info:
 			sql, rows := fc()
 			if rows == -1 {
-				l.Printf(l.traceStr, float64(elapsed.Nanoseconds())/1e6, "-", sql)
+				l.Infof(l.traceStr, float64(elapsed.Nanoseconds())/1e6, "-", sql)
 			} else {
-				l.Printf(l.traceStr, float64(elapsed.Nanoseconds())/1e6, rows, sql)
+				l.Infof(l.traceStr, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 			}
 		}
 	}
