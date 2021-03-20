@@ -88,3 +88,7 @@ TODO
 - [ ] 89.maptoStruct  
 - [ ] 90.多表join增加别名支持  
 - [ ] 91.json omitempty问题  
+- [ ] 92.inner/left join on条件  
+- [ ] 93.log to mongo/gin  
+- [x] 94.count(*) 为0不继续执行后续优化  
+- [ ] 94.支持distinct  

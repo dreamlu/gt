@@ -25,6 +25,7 @@ const (
 	GtValid  = "valid"
 	GtTrans  = "trans"
 	GtIgnore = "ignore"
+	Gt_      = "-"
 )
 
 // default page

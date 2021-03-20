@@ -13,7 +13,8 @@ func IsGtIgnore(tag reflect.StructTag) bool {
 
 	gtTag := tag.Get(cons.GT)
 	if strings.Contains(gtTag, cons.GtSubSQL) ||
-		strings.Contains(gtTag, cons.GtIgnore) {
+		strings.Contains(gtTag, cons.GtIgnore) ||
+		strings.Contains(gtTag, cons.Gt_) {
 		return true
 	}
 	return false

@@ -259,7 +259,7 @@ func (db *DBTool) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage
 	}
 	// sqlNt += limit
 	db.res = db.DB.Raw(sqlNt, args[:]...).Scan(&pager)
-	if db.res.Error == nil {
+	if db.res.Error == nil && pager.TotalNum > 0 {
 		db.res = db.DB.Raw(sql, args[:]...).Scan(data)
 		// pager data
 		pager.ClientPage = clientPage

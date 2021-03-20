@@ -135,7 +135,7 @@ PASS
 ```
 
 #### Struct Gt
-> gt:"sub_sql" 或 gt:"ignore"<忽略该字段解析,<可进行子查询>>  
+> gt:"sub_sql", gt:"ignore", gt:"-"<忽略该字段解析,<可进行子查询>>  
 ```go
 type Client struct {
 	models.AdminCom
@@ -596,7 +596,8 @@ ps:
 
 - 约定  
 1.必定有id字段  
-2.模型结构体的json格式内容与表字段保持一致  
+2.~~模型结构体的json格式内容与表字段保持一致~~  
 3.返回格式参考[result](tool/result/result.go)    
 4.多表关联命名, 模型中其他表字段命名: `他表名 + "_" + 他表字段名`  
+5.More相关接口同一个pkg和同一个Model尽量不要重复, 如有, 可通过换目录pkg或继承Model+制定gt.Table()解决  
 n.crud更多用法参考[crud_mysql_test](crud_mysql_test.go)  

@@ -2,4 +2,5 @@
 /test/log
 /test/file
 /test/main
-go.mod
+/test/sql
+go.sum
