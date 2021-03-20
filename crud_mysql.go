@@ -356,7 +356,7 @@ func (c *Mysql) line() {
 	if ok {
 		buf := new(strings.Builder)
 		_, _ = fmt.Fprintf(buf, "\n\033[35m[gt]\033[0m: ")
-		_, _ = fmt.Fprintf(buf, "%s:%d", fullFile, line)
+		_, _ = fmt.Fprintf(buf, "%s:%d\n", fullFile, line)
 		fmt.Print(buf.String())
 	}
 }

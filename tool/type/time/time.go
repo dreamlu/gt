@@ -61,6 +61,10 @@ func (t *CTime) Scan(v interface{}) error {
 	return fmt.Errorf("can not convert %v to CTime", v)
 }
 
+func (CTime) GormDataType() string {
+	return "datetime"
+}
+
 // must sure MarshalJSON is right
 // to string
 func (t CTime) String() string {
@@ -115,6 +119,10 @@ func (t *CNTime) Scan(v interface{}) error {
 		return nil
 	}
 	return fmt.Errorf("can not convert %v to CTime", v)
+}
+
+func (CNTime) GormDataType() string {
+	return "datetime(3)"
 }
 
 // must sure MarshalJSON is right
@@ -172,6 +180,10 @@ func (t *CDate) Scan(v interface{}) error {
 	return fmt.Errorf("can not convert %v to CDate", v)
 }
 
+func (CDate) GormDataType() string {
+	return "date"
+}
+
 // must sure MarshalJSON is right
 // to string
 func (t CDate) String() string {
@@ -227,8 +239,9 @@ func (t *CSTime) Scan(v interface{}) error {
 	return nil
 }
 
+// gorm bug mysql time to CSTime
 func (t CSTime) GormDataType() string {
-	return "time"
+	return "time;"
 }
 
 // must sure MarshalJSON is right

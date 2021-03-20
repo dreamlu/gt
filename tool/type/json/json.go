@@ -29,6 +29,10 @@ func (j *CJSON) Scan(value interface{}) error {
 	return nil
 }
 
+func (CJSON) GormDataType() string {
+	return "json"
+}
+
 func (j CJSON) MarshalJSON() ([]byte, error) {
 	if j == nil {
 		// use "" replace null

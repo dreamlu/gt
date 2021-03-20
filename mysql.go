@@ -86,8 +86,9 @@ func (db *DBTool) NewDB() {
 func (db *DBTool) open(sql string, dbS *dba) *gorm.DB {
 	// database, initialize once
 	cf := &gorm.Config{
-		Logger:                 logInfo(dbS),
-		SkipDefaultTransaction: true,
+		Logger:                                   logInfo(dbS),
+		SkipDefaultTransaction:                   true,
+		DisableForeignKeyConstraintWhenMigrating: true,
 	}
 	DB, err := gorm.Open(mysql.Open(sql), cf)
 	//defer db.DB.Close()

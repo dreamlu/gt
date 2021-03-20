@@ -400,6 +400,9 @@ type CTime time.Time
 type CDate time.Time
 // 时间格式化2006-01-02 15:04:05.000
 type CNTime time.Time
+// 时间格式化 15:04:05
+// ps gorm type生成bug,不填写type,默认即可
+type CSTime time.Time
 ```  
 
 ### JSONType

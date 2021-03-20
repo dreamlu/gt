@@ -68,10 +68,9 @@ type OrderD struct {
 var crud Crud
 
 func init() {
-	DB().AutoMigrate(User{}, Order{}, Service{}, UserInfo{})
+	err := DB().AutoMigrate(User{}, Order{}, Service{}, UserInfo{})
+	fmt.Println(err)
 	crud = NewCrud()
-	crud.Select("alter table `order` modify start_time time null;").Exec()
-	crud.Select("alter table `order` modify end_time time null;").Exec()
 }
 
 func TestDB(t *testing.T) {
