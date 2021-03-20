@@ -83,6 +83,16 @@ func (v CMap) Insert(key, value string) CMap {
 	return v.Set(key, value+vs)
 }
 
+// Drop to remove string if it contains value
+func (v CMap) Drop(key, value string) CMap {
+	vs := v.Get(key)
+	if strings.Contains(vs, value) {
+		vs = strings.ReplaceAll(vs, value, "")
+		v.Set(key, vs)
+	}
+	return v
+}
+
 // CMap to struct data
 // value like
 // type Te struct {

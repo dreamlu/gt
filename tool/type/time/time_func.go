@@ -8,8 +8,7 @@ import (
 
 // string to CTime
 func ParseCTime(value string) CTime {
-	loc, _ := time.LoadLocation("Local")
-	ti, err := time.ParseInLocation(Layout, value, loc)
+	ti, err := time.ParseInLocation(Layout, value, time.Local)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -18,12 +17,20 @@ func ParseCTime(value string) CTime {
 
 // string to CDate
 func ParseCDate(value string) CDate {
-	loc, _ := time.LoadLocation("Local")
-	ti, err := time.ParseInLocation(LayoutDate, value, loc)
+	ti, err := time.ParseInLocation(LayoutDate, value, time.Local)
 	if err != nil {
 		fmt.Println(err)
 	}
 	return CDate(ti)
+}
+
+// string to CSTime
+func ParseCSTime(value string) CSTime {
+	ti, err := time.ParseInLocation(LayoutS, value, time.Local)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return CSTime(ti)
 }
 
 // 日期差计算
