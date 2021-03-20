@@ -14,6 +14,7 @@ const (
 	Layout     = "2006-01-02 15:04:05"     // mysql: datetime
 	LayoutN    = "2006-01-02 15:04:05.000" // mysql: datetime(3)
 	LayoutDate = "2006-01-02"              // mysql: date
+	LayoutS    = "15:04:05"                // mysql: time
 )
 
 // china time/date
@@ -181,5 +182,64 @@ func (t CDate) String() string {
 }
 
 func (t CDate) IsZero() bool {
+	return time.Time(t).IsZero()
+}
+
+// 时间格式化15:04:05
+type CSTime time.Time
+
+func (t CSTime) MarshalJSON() ([]byte, error) {
+	if t.IsZero() {
+		return []byte(`""`), nil
+	}
+	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format(LayoutS))
+	return []byte(stamp), nil
+}
+
+func (t *CSTime) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	if s == "" {
+		s = LayoutS
+	}
+	ti, err := time.ParseInLocation(LayoutS, s, time.Local)
+	if err != nil {
+		return err
+	}
+	*t = CSTime(ti)
+	return nil
+}
+
+func (t CSTime) Value() (driver.Value, error) {
+	var zeroTime time.Time
+	var ti = time.Time(t)
+	if ti.UnixNano() == zeroTime.UnixNano() {
+		return nil, nil
+	}
+	return ti, nil
+}
+
+func (t *CSTime) Scan(v interface{}) error {
+	ti, err := time.ParseInLocation(LayoutS, string(v.([]byte)), time.Local)
+	if err != nil {
+		return err
+	}
+	*t = CSTime(ti)
+	return nil
+}
+
+func (t CSTime) GormDataType() string {
+	return "time"
+}
+
+// must sure MarshalJSON is right
+// to string
+func (t CSTime) String() string {
+	if t.IsZero() {
+		return ""
+	}
+	return time.Time(t).Format(LayoutS)
+}
+
+func (t CSTime) IsZero() bool {
 	return time.Time(t).IsZero()
 }

@@ -47,11 +47,13 @@ type Service struct {
 
 // order model
 type Order struct {
-	ID         uint64     `json:"id"`
-	UserID     int64      `json:"user_id"` // user id
-	UserInfoID uint64     `json:"user_info_id"`
-	ServiceID  int64      `json:"service_id"` // service table id
-	CreateTime time.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
+	ID         uint64      `json:"id"`
+	UserID     int64       `json:"user_id"` // user id
+	UserInfoID uint64      `json:"user_info_id"`
+	ServiceID  int64       `json:"service_id"` // service table id
+	CreateTime time.CTime  `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
+	StartTime  time.CSTime `json:"start_time"`
+	EndTime    time.CSTime `json:"end_time"`
 }
 
 // order detail
@@ -68,6 +70,8 @@ var crud Crud
 func init() {
 	DB().AutoMigrate(User{}, Order{}, Service{}, UserInfo{})
 	crud = NewCrud()
+	crud.Select("alter table `order` modify start_time time null;").Exec()
+	crud.Select("alter table `order` modify end_time time null;").Exec()
 }
 
 func TestDB(t *testing.T) {
@@ -587,4 +591,28 @@ func TestMysql_GetMoreByData(t *testing.T) {
 	for _, v := range or {
 		t.Log(v)
 	}
+}
+
+// 测试mysql仅时分秒格式
+func TestMysql_Time(t *testing.T) {
+	var or []*Order
+	cd := NewCrud(
+		Model(Order{}),
+		Data(&or),
+	)
+	err := cd.Get(cmap.NewCMap()).Error()
+	if err != nil {
+		t.Error(err)
+	}
+	for _, v := range or {
+		t.Log(v.EndTime.String())
+		s := time.CTime(v.StartTime)
+		t.Log(s.String())
+		t.Log(v)
+	}
+
+	cd.Params(Data(&Order{
+		StartTime: time.ParseCSTime("12:00:00"),
+		EndTime:   time.ParseCSTime("12:00:00"),
+	})).Create()
 }
