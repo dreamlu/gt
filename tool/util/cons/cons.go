@@ -36,13 +36,16 @@ const (
 
 // part sql
 const (
-	WhereS          = "where %s "
-	AndS            = "and %s "
-	OrderDesc       = "%s.id desc"
-	OrderS          = "order by %s "
-	ParamAnd        = " = ? and "
-	SelectFrom      = "select %s from %s "
-	Count           = "count(*) as total_num"
-	SelectCount     = "select " + Count + " "
-	SelectCountFrom = SelectCount + "from %s "
+	WhereS              = "where %s "
+	AndS                = "and %s "
+	OrderDesc           = "%s.id desc"
+	OrderS              = "order by %s "
+	ParamAnd            = " = ? and "
+	SelectFrom          = "select %s from %s "
+	Distinct            = "distinct "
+	Count               = "count(*) as total_num"
+	CountDistinct       = "count(distinct 0) as total_num"
+	SelectCount         = "select " + Count + " "
+	SelectCountDistinct = "select " + CountDistinct + " "
+	SelectCountFrom     = SelectCount + "from %s "
 )

@@ -91,4 +91,4 @@ TODO
 - [ ] 92.inner/left join on条件  
 - [ ] 93.log to mongo/gin  
 - [x] 94.count(*) 为0不继续执行后续优化  
-- [ ] 94.支持distinct  
+- [x] 94.支持distinct  

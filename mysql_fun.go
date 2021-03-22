@@ -49,9 +49,15 @@ func (gt *GT) GetMoreSQL() {
 	var (
 		tables []string
 		bufW   bytes.Buffer // gt.sql bytes connect
+		count  = cons.Count
 	)
 	tables = gt.moreSql()
-	gt.sql = strings.Replace(gt.sqlNt, cons.Count, GetMoreTableColumnSQL(gt.Model, tables[:]...)+gt.SubSQL, 1)
+	var sql = GetMoreTableColumnSQL(gt.Model, tables[:]...)
+	if gt.distinct {
+		count = cons.CountDistinct
+		sql = cons.Distinct + sql
+	}
+	gt.sql = strings.Replace(gt.sqlNt, count, sql+gt.SubSQL, 1)
 	// default
 	gt.order = fmt.Sprintf(cons.OrderDesc, sq.Table(tables[0]))
 
@@ -206,9 +212,13 @@ func (gt *GT) moreSql() (tables []string) {
 
 	var (
 		bufNt bytes.Buffer // sql bytes connect
+		count = cons.SelectCount
 	)
+	if gt.distinct {
+		count = cons.SelectCountDistinct
+	}
 	// sql and sqlCount
-	bufNt.WriteString(cons.SelectCount)
+	bufNt.WriteString(count)
 	bufNt.WriteString("from ")
 	if tb := DBS[tables[0]]; tb != "" {
 		bufNt.WriteString("`")

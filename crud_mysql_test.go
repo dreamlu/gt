@@ -240,6 +240,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		Data(&or),
 		KeyModel(Key{}),
 		WhereSQL("1 = ?", 1).WhereSQL("2 = ?", 2),
+		Distinct(),
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {
