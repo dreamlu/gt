@@ -30,13 +30,21 @@ func TestValidator(t *testing.T) {
 	t.Log(Valid(&test2))
 
 	// json data
-	var tests = []Test{
+	var tests = []*Test{
 		{
 			ID:   6,
 			Name: "梦",
 		},
 	}
 	t.Log(Valid(tests))
+
+	var tests2 = []*Test{
+		{
+			ID:   6,
+			Name: "梦",
+		},
+	}
+	t.Log(Valid(&tests2))
 
 	// form data
 	var maps = cmap.NewCMap().Set("id", "1")

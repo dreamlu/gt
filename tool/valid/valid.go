@@ -63,13 +63,15 @@ func (v *ValidRule) Struct(str string) {
 
 var validBuffer = cmap.NewCMap()
 
-// 创建校验器对象
-// 针对结构体数据
-// json
+// Valid
 func Valid(data interface{}) ValidError {
 
-	// 根据模型添加验证规则
 	typ := reflect.TypeOf(data)
+	for typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+		data = reflect.ValueOf(data).Elem().Interface()
+	}
+
 	if typ.Kind() == reflect.Slice {
 		ss := myReflect.ToSlice(data)
 		for _, v := range ss {
@@ -81,10 +83,6 @@ func Valid(data interface{}) ValidError {
 		return nil
 	}
 
-	for typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-		data = reflect.ValueOf(data).Elem().Interface()
-	}
 	return valid(data, typ)
 }
 
