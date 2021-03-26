@@ -47,7 +47,7 @@ type dba struct {
 func (db *DBTool) NewDB() {
 
 	dbS := &dba{}
-	conf.Configger().GetStruct("app.db", dbS)
+	conf.GetStruct("app.db", dbS)
 	db.log = dbS.Log
 	var (
 		sql = fmt.Sprintf("%s:%s@%s/?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host)
@@ -303,7 +303,7 @@ func (db *DBTool) Update(gt *GT) {
 	}
 
 	if gt.Select != "" {
-		db.res = db.Table(gt.Table).Model(gt.Model).Where(gt.Select, gt.Args).Updates(gt.Data)
+		db.res = db.Table(gt.Table).Where(gt.Select, gt.Args).Updates(gt.Data)
 	} else {
 		db.res = db.Table(gt.Table).Model(gt.Data).Updates(gt.Data)
 	}
@@ -394,4 +394,14 @@ func (db *DBTool) CreateDataResID(table string, params cmap.CMap) (id uint64, er
 
 	tx.Commit()
 	return
+}
+
+func (db *DBTool) GetColumns(table string) (error, []string) {
+
+	var (
+		name    = conf.GetString("app.db.name")
+		columns []string
+	)
+	db.getBySQL(&columns, "SELECT COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE TABLE_NAME = ? and TABLE_SCHEMA = ?", table, name)
+	return db.res.Error, columns
 }

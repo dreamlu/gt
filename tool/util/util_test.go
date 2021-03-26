@@ -1,12 +1,13 @@
 package util
 
 import (
-	"log"
 	"testing"
 )
 
 func TestAesEn(t *testing.T) {
 
-	log.Println("[加密测试]:", AesEn("admin"))
-	log.Println("[解密测试]:", AesDe("sPa0sTmDf6gasS9tHvIqKw=="))
+	t.Log("[aesEn]:", AesEn("admin"))
+	t.Log("[aesDe]:", AesDe("sPa0sTmDf6gasS9tHvIqKw=="))
+	t.Log(IsAes("13242trergf"))
+	t.Log(IsAes("sPa0sTmDf6gasS9tHvIqKw=="))
 }

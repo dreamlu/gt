@@ -92,3 +92,7 @@ TODO
 - [ ] 93.log to mongo/gin  
 - [x] 94.count(*) 为0不继续执行后续优化  
 - [x] 94.支持distinct  
+- [ ] 95.多线程支持  
+- [ ] 96.包名统一化  
+- [x] 96.update() select问题  
+- [x] 97.select *多表模型组合解析更智能  

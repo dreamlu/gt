@@ -41,6 +41,7 @@ func getTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 		oTag, tag, tagTable string
 		b                   bool
 	)
+
 	if ref.Kind() != reflect.Struct {
 		return
 	}
@@ -56,28 +57,22 @@ func getTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 		if tag == "" {
 			tag = oTag
 		}
+		// gt tag rule
 		if tagTable != "" {
-			buf.WriteString("`")
-			buf.WriteString(tagTable)
-			buf.WriteString("`.`")
-			buf.WriteString(tag)
-			//buf.WriteString("`,")
-			buf.WriteString("` as ")
-			if oTag != "" && oTag != "-" {
-				buf.WriteString(oTag)
-			} else {
-				buf.WriteString(tag)
-			}
-			buf.WriteString(",")
+			writeTagString(buf, tagTable, tag, oTag)
 			continue
 		}
 
+		// sql tag rule
+		tb := UniqueTagTable(tag, tables)
+		if tb != "" {
+			writeTagString(buf, tb, tag, "")
+			continue
+		}
+
+		// default tag rule
 		if b = otherTableTagSQL(oTag, tag, buf, tables...); !b {
-			buf.WriteString("`")
-			buf.WriteString(tables[0])
-			buf.WriteString("`.`")
-			buf.WriteString(tag)
-			buf.WriteString("`,")
+			writeTagString(buf, tables[0], tag, "")
 		}
 	}
 }
@@ -92,24 +87,29 @@ func otherTableTagSQL(oTag, tag string, buf *bytes.Buffer, tables ...string) boo
 		}
 		// tables
 		if strings.HasPrefix(tag, v+"_") &&
-			// next two condition see db_test.go==>TestGetReflectTagMore()
+			// next two condition, eg: db_test.go==>TestGetReflectTagMore()
 			!strings.Contains(tag, "_id") &&
 			!strings.EqualFold(v, tables[0]) {
-			buf.WriteString("`")
-			buf.WriteString(v)
-			buf.WriteString("`.`")
-			buf.Write([]byte(tag)[len(v)+1:])
-			buf.WriteString("` as ")
-			if oTag != "" && oTag != "-" {
-				buf.WriteString(oTag)
-			} else {
-				buf.WriteString(tag)
-			}
-			buf.WriteString(",")
+
+			writeTagString(buf, v, string([]byte(tag)[len(v)+1:]), oTag)
 			return true
 		}
 	}
 	return false
+}
+
+// write tag sql
+func writeTagString(buf *bytes.Buffer, tb, tag, alias string) {
+	buf.WriteString("`")
+	buf.WriteString(tb)
+	buf.WriteString("`.`")
+	buf.WriteString(tag)
+	buf.WriteString("`")
+	if alias != "" && alias != "-" {
+		buf.WriteString(" as ")
+		buf.WriteString(alias)
+	}
+	buf.WriteString(",")
 }
 
 // select * replace
@@ -233,4 +233,43 @@ func getParams(typ reflect.Value) (params []interface{}) {
 		params = append(params, value)
 	}
 	return
+}
+
+// return unique table tag
+func UniqueTagTable(tag string, tables []string) (table string) {
+	var (
+		m = getTableColumns(tables)
+		i = 0
+	)
+
+	for k, tags := range m {
+		for _, t := range tags {
+			if t == tag {
+				i++
+				table = k
+			}
+		}
+	}
+	if i == 1 {
+		return
+	}
+	return ""
+}
+
+var columns cmap.CMap
+
+func getTableColumns(tables []string) cmap.CMap {
+
+	if columns == nil {
+		columns = cmap.NewCMap()
+	}
+
+	// select db columns
+	for _, tb := range tables {
+		if _, ok := columns[tb]; ok {
+			continue
+		}
+		_, columns[tb] = DB().GetColumns(tb)
+	}
+	return columns
 }

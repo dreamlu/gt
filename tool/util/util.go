@@ -11,6 +11,15 @@ import (
 
 var AesKey = "github.com/dreamlu/gt dreamlu123"
 
+// is aes encode
+func IsAes(s string) bool {
+	defer func() {
+		recover()
+	}()
+	AesDe(s)
+	return true
+}
+
 // aes加密,返回16进制数据
 func AesEn(data string) string {
 	// 转成字节数组

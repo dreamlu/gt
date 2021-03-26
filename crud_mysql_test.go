@@ -227,7 +227,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	// 多表查询
 	// get more search
 	var params = cmap.NewCMap().
-		Set("key", "梦 1"). // key work
+		Set("key", "梦 sql"). // key work
 		Set("clientPage", "1").
 		Set("everyPage", "2")
 	//params.Add("mock", "1") // mock data
@@ -501,19 +501,29 @@ func TestField(t *testing.T) {
 // test transaction
 func TestTransaction(t *testing.T) {
 	cd := NewCrud().Begin()
+	type UserP struct {
+		Name string
+	}
 	var (
 		params = cmap.NewCMap()
-		user   = User{
+		userP  = UserP{
+			Name: "test1",
+		}
+		user = User{
 			ID:   1,
 			Name: "test2",
 		}
 		users []*User
 	)
-	_ = cd.Params(Model(User{}), Data(&user)).Select("select *from user where id = 1").Single()
+	_ = cd.Params(Data(&user)).Select("select *from user where id = 1").Single()
 	t.Log("step1: ", user)
 
 	user.Name = "testUpdate"
 	cd.Params(Data(user)).Update()
+
+	user.Name = "testUpdate"
+	user.ID = 0
+	cd.Params(Table("user"), Data(userP)).Select("name = ?", "梦").Update()
 
 	cd.SavePoint("point1")
 
