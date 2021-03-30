@@ -64,6 +64,16 @@ func TestCacheRedis(t *testing.T) {
 	t.Log(reply.Struct(&user2))
 	t.Log("user data :", user2)
 
+	var ar = []string{"test1", "test2"}
+	data.Data = ar
+	err = NewCache().Set("arr", data)
+	t.Log("set err: ", err)
+
+	// get
+	ar = []string{}
+	reply, _ = ce.Get("arr")
+	t.Log(reply.Unmarshal(&ar))
+	t.Log("user data :", user2)
 }
 
 // check or delete cache

@@ -528,7 +528,7 @@ func TestTransaction(t *testing.T) {
 
 	cd.SavePoint("point1")
 
-	params.Set("id", "1")
+	params.Set("id", "1").Set("name", "sql")
 	cd.Params(Data(&user)).Get(params)
 	t.Log("step2: ", user)
 

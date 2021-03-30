@@ -15,8 +15,18 @@ type CacheModel struct {
 	Data interface{} `json:"data,omitempty"`
 }
 
+// Deprecated
 // c.Data to v
 func (c CacheModel) Struct(v interface{}) error {
+	b, err := json.Marshal(c.Data)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(b, v)
+}
+
+// Unmarshal support Struct/Array
+func (c CacheModel) Unmarshal(v interface{}) error {
 	b, err := json.Marshal(c.Data)
 	if err != nil {
 		return err
