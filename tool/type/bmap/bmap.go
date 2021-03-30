@@ -70,7 +70,7 @@ func StructToBMap(v interface{}) (values BMap) {
 	typ := iVal.Type()
 	for i := 0; i < iVal.NumField(); i++ {
 		fi := typ.Field(i)
-		values.Set(tag.GetField(fi), fmt.Sprint(iVal.Field(i)))
+		values.Set(tag.GetFieldTag(fi), fmt.Sprint(iVal.Field(i)))
 	}
 	return
 }

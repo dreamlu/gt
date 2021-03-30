@@ -60,7 +60,6 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 	buf.WriteString("(")
 	for _, t := range tags {
 		switch {
-		// 排除_id结尾字段
 		case !strings.HasSuffix(t, "_id") &&
 			!strings.HasPrefix(t, "id"):
 			buf.WriteString(alias)

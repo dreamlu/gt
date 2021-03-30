@@ -8,14 +8,14 @@ import (
 
 // GtTags All GT tags corresponding to a field
 type GtTags struct {
-	FieldName string   `json:"field_name"`
-	GtTags    []*GtTag `json:"tags"`
+	FieldName string
+	GtTags    []*GtTag
 }
 
 // GtTag A GT tag
 type GtTag struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Name  string
+	Value string
 }
 
 // IsGtTagIgnore can determine gt-tags whether you do not need to parse
@@ -46,7 +46,7 @@ func ParseGtTags(ref reflect.Type, fs ...func(reflect.StructTag) bool) map[strin
 		tags map[string]string
 		res  = make(map[string]GtTags)
 	)
-	tags = ObtainTags(ref, "gt", fs...)
+	tags = ObtainTags(ref, cons.GT, fs...)
 	for k, v := range tags {
 		gtTag := parseGtTag(v)
 		gtTag.FieldName = k
