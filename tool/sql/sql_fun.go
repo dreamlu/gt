@@ -89,7 +89,7 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 // more tables
 // key search sql
 // tables [table1:table1_alias]
-// searModel : 搜索字段模型
+// searModel : Model
 func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey string, argsKey []interface{}) {
 
 	var (
@@ -112,9 +112,15 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 	)
 	buf.WriteString("(")
 	for _, t := range tags {
-		// 排除_id结尾字段
 		if !strings.HasSuffix(t, "_id") &&
 			!strings.HasPrefix(t, "id") {
+
+			tb := UniqueTagTable(t)
+			if tb != "" {
+				writeTagString(buf, tb, t)
+				argsKey = append(argsKey, "%"+v+"%")
+				continue
+			}
 
 			if b := otherTableKeySql(t, buf, tables...); b == true {
 				argsKey = append(argsKey, "%"+v+"%")
@@ -124,11 +130,7 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 			// 主表
 			ts := strings.Split(tables[0], ":")
 			alias := ts[1]
-			buf.WriteString("`")
-			buf.WriteString(alias)
-			buf.WriteString("`.`")
-			buf.WriteString(t)
-			buf.WriteString("` like binary ? or ")
+			writeTagString(buf, alias, t)
 			argsKey = append(argsKey, "%"+v+"%")
 		}
 	}
@@ -147,23 +149,28 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 	return
 }
 
+// other table key search sql
 func otherTableKeySql(tag string, buf *bytes.Buffer, tables ...string) (b bool) {
-	// 多表判断
 	for _, v := range tables {
 		ts := strings.Split(v, ":")
 		table := ts[0]
 		alias := ts[1]
 		if strings.Contains(tag, table+"_") && !strings.Contains(tag, table+"_id") {
-			buf.WriteString("`")
-			buf.WriteString(alias)
-			buf.WriteString("`.`")
-			buf.WriteString(string([]byte(tag)[len(table)+1:]))
-			buf.WriteString("` like binary ? or ")
+			writeTagString(buf, alias, string([]byte(tag)[len(table)+1:]))
 			b = true
 			return
 		}
 	}
 	return
+}
+
+// write tag sql
+func writeTagString(buf *bytes.Buffer, tb, tag string) {
+	buf.WriteString("`")
+	buf.WriteString(tb)
+	buf.WriteString("`.`")
+	buf.WriteString(tag)
+	buf.WriteString("` like binary ? or ")
 }
 
 // struct to where sql
@@ -204,4 +211,38 @@ func Table(table string) string {
 	}
 
 	return fmt.Sprintf("`%s`", table)
+}
+
+// only table name
+func TableOnly(table string) string {
+
+	if table == "" {
+		return table
+	}
+	if strings.Contains(table, ".") {
+		ts := strings.Split(table, ".")
+		return ts[1]
+	}
+
+	return table
+}
+
+// return unique table tag
+func UniqueTagTable(tag string) (table string) {
+	var (
+		i = 0
+	)
+
+	for k, tags := range TableCols {
+		for _, t := range tags {
+			if t == tag {
+				i++
+				table = k
+			}
+		}
+	}
+	if i == 1 {
+		return
+	}
+	return ""
 }

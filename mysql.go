@@ -396,12 +396,27 @@ func (db *DBTool) CreateDataResID(table string, params cmap.CMap) (id uint64, er
 	return
 }
 
-func (db *DBTool) GetColumns(table string) (error, []string) {
+// init db table columns map
+func (db *DBTool) InitColumns(param *Params) {
 
 	var (
-		name    = conf.GetString("app.db.name")
-		columns []string
+		name   = conf.GetString("app.db.name")
+		tables = []string{param.Table}
 	)
-	db.getBySQL(&columns, "SELECT COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE TABLE_NAME = ? and TABLE_SCHEMA = ?", table, name)
-	return db.res.Error, columns
+
+	tables = append(tables, param.InnerTable...)
+	tables = append(tables, param.LeftTable...)
+
+	for _, v := range param.InnerTable {
+		if v == "" {
+			continue
+		}
+		if _, ok := sq.TableCols[v]; ok {
+			continue
+		}
+		var columns []string
+		tb := sq.TableOnly(v)
+		db.getBySQL(&columns, "SELECT COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE TABLE_NAME = ? and TABLE_SCHEMA = ?", tb, name)
+		sq.TableCols[tb] = columns
+	}
 }

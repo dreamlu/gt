@@ -42,6 +42,7 @@ func (c *Mysql) Init(param *Params) {
 
 	c.dbTool = dbTool
 	c.param = param
+	c.dbTool.InitColumns(c.param)
 	return
 }
 

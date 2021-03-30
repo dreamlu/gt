@@ -62,6 +62,7 @@ type OrderD struct {
 	UserName    string     `json:"user_name" gt:"field:user.name"`  // user table column name
 	ServiceName string     `json:"service_name"`                    // service table column `name`
 	Info        json.CJSON `json:"info" gt:"sub_sql" faker:"cjson"` // json
+	BirthDate   time.CDate `gorm:"type:date"`                       // data
 }
 
 // 局部
@@ -238,7 +239,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		Left("order", "service"),
 		Model(OrderD{}),
 		Data(&or),
-		KeyModel(Key{}),
+		//KeyModel(Key{}),
 		WhereSQL("1 = ?", 1).WhereSQL("2 = ?", 2),
 		Distinct(),
 	)

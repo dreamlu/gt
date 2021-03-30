@@ -42,9 +42,9 @@ func New(config Config) logger2.Interface {
 	)
 
 	if config.Colorful {
-		infoStr = Reset + Green + "[info] " + Reset
-		warnStr = BlueBold + "%s\n" + Reset + Magenta + "[warn] " + Reset
-		errStr = Magenta + "%s\n" + Reset + Red + "[error] " + Reset
+		infoStr = Reset
+		warnStr = BlueBold + "%s\n" + Reset
+		errStr = Magenta + "%s\n" + Reset
 		traceStr = Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
 		traceWarnStr = Yellow + "%s\n" + Reset + RedBold + "[%.3fms] " + Yellow + "[rows:%v]" + Magenta + " %s" + Reset
 		traceErrStr = RedBold + "%s\n" + Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
@@ -79,7 +79,7 @@ func (l *logger) LogMode(level logger2.LogLevel) logger2.Interface {
 // Info print info
 func (l logger) Info(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= logger2.Info {
-		l.Infof(l.infoStr+msg, append([]interface{}{}, data)...)
+		l.Infof(l.infoStr+msg, append([]interface{}{}, data...)...)
 	}
 }
 
