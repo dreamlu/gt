@@ -59,25 +59,13 @@ func (j CJSON) String() string {
 
 // Deprecated
 // use Unmarshal replace
-func (j CJSON) Struct(value interface{}) error {
-	b, err := json.Marshal(j)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(b, value)
-	if err != nil {
-		return err
-	}
-	return nil
+func (j CJSON) Struct(v interface{}) error {
+	return j.Unmarshal(v)
 }
 
 // Unmarshal support Struct/Array
-func (j CJSON) Unmarshal(value interface{}) error {
-	b, err := json.Marshal(j)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(b, value)
+func (j CJSON) Unmarshal(v interface{}) error {
+	err := json.Unmarshal(j, v)
 	if err != nil {
 		return err
 	}

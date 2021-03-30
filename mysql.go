@@ -220,7 +220,7 @@ func (db *DBTool) Get(gt *GT) {
 	if gt.isMock {
 		return
 	}
-	db.getBySQL(gt.Data, gt.sql, gt.Args)
+	db.getBySQL(gt.Data, gt.sql, gt.Args...)
 }
 
 // 获得数据, no search
