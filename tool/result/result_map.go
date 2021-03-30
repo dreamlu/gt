@@ -2,29 +2,23 @@ package result
 
 import (
 	"encoding/json"
-	"log"
 )
 
 // Resultable interface
 type Resultable interface {
-	Add(key string, value interface{}) (rmp ResultMap) // Add
-	AddStruct(value interface{}) (rmp ResultMap)       // AddStruct
+	Add(key string, value interface{}) (rmp Resultable) // Add
+	AddStruct(value interface{}) (rmp Resultable)       // AddStruct
+	String() string                                     // String()
 }
 
 type ResultMap map[string]interface{}
 
-func (c ResultMap) Add(key string, value interface{}) ResultMap {
-	if c == nil {
-		c = ResultMap{}
-	}
+func (c ResultMap) Add(key string, value interface{}) Resultable {
 	c[key] = value
 	return c
 }
 
-func (c ResultMap) AddStruct(value interface{}) ResultMap {
-	if c == nil {
-		c = ResultMap{}
-	}
+func (c ResultMap) AddStruct(value interface{}) Resultable {
 	b, err := json.Marshal(value)
 	if err != nil {
 		return nil
@@ -38,9 +32,9 @@ func (c ResultMap) AddStruct(value interface{}) ResultMap {
 
 // impl String()
 func (c ResultMap) String() string {
-	b, err := json.Marshal(c)
-	if err != nil {
-		log.Println("[ResultMap ERROR]:", err)
-	}
-	return string(b)
+	return StructToString(c)
+}
+
+func NewResultMap() ResultMap {
+	return make(ResultMap)
 }

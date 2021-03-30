@@ -38,17 +38,26 @@ var (
 	MapNoAuth   = GetMapData(CodeNoAuth, MsgNoAuth)     // 请求非法
 )
 
-// 分页数据信息
-type GetInfoPager struct {
-	*GetInfo
-	Pager Pager `json:"pager"`
+// 信息,通用
+type MapData struct {
+	Status int64       `json:"status"`
+	Msg    interface{} `json:"msg"`
 }
 
-// pager info
-type Pager struct {
-	ClientPage int64 `json:"client_page"` // 当前页码
-	EveryPage  int64 `json:"every_page"`  // 每一页显示的数量
-	TotalNum   int64 `json:"total_num"`   // 数据总数量
+func (m *MapData) Add(key string, value interface{}) (rmp Resultable) {
+	rmp = NewResultMap()
+	return rmp.Add(Status, m.Status).Add(Msg, m.Msg).Add(key, value)
+}
+
+func (m *MapData) AddStruct(value interface{}) (rmp Resultable) {
+	rmp = NewResultMap()
+	return rmp.Add(Status, m.Status).Add(Msg, m.Msg).AddStruct(value)
+}
+
+// string
+func (m MapData) String() string {
+
+	return StructToString(m)
 }
 
 // 无分页数据信息
@@ -58,10 +67,61 @@ type GetInfo struct {
 	Data interface{} `json:"data"` // 数据存储
 }
 
-// 信息,通用
-type MapData struct {
-	Status int64       `json:"status"`
-	Msg    interface{} `json:"msg"`
+// 转化
+func (m *GetInfo) Parent() *MapData {
+
+	return m.MapData
+}
+
+func (m *GetInfo) Add(key string, value interface{}) (rmp Resultable) {
+
+	return m.Parent().Add("data", m.Data).Add(key, value)
+}
+
+func (m *GetInfo) AddStruct(value interface{}) (rmp Resultable) {
+
+	return m.Parent().Add("data", m.Data).AddStruct(value)
+}
+
+func (m GetInfo) String() string {
+
+	return StructToString(m)
+}
+
+// pager info
+type Pager struct {
+	ClientPage int64 `json:"client_page"` // 当前页码
+	EveryPage  int64 `json:"every_page"`  // 每一页显示的数量
+	TotalNum   int64 `json:"total_num"`   // 数据总数量
+}
+
+// 分页数据信息
+type GetInfoPager struct {
+	*GetInfo
+	Pager Pager `json:"pager"`
+}
+
+func (m *GetInfoPager) Parent() *GetInfo {
+
+	return &GetInfo{
+		MapData: m.MapData,
+		Data:    m.Data,
+	}
+}
+
+func (m *GetInfoPager) Add(key string, value interface{}) (rmp Resultable) {
+
+	return m.Parent().Add("pager", m.Pager).Add(key, value)
+}
+
+func (m *GetInfoPager) AddStruct(value interface{}) (rmp Resultable) {
+
+	return m.Parent().Add("pager", m.Pager).AddStruct(value)
+}
+
+func (m GetInfoPager) String() string {
+
+	return StructToString(m)
 }
 
 // 信息通用,状态码及信息提示
@@ -122,66 +182,6 @@ func GetDataPager(data interface{}, mapData *MapData, pager Pager) *GetInfoPager
 		GetInfo: GetData(data, mapData),
 		Pager:   pager,
 	}
-}
-
-// 转化
-func (m *GetInfo) Parent() *MapData {
-
-	return m.MapData
-}
-
-func (m *GetInfoPager) Parent() *GetInfo {
-
-	return &GetInfo{
-		MapData: m.MapData,
-		Data:    m.Data,
-	}
-}
-
-// string
-func (m MapData) String() string {
-
-	return StructToString(m)
-}
-
-func (m GetInfo) String() string {
-
-	return StructToString(m)
-}
-
-func (m GetInfoPager) String() string {
-
-	return StructToString(m)
-}
-
-func (m *GetInfoPager) Add(key string, value interface{}) (rmp ResultMap) {
-
-	return m.Parent().Add("pager", m.Pager).Add(key, value)
-}
-
-func (m *GetInfo) Add(key string, value interface{}) (rmp ResultMap) {
-
-	return m.Parent().Add("data", m.Data).Add(key, value)
-}
-
-func (m *MapData) Add(key string, value interface{}) (rmp ResultMap) {
-
-	return rmp.Add(Status, m.Status).Add(Msg, m.Msg).Add(key, value)
-}
-
-func (m *GetInfoPager) AddStruct(value interface{}) (rmp ResultMap) {
-
-	return m.Parent().Add("pager", m.Pager).AddStruct(value)
-}
-
-func (m *GetInfo) AddStruct(value interface{}) (rmp ResultMap) {
-
-	return m.Parent().Add("data", m.Data).AddStruct(value)
-}
-
-func (m *MapData) AddStruct(value interface{}) (rmp ResultMap) {
-
-	return rmp.Add(Status, m.Status).Add(Msg, m.Msg).AddStruct(value)
 }
 
 func StructToString(st interface{}) string {
