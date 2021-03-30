@@ -3,6 +3,7 @@ package gt
 import (
 	"bytes"
 	"fmt"
+	sq "github.com/dreamlu/gt/tool/sql"
 	. "github.com/dreamlu/gt/tool/tag"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"reflect"
@@ -64,7 +65,7 @@ func getTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 		}
 
 		// sql tag rule
-		tb := UniqueTagTable(tag, tables)
+		tb := sq.UniqueTagTable(tag)
 		if tb != "" {
 			writeTagString(buf, tb, tag, "")
 			continue
@@ -233,43 +234,4 @@ func getParams(typ reflect.Value) (params []interface{}) {
 		params = append(params, value)
 	}
 	return
-}
-
-// return unique table tag
-func UniqueTagTable(tag string, tables []string) (table string) {
-	var (
-		m = getTableColumns(tables)
-		i = 0
-	)
-
-	for k, tags := range m {
-		for _, t := range tags {
-			if t == tag {
-				i++
-				table = k
-			}
-		}
-	}
-	if i == 1 {
-		return
-	}
-	return ""
-}
-
-var columns cmap.CMap
-
-func getTableColumns(tables []string) cmap.CMap {
-
-	if columns == nil {
-		columns = cmap.NewCMap()
-	}
-
-	// select db columns
-	for _, tb := range tables {
-		if _, ok := columns[tb]; ok {
-			continue
-		}
-		_, columns[tb] = DB().GetColumns(tb)
-	}
-	return columns
 }

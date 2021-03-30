@@ -3,12 +3,16 @@ package sql
 import (
 	"fmt"
 	"github.com/dreamlu/gt/tool/result"
+	"github.com/dreamlu/gt/tool/type/cmap"
 	errors2 "github.com/dreamlu/gt/tool/type/errors"
 	"github.com/pkg/errors"
 	"strings"
 )
 
-// 数据库错误过滤、转换(友好提示)
+// table columns map
+var TableCols = cmap.NewCMap()
+
+// sql CN prompt
 func GetSQLError(error string) (err error) {
 
 	switch {
