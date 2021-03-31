@@ -51,7 +51,7 @@ func getTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 			getTagMore(ref.Field(i).Type, buf, tables[:]...)
 			continue
 		}
-		if tag, tagTable, b = GtTag(ref.Field(i).Tag); b {
+		if tag, tagTable, b = ParseGtTag(ref.Field(i).Tag); b {
 			continue
 		}
 		oTag = GetFieldTag(ref.Field(i))
