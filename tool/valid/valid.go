@@ -110,7 +110,7 @@ func valid(data interface{}, typ reflect.Type) ValidError {
 		// new rule
 		rule := Rule{}
 		// key
-		rule.Key = tag.GetField(typ.Field(i))
+		rule.Key = tag.GetFieldTag(typ.Field(i))
 		// rule
 		gtTag := typ.Field(i).Tag.Get(cons.GT)
 		if gtTag == "" {
@@ -174,7 +174,7 @@ func (v *Validator) Check() (errs ValidError) {
 				typ = typ.Elem()
 			}
 			for i := 0; i < typ.NumField(); i++ {
-				if tag.GetField(typ.Field(i)) == k {
+				if tag.GetFieldTag(typ.Field(i)) == k {
 					val, _ = myReflect.GetDataByFieldName(d, typ.Field(i).Name)
 					break
 				}
