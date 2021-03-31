@@ -61,8 +61,7 @@ func GetTags(model interface{}) (arr []string) {
 		if strings.Contains(gt, cons.GtField) {
 			t, c := parseFieldTag(gt)
 			tag = t + "_" + c
-		}
-		if tag == "" || tag == cons.Gt_ {
+		} else if tag == "" || tag == cons.Gt_ {
 			tag = hump.HumpToLine(k)
 		}
 		arr = append(arr, tag)

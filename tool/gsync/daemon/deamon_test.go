@@ -10,18 +10,16 @@ import (
 func TestNewDaemon(t *testing.T) {
 
 	for i := 0; i < 15; i++ {
-		Daemoner().
-			AddTask(
-				Func(f),
-			)
+		AddTask(
+			Func(f),
+		)
 		t.Log(i)
 	}
 	for i := 0; i < 5; i++ {
-		Daemoner().
-			AddTask(
-				Func(f2),
-				Time(time.ParseCTime("2020-07-08 16:00:00")),
-			)
+		AddTask(
+			Func(f2),
+			Time(time.ParseCTime("2020-07-08 16:00:00")),
+		)
 		t.Log(i)
 	}
 

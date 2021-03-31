@@ -126,3 +126,8 @@ func (d *Daemon) task() {
 		}()
 	}
 }
+
+// AddTask
+func AddTask(params ...Param) *Daemon {
+	return Daemoner().AddTask(params...)
+}
