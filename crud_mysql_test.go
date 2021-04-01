@@ -228,7 +228,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	// 多表查询
 	// get more search
 	var params = cmap.NewCMap().
-		Set("key", "梦 sql"). // key work
+		Set("key", "test 1"). // key work
 		Set("clientPage", "1").
 		Set("everyPage", "2")
 	//params.Add("mock", "1") // mock data
@@ -241,7 +241,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		Data(&or),
 		//KeyModel(Key{}),
 		WhereSQL("1 = ?", 1).WhereSQL("2 = ?", 2),
-		Distinct(),
+		Distinct("order.id"),
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {

@@ -53,8 +53,8 @@ func (gt *GT) GetMoreSQL() {
 	)
 	tables = gt.moreSql()
 	var sql = GetMoreTableColumnSQL(gt.Model, tables[:]...)
-	if gt.distinct {
-		count = cons.CountDistinct
+	if gt.distinct != "" {
+		count = fmt.Sprintf(cons.CountDistinct, gt.distinct)
 		sql = cons.Distinct + sql
 	}
 	gt.sql = strings.Replace(gt.sqlNt, count, sql+gt.SubSQL, 1)
@@ -214,8 +214,8 @@ func (gt *GT) moreSql() (tables []string) {
 		bufNt bytes.Buffer // sql bytes connect
 		count = cons.SelectCount
 	)
-	if gt.distinct {
-		count = cons.SelectCountDistinct
+	if gt.distinct != "" {
+		count = fmt.Sprintf(cons.SelectCountDistinct, gt.distinct)
 	}
 	// sql and sqlCount
 	bufNt.WriteString(count)

@@ -89,7 +89,7 @@ type Params struct {
 	wArgs    []interface{} // Where args
 
 	// distinct
-	distinct bool
+	distinct string
 }
 
 type Param func(*Params)
@@ -222,9 +222,9 @@ func (p Param) WhereSQL(WhereSQL string, args ...interface{}) Param {
 }
 
 // inner/left support distinct
-func Distinct() Param {
+func Distinct(Distinct string) Param {
 
 	return func(params *Params) {
-		params.distinct = true
+		params.distinct = Distinct
 	}
 }

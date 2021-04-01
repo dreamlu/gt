@@ -44,7 +44,7 @@ const (
 	SelectFrom          = "select %s from %s "
 	Distinct            = "distinct "
 	Count               = "count(*) as total_num"
-	CountDistinct       = "count(distinct 0) as total_num"
+	CountDistinct       = "count(distinct %s) as total_num"
 	SelectCount         = "select " + Count + " "
 	SelectCountDistinct = "select " + CountDistinct + " "
 	SelectCountFrom     = SelectCount + "from %s "
