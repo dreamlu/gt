@@ -64,6 +64,7 @@ func (c *Order) GetMoreBySearch(params cmap.CMap) interface{} {
     - [日志支持](#customlog)
     - [snowflake ID](#snowflakeid)
     - [消息中间件](#msg)
+    - [多线程池](#gsync)
 - [扩展 使用](#extend-examples)
     - [crud原生SQL](#crud-selectsql)
     - [更新其他字段](#crud-update)
@@ -191,26 +192,14 @@ print sql: select `id`,`createtime`,`admin_id`,`name`,`openid`,`head_img`,(selec
 	sqlNt, sql, _, _, _ := GetMoreSearchSQL(gt)
 	t.Log(sqlNt)
 	t.Log(sql)
-// output:
-TestGetMoreSearchSQL: db_test.go:267: select count(`client_vip_behavior`.id) as total_num from `client_vip_behavior` inner join `client_vip` on `client_vip_behavior`.`client_vip_id`=`client_vip`.`id`  inner join `client` on `client_vip`.`client_id`=`client`.`id` 
-TestGetMoreSearchSQL: db_test.go:268: select `client_vip_behavior`.`id`,`client_vip_behavior`.`client_vip_id`,`client_vip_behavior`.`shop_id`,`client`.`name` as client_name,`client_vip_behavior`.`is_sp` from `client_vip_behavior` inner join `client_vip` on `client_vip_behavior`.`client_vip_id`=`client_vip`.`id`  inner join `client` on `client_vip`.`client_id`=`client`.`id`  order by `client_vip_behavior`.id desc 
+	// output:
+	TestGetMoreSearchSQL: db_test.go:267: select count(`client_vip_behavior`.id) as total_num from `client_vip_behavior` inner join `client_vip` on `client_vip_behavior`.`client_vip_id`=`client_vip`.`id`  inner join `client` on `client_vip`.`client_id`=`client`.`id` 
+	TestGetMoreSearchSQL: db_test.go:268: select `client_vip_behavior`.`id`,`client_vip_behavior`.`client_vip_id`,`client_vip_behavior`.`shop_id`,`client`.`name` as client_name,`client_vip_behavior`.`is_sp` from `client_vip_behavior` inner join `client_vip` on `client_vip_behavior`.`client_vip_id`=`client_vip`.`id`  inner join `client` on `client_vip`.`client_id`=`client`.`id`  order by `client_vip_behavior`.id desc 
 
 ```
 
 #### Crud Request
 ```go
-// GET Request
-//func ToCMap(u *gin.Context) cmap.CMap {
-//	err := u.Request.ParseForm()
-//	if err != nil {
-//		gt.Logger().Error(err.Error())
-//		return nil
-//	}
-//	values := cmap.CMap(u.Request.Form)
-//	xss.XssMap(values)
-//	return values
-//}
-
 var crud = gt.NewCrud(
 	gt.Model(Client{}),
 )
@@ -369,8 +358,8 @@ func TestCreateMoreDataJ(t *testing.T) {
 
 #### CacheManager
 ```go
-    ce = gt.NewCache()
-    data := CacheModel{
+	ce = gt.NewCache()
+	data := CacheModel{
 		Time: 50 * CacheMinute,
 		Data: user,
 	}
@@ -493,6 +482,41 @@ func TestId(t *testing.T) {
 
 参考:[nsq_test.go](./msg/nsq_test.go)  
 
+### Gsync  
+多线程池支持  
+参考:[nsq_test.go](./tool/gsync/gsync_test.go)  
+异步
+```go
+	p = gsync.NewPool(100)
+	read := func() {
+		fmt.Printf("go func time: %d\n", time.Now().Unix())
+		time.Sleep(time.Second)
+	}
+
+	// 多线程提交执行
+	for i := 0; i < 1000; i++ {
+		p.Submit(read)
+	}
+	time.Sleep(5*time.Second)
+```
+同步
+```go
+	read := func() {
+		fmt.Printf("go func time: %d\n", time.Now().Unix())
+		time.Sleep(time.Second)
+	}
+
+	for i := 0; i < 10; i++ {
+		p.Submit(read)
+		readWait := func() interface{} {
+			time.Sleep(time.Second)
+			return i
+		}
+
+		t.Log(p.SubmitWait(readWait))
+	}
+```
+
 ### Extend Examples  
 
 #### Crud Selectsql
@@ -517,7 +541,7 @@ func TestId(t *testing.T) {
 
 #### Crud Update
 ```go
-    type UserPar struct {
+	type UserPar struct {
 		Name string `json:"name"`
 	}
 	crud := crud.Params(
@@ -535,7 +559,7 @@ func TestId(t *testing.T) {
 
 #### Transcation
 ```go
-    cd := crud.Begin()
+	cd := crud.Begin()
 	cd.Params(
 		Table("user"),
 		Data(&User{

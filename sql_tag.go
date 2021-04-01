@@ -141,7 +141,7 @@ func getTagAlias(ref reflect.Type, buf *bytes.Buffer, alias string) {
 			getTagAlias(ref.Field(i).Type, buf, alias)
 			continue
 		}
-		if IsGtIgnore(ref.Field(i).Tag) {
+		if IsGtTagIgnore(ref.Field(i).Tag) {
 			continue
 		}
 
@@ -180,7 +180,7 @@ func getTag(ref reflect.Type, buf *bytes.Buffer) {
 			getTag(ref.Field(i).Type, buf)
 			continue
 		}
-		if IsGtIgnore(ref.Field(i).Tag) {
+		if IsGtTagIgnore(ref.Field(i).Tag) {
 			continue
 		}
 		tag := GetFieldTag(ref.Field(i))

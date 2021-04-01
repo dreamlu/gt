@@ -2,72 +2,165 @@ package tag
 
 import (
 	"github.com/dreamlu/gt/tool/util/cons"
-	"github.com/dreamlu/gt/tool/util/hump"
 	"reflect"
 	"strings"
 )
 
-// gt tag
-// is gt ignore or sub_sql
-// Deprecated: please use IsGtTagIgnore()
-func IsGtIgnore(tag reflect.StructTag) bool {
-
-	return IsGtTagIgnore(tag)
+// gtTags All GT tags corresponding to a field
+type gtTags struct {
+	FieldName string
+	GtTags    []*gtTag
 }
 
+// gtTag A GT tag
+type gtTag struct {
+	Name  string
+	Value string
+}
+
+// IsTagIgnore can determine tags whether you do not need to parse
+func IsTagIgnore(tag reflect.StructTag, tagName string, exist bool, extTags ...string) bool {
+	// exist ok return
+	// 1     1  -
+	// 1     0  ture
+	// 0     1  -
+	// 0     0  -
+	tagValue, ok := tag.Lookup(tagName)
+	if exist && !ok {
+		return true
+	}
+	return strings.EqualFold(tagValue, "-") || equalFolds(tagValue, extTags...)
+}
+
+// gt:"-"
+// gt:"ignore"
+// gt:"sub_sql"
+// gt:"excel:NAME"
 // gt:"field:table.column"
-func ParseGtTag(sTag reflect.StructTag) (tag, tagTable string, b bool) {
-
-	if IsGtTagIgnore(sTag) {
-		b = true
-		return
-	}
-	tagValue := sTag.Get(cons.GT)
-	if tagValue == "" {
-		return
-	}
-	gtFields := strings.Split(tagValue, ";")
-	for _, v := range gtFields {
-		if strings.Contains(v, cons.GtField) {
-			tagTable, tag = parseFieldTag(v)
-		}
-	}
-	return
+// gt:"field:table.column;excel:NAME"
+// GetGtTags use to analyze and obtain GT tags in the structure model
+func GetGtTags(model interface{}) map[string]gtTags {
+	return ParseGtTags(reflect.TypeOf(model), IsGtTagIgnore)
 }
 
-// get json field tag
-// if no, use HumpToLine
-func GetFieldTag(field reflect.StructField) string {
-
-	tag := field.Tag.Get("json")
-	if tag == "" || tag == "-" {
-		tag = hump.HumpToLine(field.Name)
+// ParseGtTags use to get all gt tags
+func ParseGtTags(ref reflect.Type, fs ...func(reflect.StructTag) bool) map[string]gtTags {
+	var (
+		tags map[string]string
+		res  = make(map[string]gtTags)
+	)
+	tags = ObtainTags(ref, cons.GT, fs...)
+	for k, v := range tags {
+		tag := parseGtTag(v)
+		tag.FieldName = k
+		res[k] = tag
 	}
-	// json tag opt `json:"name,opt1,opt2,opts..."`
-	tag = strings.Split(tag, ",")[0]
-	return tag
+	return res
 }
 
-// get struct model fields tag []string
-func GetTags(model interface{}) (arr []string) {
-	tags := ObtainMoreTags(reflect.TypeOf(model), []string{"json", cons.GT}, IsGtTagIgnore)
-	jsonTags := tags["json"]
-	gts := tags[cons.GT]
-	for k, jt := range jsonTags {
-		var (
-			tag = jt
-			gt  = gts[k]
-		)
-		if strings.Contains(gt, cons.GtField) {
-			t, c := parseFieldTag(gt)
-			tag = t + "_" + c
-		} else if tag == "" || tag == cons.Gt_ {
-			tag = hump.HumpToLine(k)
+// parseGtTag use to parse tag value of gt
+func parseGtTag(tagValue string) gtTags {
+	var tags gtTags
+	tagValues := strings.Split(tagValue, ";")
+	for _, value := range tagValues {
+		var tag gtTag
+		if strings.Contains(value, ":") {
+			kv := strings.Split(value, ":")
+			tag.Name = kv[0]
+			tag.Value = kv[1]
+			tags.GtTags = append(tags.GtTags, &tag)
 		}
-		arr = append(arr, tag)
 	}
-	//arr = getTags(reflect.TypeOf(model))
-	return
+	return tags
+}
+
+// GetJsonTags use to analyze and obtain JSON tags in the structure model, but it will ignore the ignored value of json
+func GetJsonTags(model interface{}) map[string]string {
+	return ParseJsonTags(reflect.TypeOf(model), func(tag reflect.StructTag) bool {
+		return IsTagIgnore(tag, "json", true)
+	})
+}
+
+func ParseJsonTags(ref reflect.Type, fs ...func(reflect.StructTag) bool) map[string]string {
+	var (
+		tags map[string]string
+		res  = make(map[string]string)
+	)
+	tags = ObtainTags(ref, "json", fs...)
+	for k, v := range tags {
+		res[k] = parseJsonTag(v)
+	}
+	return res
+}
+
+func parseJsonTag(tagValue string) string {
+	if !strings.Contains(tagValue, ",") {
+		return tagValue
+	}
+	return strings.Split(tagValue, ",")[0]
+}
+
+// ObtainTags use to get the specified tag in the structure
+// fs use to filter specified tags, true means filtering
+func ObtainTags(ref reflect.Type, tagName string, fs ...func(reflect.StructTag) bool) map[string]string {
+	return ObtainMoreTags(ref, []string{tagName}, fs...)[tagName]
+}
+
+// ObtainTags use to get the specified tag in the structure
+// fs use to filter specified tags, true means filtering
+func ObtainMoreTags(ref reflect.Type, tagNames []string, fs ...func(reflect.StructTag) bool) map[string]map[string]string {
+	if ref.Kind() != reflect.Struct {
+		return nil
+	}
+	var (
+		field reflect.StructField
+		tag   reflect.StructTag
+		res   = make(map[string]map[string]string)
+	)
+	for _, tagName := range tagNames {
+		var tags = make(map[string]string)
+		for i := 0; i < ref.NumField(); i++ {
+			field = ref.Field(i)
+			if field.Anonymous {
+				tags = mergeMap(tags, ObtainTags(field.Type, tagName, fs...))
+				continue
+			}
+			tag = field.Tag
+			var b = true
+			for _, f := range fs {
+				b = b && !f(tag)
+				if !b {
+					break
+				}
+			}
+			if b {
+				tags[field.Name] = tag.Get(tagName)
+			}
+		}
+		res[tagName] = tags
+	}
+	return res
+}
+
+// mergeMap use to merge more map slice
+func mergeMap(ma ...map[string]string) map[string]string {
+	m := make(map[string]string)
+	for _, map1 := range ma {
+		for k, v := range map1 {
+			m[k] = v
+		}
+	}
+	return m
+}
+
+// equalFolds Determine whether the strings are equal
+func equalFolds(s string, str ...string) bool {
+	for _, v := range str {
+		if strings.EqualFold(s, v) {
+			return true
+		}
+	}
+	return false
 }
 
 func parseFieldTag(tagValue string) (table, column string) {
@@ -81,8 +174,6 @@ func parseFieldTag(tagValue string) (table, column string) {
 }
 
 // get struct fields tags via recursion
-//
-// Deprecated
 func getTags(ref reflect.Type) (tags []string) {
 	if ref.Kind() != reflect.Struct {
 		return
