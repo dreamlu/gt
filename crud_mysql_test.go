@@ -627,3 +627,29 @@ func TestMysql_Time(t *testing.T) {
 		EndTime:   time.ParseCSTime("12:00:00"),
 	})).Create()
 }
+
+// select * unique table column test
+func TestGetMoreSearchResolve(t *testing.T) {
+
+	// order detail
+	type OrderD struct {
+		Order
+		UserBirthDate string `json:"user_birth_date"` // user table column name
+		Name          string `json:"name"`            // user table column name
+	}
+	var params = cmap.NewCMap().
+		Set("key", "test 1"). // key work
+		Set("clientPage", "1").
+		Set("everyPage", "2")
+	var or []*OrderD
+	crud := NewCrud(
+		Inner("order:user_id", "user:id"),
+		Model(OrderD{}),
+		Data(&or),
+		//KeyModel(Key{}),
+	)
+	err := crud.GetMoreBySearch(params).Error()
+	if err != nil {
+		log.Println(err)
+	}
+}

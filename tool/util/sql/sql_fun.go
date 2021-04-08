@@ -219,10 +219,11 @@ func TableOnly(table string) string {
 		return table
 	}
 	if strings.Contains(table, ".") {
-		ts := strings.Split(table, ".")
-		return ts[1]
+		table = strings.Split(table, ".")[1]
 	}
-
+	if strings.Contains(table, ":") {
+		table = strings.Split(table, ":")[0]
+	}
 	return table
 }
 
