@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	reflect2 "github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/tag"
 	"github.com/dreamlu/gt/tool/util/cons"
 	"github.com/dreamlu/gt/tool/util/hump"
+	"github.com/dreamlu/gt/tool/util/tag"
 	"reflect"
 	"strings"
 )

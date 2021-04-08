@@ -3,9 +3,9 @@ package gt
 import (
 	"bytes"
 	"fmt"
-	sq "github.com/dreamlu/gt/tool/sql"
-	. "github.com/dreamlu/gt/tool/tag"
 	"github.com/dreamlu/gt/tool/type/cmap"
+	sq "github.com/dreamlu/gt/tool/util/sql"
+	. "github.com/dreamlu/gt/tool/util/tag"
 	"reflect"
 	"strings"
 )

@@ -3,7 +3,7 @@ package bmap
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dreamlu/gt/tool/tag"
+	"github.com/dreamlu/gt/tool/util/tag"
 	"reflect"
 )
 

@@ -5,11 +5,11 @@ package gt
 import (
 	"bytes"
 	"fmt"
-	"github.com/dreamlu/gt/tool/mock"
-	sq "github.com/dreamlu/gt/tool/sql"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util"
 	"github.com/dreamlu/gt/tool/util/cons"
+	"github.com/dreamlu/gt/tool/util/mock"
+	sq "github.com/dreamlu/gt/tool/util/sql"
 	"reflect"
 	"strconv"
 	"strings"

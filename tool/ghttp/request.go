@@ -1,4 +1,4 @@
-package http
+package ghttp
 
 import (
 	"bytes"
@@ -9,16 +9,17 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 const (
-	GET             = "GET"
-	POST            = "POST"
-	DELETE          = "DELETE"
-	PUT             = "PUT"
-	PATCH           = "PATCH"
-	HEAD            = "HEAD"
-	OPTIONS         = "OPTIONS"
+	GET             = http.MethodGet
+	POST            = http.MethodPost
+	DELETE          = http.MethodDelete
+	PUT             = http.MethodPut
+	PATCH           = http.MethodPatch
+	HEAD            = http.MethodHead
+	OPTIONS         = http.MethodOptions
 	ContentTypeJSON = "application/json"
 	ContentTypeForm = "application/x-www-form-urlencoded"
 )
@@ -48,73 +49,87 @@ func NewRequest(method, urlString string) *Request {
 	r.url = urlString
 	r.params = cmap.NewCMap()
 	r.header = http.Header{}
-	r.Client = http.DefaultClient
-	r.SetContentType("application/x-www-form-urlencoded")
+	r.Client = &http.Client{
+		Timeout: time.Second * 10,
+	}
+	r.SetContentType(ContentTypeForm)
 	return r
 }
 
 //SetContentType 设定Content-Type
-func (m *Request) SetContentType(contentType string) {
+func (m *Request) SetContentType(contentType string) *Request {
 	m.SetHeader("Content-Type", contentType)
+	return m
 }
 
 //AddHeader 增加Header头
-func (m *Request) AddHeader(key, value string) {
+func (m *Request) AddHeader(key, value string) *Request {
 	m.header.Add(key, value)
+	return m
 }
 
 //SetHeader 设定Header头
-func (m *Request) SetHeader(key, value string) {
+func (m *Request) SetHeader(key, value string) *Request {
 	m.header.Set(key, value)
+	return m
 }
 
 //SetHeaders 设定Header头
-func (m *Request) SetHeaders(header http.Header) {
+func (m *Request) SetHeaders(header http.Header) *Request {
 	m.header = header
+	return m
 }
 
 //SetBody 设定POST内容
-func (m *Request) SetBody(body io.Reader) {
+func (m *Request) SetBody(body io.Reader) *Request {
 	m.body = body
 	m.params = nil
+	return m
 }
 
 //AddParam 增加Get请求参数
-func (m *Request) AddParam(key, value string) {
+func (m *Request) AddParam(key, value string) *Request {
 	m.params.Add(key, value)
 	m.body = nil
+	return m
 }
 
 //SetParam 设定Get请求参数
-func (m *Request) SetParam(key, value string) {
+func (m *Request) SetParam(key, value string) *Request {
 	m.params.Set(key, value)
 	m.body = nil
+	return m
 }
 
 // SetStructParams struct to Params
-func (m *Request) SetStructParams(v interface{}) {
+func (m *Request) SetStructParams(v interface{}) *Request {
 
 	m.params = cmap.StructToCMap(v)
+	return m
 }
 
 //SetParams 设定Get请求参数
-func (m *Request) SetParams(params cmap.CMap) {
+func (m *Request) SetParams(params cmap.CMap) *Request {
 	m.params = params
+	return m
 }
 
 //AddFile 增加文件
-func (m *Request) AddFile(name, filename, path string) {
+func (m *Request) AddFile(name, filename, path string) *Request {
 	m.file = &file{name, filename, path}
+	return m
 }
 
 //RemoveFile 移除文件
-func (m *Request) RemoveFile() {
+func (m *Request) RemoveFile() *Request {
 	m.file = nil
+	return m
 }
 
 //AddCookie 添加COOKIE
-func (m *Request) AddCookie(cookie *http.Cookie) {
+func (m *Request) AddCookie(cookie *http.Cookie) *Request {
 	m.cookies = append(m.cookies, cookie)
+	return m
 }
 
 //Exec 发送HTTP请求
@@ -124,7 +139,7 @@ func (m *Request) Exec() *Response {
 	var body io.Reader
 	var rawQuery string
 
-	if m.method == http.MethodGet || m.method == http.MethodHead || m.method == http.MethodDelete {
+	if m.method == GET || m.method == HEAD || m.method == DELETE {
 		if len(m.params) > 0 {
 			rawQuery = m.params.Encode()
 		}

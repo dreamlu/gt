@@ -7,6 +7,7 @@
 package gt
 
 import (
+	"github.com/dreamlu/gt/tool/log"
 	"github.com/dreamlu/gt/tool/result"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util"
@@ -16,7 +17,7 @@ import (
 const Version = "2.0.0+"
 
 func init() {
-	println("[gt version]:", Version)
+	log.Info("[gt version]:", Version)
 }
 
 // crud is db driver extend
