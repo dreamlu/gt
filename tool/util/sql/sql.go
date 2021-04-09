@@ -44,7 +44,7 @@ func keyAnd(keys []string, buf *bytes.Buffer, num int) (argsKey []interface{}) {
 func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, argsKey []interface{}) {
 
 	var (
-		keys = strings.Split(key, " ")
+		keys = strings.Fields(key)
 		typ  = reflect.TypeOf(model)
 		ks   = typ.PkgPath() + typ.Name()
 	)

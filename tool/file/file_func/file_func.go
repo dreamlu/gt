@@ -101,26 +101,26 @@ func CopyFile(src, des string) (written int64, err error) {
 }
 
 // copy dir
-func CopyDir(srcPath, desPath string) error {
+func CopyDir(srcPath, dstPath string) error {
 	//检查目录是否正确
 	if srcInfo, err := os.Stat(srcPath); err != nil {
 		return err
 	} else {
 		if !srcInfo.IsDir() {
-			return errors.New("源路径不是一个正确的目录！")
+			return errors.New(srcPath + "is not directory")
 		}
 	}
 
-	if desInfo, err := os.Stat(desPath); err != nil {
+	if desInfo, err := os.Stat(dstPath); err != nil {
 		return err
 	} else {
 		if !desInfo.IsDir() {
-			return errors.New("目标路径不是一个正确的目录！")
+			return errors.New(dstPath + "is not directory")
 		}
 	}
 
-	if strings.TrimSpace(srcPath) == strings.TrimSpace(desPath) {
-		return errors.New("源路径与目标路径不能相同！")
+	if strings.TrimSpace(srcPath) == strings.TrimSpace(dstPath) {
+		return errors.New(srcPath + " can not the same as" + dstPath)
 	}
 
 	err := filepath.Walk(srcPath, func(path string, f os.FileInfo, err error) error {
@@ -134,7 +134,7 @@ func CopyDir(srcPath, desPath string) error {
 		}
 
 		//生成新路径
-		destNewPath := strings.Replace(path, srcPath, desPath, -1)
+		destNewPath := strings.Replace(path, srcPath, dstPath, -1)
 
 		if !f.IsDir() {
 			_, err = CopyFile(path, destNewPath)

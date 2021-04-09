@@ -368,7 +368,7 @@ func check(data interface{}) error {
 		for k, v := range ves {
 			s += fmt.Sprintf("%s:%s;", k, v)
 		}
-		return errors.New(strings.TrimRight(s, ";"))
+		return errors.New(strings.TrimSuffix(s, ";"))
 	}
 	return nil
 }

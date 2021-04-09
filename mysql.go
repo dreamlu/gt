@@ -6,11 +6,11 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/dreamlu/gt/tool/conf"
-	log3 "github.com/dreamlu/gt/tool/log"
+	"github.com/dreamlu/gt/tool/log"
 	reflect2 "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/cons"
-	result2 "github.com/dreamlu/gt/tool/util/result"
+	"github.com/dreamlu/gt/tool/util/result"
 	sq "github.com/dreamlu/gt/tool/util/sql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -57,7 +57,7 @@ func (db *DBTool) NewDB() {
 	db.DB = db.open(sql, dbS)
 	err := db.DB.Exec("create database if not exists `" + dbS.Name + "`").Error
 	if err != nil {
-		log3.Info("[mysql自动连接根数据库失败,尝试直接连接]")
+		log.Info("[mysql自动连接根数据库失败,尝试直接连接]")
 	}
 
 	sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
@@ -93,8 +93,8 @@ func (db *DBTool) open(sql string, dbS *dba) *gorm.DB {
 	DB, err := gorm.Open(mysql.Open(sql), cf)
 	//defer db.DB.Close()
 	if err != nil {
-		log3.Error("[mysql连接错误]:", err)
-		log3.Error("[mysql开始尝试重连中]: try it every 5s...")
+		log.Error("[mysql连接错误]:", err)
+		log.Error("[mysql开始尝试重连中]: try it every 5s...")
 		// try to reconnect
 		for {
 			// go is so fast
@@ -103,10 +103,10 @@ func (db *DBTool) open(sql string, dbS *dba) *gorm.DB {
 			DB, err = gorm.Open(mysql.Open(sql), cf)
 			//defer DB.Close()
 			if err != nil {
-				log3.Error("[mysql连接错误]:", err)
+				log.Error("[mysql连接错误]:", err)
 				continue
 			}
-			log3.Info("[mysql重连成功]")
+			log.Info("[mysql重连成功]")
 			break
 		}
 	}
@@ -190,7 +190,7 @@ func (db *DBTool) GetByID(gt *GT, id interface{}) {
 // params: leftTables is left join tables
 // return search info
 // table1 as main table, include other tables_id(foreign key)
-func (db *DBTool) GetMoreBySearch(gt *GT) (pager result2.Pager) {
+func (db *DBTool) GetMoreBySearch(gt *GT) (pager result.Pager) {
 	// more table search
 	gt.GetMoreSQL()
 	// isMock
@@ -202,7 +202,7 @@ func (db *DBTool) GetMoreBySearch(gt *GT) (pager result2.Pager) {
 
 // single table
 // return search info
-func (db *DBTool) GetBySearch(gt *GT) (pager result2.Pager) {
+func (db *DBTool) GetBySearch(gt *GT) (pager result.Pager) {
 
 	gt.GetSearchSQL()
 	// isMock
@@ -235,7 +235,7 @@ func (db *DBTool) GetMoreData(gt *GT) {
 }
 
 // select sql search
-func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result2.Pager) {
+func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
 
 	gt.GetSelectSearchSQL()
 	return db.GetBySQLSearch(gt.Data, gt.sql, gt.sqlNt, gt.clientPage, gt.everyPage, gt.Args)
@@ -245,7 +245,7 @@ func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result2.Pager) {
 // clientPage: default 1
 // everyPage: default 10
 // if clientPage or everyPage < 0, return all
-func (db *DBTool) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}) (pager result2.Pager) {
+func (db *DBTool) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}) (pager result.Pager) {
 
 	// if clientPage or everyPage < 0
 	// return all data

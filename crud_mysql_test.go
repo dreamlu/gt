@@ -227,7 +227,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	// 多表查询
 	// get more search
 	var params = cmap.NewCMap().
-		Set("key", "test 1"). // key work
+		Set("key", "梦 test 1"). // key work，& relation
 		Set("clientPage", "1").
 		Set("everyPage", "2")
 	//params.Add("mock", "1") // mock data
