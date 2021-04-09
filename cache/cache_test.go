@@ -61,7 +61,7 @@ func TestCacheRedis(t *testing.T) {
 	// get
 	var user2 User
 	reply, _ := ce.Get(user)
-	t.Log(reply.Struct(&user2))
+	t.Log(reply.Unmarshal(&user2))
 	t.Log("user data :", user2)
 
 	var ar = []string{"test1", "test2"}

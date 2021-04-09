@@ -26,6 +26,7 @@ func (c CacheModel) Struct(v interface{}) error {
 }
 
 // Unmarshal support Struct/Array
+// c.Data to v
 func (c CacheModel) Unmarshal(v interface{}) error {
 	b, err := json.Marshal(c.Data)
 	if err != nil {

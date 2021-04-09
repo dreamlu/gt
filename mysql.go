@@ -8,9 +8,9 @@ import (
 	"github.com/dreamlu/gt/tool/conf"
 	log3 "github.com/dreamlu/gt/tool/log"
 	reflect2 "github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/result"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/cons"
+	result2 "github.com/dreamlu/gt/tool/util/result"
 	sq "github.com/dreamlu/gt/tool/util/sql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -190,7 +190,7 @@ func (db *DBTool) GetByID(gt *GT, id interface{}) {
 // params: leftTables is left join tables
 // return search info
 // table1 as main table, include other tables_id(foreign key)
-func (db *DBTool) GetMoreBySearch(gt *GT) (pager result.Pager) {
+func (db *DBTool) GetMoreBySearch(gt *GT) (pager result2.Pager) {
 	// more table search
 	gt.GetMoreSQL()
 	// isMock
@@ -202,7 +202,7 @@ func (db *DBTool) GetMoreBySearch(gt *GT) (pager result.Pager) {
 
 // single table
 // return search info
-func (db *DBTool) GetBySearch(gt *GT) (pager result.Pager) {
+func (db *DBTool) GetBySearch(gt *GT) (pager result2.Pager) {
 
 	gt.GetSearchSQL()
 	// isMock
@@ -235,7 +235,7 @@ func (db *DBTool) GetMoreData(gt *GT) {
 }
 
 // select sql search
-func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
+func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result2.Pager) {
 
 	gt.GetSelectSearchSQL()
 	return db.GetBySQLSearch(gt.Data, gt.sql, gt.sqlNt, gt.clientPage, gt.everyPage, gt.Args)
@@ -245,7 +245,7 @@ func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
 // clientPage: default 1
 // everyPage: default 10
 // if clientPage or everyPage < 0, return all
-func (db *DBTool) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}) (pager result.Pager) {
+func (db *DBTool) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}) (pager result2.Pager) {
 
 	// if clientPage or everyPage < 0
 	// return all data
@@ -383,7 +383,7 @@ func (db *DBTool) CreateDataResID(table string, params cmap.CMap) (id uint64, er
 
 	switch {
 	case dba.Error != nil:
-		err = sq.GetSQLError(dba.Error.Error())
+		err = dba.Error
 	default:
 		err = nil
 	}

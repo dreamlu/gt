@@ -78,61 +78,33 @@ func (c *Order) GetMoreBySearch(params cmap.CMap) interface{} {
 
 #### Model
 ```go
-// user model
-type User struct {
-	ID         uint64     `json:"id"`
-	Name       string     `json:"name"`
-	Createtime time.CTime `json:"createtime"`
-}
-
-// service model
-type Service struct {
-	ID   uint64 `json:"id"`
-	Name string `json:"name"`
-}
-
-// order model
-type Order struct {
-	ID         uint64     `json:"id"`
-	UserID     int64      `json:"user_id"`    // user id
-	ServiceID  int64      `json:"service_id"` // service table id
-	Createtime time.CTime `json:"createtime"` // createtime
-}
-
-// order detail
-type OrderD struct {
-	Order
-	UserName    string `json:"user_name"`    // user table column name
-	ServiceName string `json:"service_name"` // service table column `name`
-}
-
-    // select more
-    // 多表查询
-	// get more search
-	var params = make(cmap.CMap)
-	params.Add("user_id", "1")
-	//params.Add("key", "梦") // key word
-	params.Add("clientPage", "1") // 第一页
-	params.Add("everyPage", "2") // 每页2条
-	var or []*OrderD
-	crud := NewCrud(
-		Inner("order", "user", "order", "service"),
-		//Left("order", "service"),
-		Model(OrderD{}),
-		Data(&or),
-		SubWhereSQL("1 = 1", "2 = 2", ""),
-	)
-	err := crud.GetMoreBySearch(params).Error()
-	if err != nil {
-		log.Println(err)
+	// user model
+	type User struct {
+		ID         uint64     `json:"id"`
+		Name       string     `json:"name"`
+		Createtime time.CTime `json:"createtime"`
 	}
-	t.Log("\n[User Info]:", or[0])
-    
-// output:
-    TestGetMoreDataBySearch: db_test.go:243: 
-        [User Info]: &{{1 1 1 "2019-01-28 15:07:06"} 梦sql 服务名称}
---- PASS: TestGetMoreDataBySearch (0.00s)
-PASS
+
+	// service model
+	type Service struct {
+		ID   uint64 `json:"id"`
+		Name string `json:"name"`
+	}
+
+	// order model
+	type Order struct {
+		ID         uint64     `json:"id"`
+		UserID     int64      `json:"user_id"`    // user id
+		ServiceID  int64      `json:"service_id"` // service table id
+		Createtime time.CTime `json:"createtime"` // createtime
+	}
+
+	// order detail
+	type OrderD struct {
+		Order
+		UserName    string `json:"user_name"`    // `user`.name
+		ServiceName string `json:"service_name"` // `service`.name
+	}
 ```
 
 #### Struct Gt
@@ -260,29 +232,34 @@ func (c *Client) Create(data *Client) (*Client, error) {
 1.GetMoreBySearch
 ```go
 	// 多表查询
+	type Key struct {
+		UserName    string `json:"user_name"`
+		UserAccount string `json:"user_account"`
+	}
+	// 多表查询
 	// get more search
-	var params = make(cmap.CMap)
-	//params.Add("user_id", "1")
-	//params.Add("key", "梦") // key work
-	params.Add("clientPage", "1")
-	params.Add("everyPage", "2")
+	var params = cmap.NewCMap().
+		Set("key", "test 1"). // key work
+		Set("clientPage", "1").
+		Set("everyPage", "2")
 	//params.Add("mock", "1") // mock data
 	var or []*OrderD
 	crud := NewCrud(
 		// 支持同一个mysql多数据库跨库查询
-		Inner("gt.order", "user"),
+		Inner("order", "gt.user"),
 		Left("order", "service"),
 		Model(OrderD{}),
 		Data(&or),
-		//SubWhereSQL("1 = 1", "2 = 2", ""),
+		//KeyModel(Key{}),
+		WhereSQL("1 = ?", 1).WhereSQL("2 = ?", 2),
+		Distinct("order.id"),
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {
-		log.Println(err)
+		t.Log(err)
 	}
-	t.Log("\n[User Info]:", or)
 ```
-2.GetMoreByData   
+2.GetMore   
 ```go
 	var or []*OrderD
 	cd := NewCrud(
@@ -293,13 +270,14 @@ func (c *Client) Create(data *Client) (*Client, error) {
 		Data(&or),
 		KeyModel(OrderD{}),
 	)
-	err := cd.GetMoreByData(cmap.NewCMap()).Error()
+	err := cd.GetMore(cmap.NewCMap()).Error()
 	if err != nil {
 		t.Error(err)
 	}
 ```
 
-#### CreateMore
+#### CreateMore  
+> ps: 或者直接使用Create()传入数组数据，gorm 2.0新支持 
 ```go
 // 批量创建
 func TestCreateMoreDataJ(t *testing.T) {
@@ -344,21 +322,21 @@ func TestCreateMoreDataJ(t *testing.T) {
     	// db log mode
     	Log bool
     }
-    config := gt.Configger()
     dbS := &dba{
-        user:     config.GetString("app.db.user"),
-        password: config.GetString("app.db.password"),
-        host:     config.GetString("app.db.host"),
-        name:     config.GetString("app.db.name"),
+        user:     conf.GetString("app.db.user"),
+        password: conf.GetString("app.db.password"),
+        host:     conf.GetString("app.db.host"),
+        name:     conf.GetString("app.db.name"),
     }
     // or
     dbS := &dba{}
-    gt.Configger().GetStruct("app.db", dbS)
+    conf.GetStruct("app.db", dbS)
 ```
 
 #### CacheManager
 ```go
 	ce = gt.NewCache()
+	// data
 	data := CacheModel{
 		Time: 50 * CacheMinute,
 		Data: user,
@@ -371,14 +349,27 @@ func TestCreateMoreDataJ(t *testing.T) {
 	t.Log("set err: ", err)
 
 	// get
+	var user2 User
 	reply, _ := ce.Get(user)
-	t.Log("user data :", reply.Data)
+	t.Log(reply.Unmarshal(&user2))
+	t.Log("user data :", user2)
+
+	var ar = []string{"test1", "test2"}
+	data.Data = ar
+	err = ce.Set("arr", data)
+	t.Log("set err: ", err)
+
+	// get
+	ar = []string{}
+	reply, _ = ce.Get("arr")
+	t.Log(reply.Unmarshal(&ar))
+	t.Log("user data :", user2)
 ```
 
 ### AesEnDe  
 ```go
-log.Println("[加密测试]:", AesEn("123456"))
-log.Println("[解密测试]:", AesDe("lIEbR7cEp2U10gtM0j8dCg=="))
+t.Log("[aesEn]:", AesEn("admin"))
+t.Log("[aesDe]:", AesDe("sPa0sTmDf6gasS9tHvIqKw=="))
 ```
 
 ### Time
@@ -624,7 +615,7 @@ ps:
 - 约定  
 1.必定有id字段  
 2.~~模型结构体的json格式内容与表字段保持一致~~  
-3.返回格式参考[result](tool/result/result.go)    
+3.返回格式参考[result](tool/util/result/result.go)    
 4.多表关联命名, 模型中其他表字段命名: `他表名 + "_" + 他表字段名`  
 5.More相关接口同一个pkg和同一个Model尽量不要重复, 如有, 可通过换目录pkg或继承Model+制定gt.Table()解决  
 n.crud更多用法参考[crud_mysql_test](crud_mysql_test.go)  

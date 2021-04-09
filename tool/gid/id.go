@@ -1,4 +1,4 @@
-package id
+package gid
 
 import (
 	"github.com/bwmarrin/snowflake"

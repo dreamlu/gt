@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/dreamlu/gt/tool/conf"
 	os2 "github.com/dreamlu/gt/tool/file/file_func"
-	"github.com/dreamlu/gt/tool/id"
+	"github.com/dreamlu/gt/tool/gid"
 	"github.com/dreamlu/resize"
 	"image"
 	"image/jpeg"
@@ -33,7 +33,12 @@ import (
 //	u.JSON(http.StatusOK, map[string]interface{}{lib.Status: lib.CodeFile, lib.Msg: lib.MsgFile, "path": path})
 //}
 
-// file
+const (
+	JPEG = "jpeg" // jpeg/jpg
+	PNG  = "png"  // png
+)
+
+// File
 type File struct {
 	// file name
 	Name string
@@ -46,12 +51,13 @@ type File struct {
 
 	// format 2006-01-02 15:04:05
 	Format string
-
-	IsComp  int8 // is img compress
-	Quality int  // default 80, 1-100
+	// is img compress
+	// default false, no compress
+	IsComp  bool
+	Quality int // default 80, 1-100
 }
 
-// 获得文件上传路径
+// GetUploadFile return the upload file path
 func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err error) {
 
 	filenameSplit := strings.Split(file.Filename, ".")
@@ -60,7 +66,7 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 	filename = "." + fType
 	switch f.Name {
 	case "": //重命名
-		snowflakeID, err := id.NewID(1)
+		snowflakeID, err := gid.NewID(1)
 		if err != nil {
 			return "", err
 		}
@@ -75,26 +81,26 @@ func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err e
 	}
 
 	// whatever
-	go func() {
-		if f.IsComp == 0 {
-			return
-		}
-		data, _ := ioutil.ReadFile(path)
-		fType = GetImageType(data[:512])
-		switch fType {
-		case "jpeg", "png":
-			f.Path = path
-			_ = f.CompressImage(fType)
-		default:
-			//处理其他类型文件
-		}
-	}()
+	if f.IsComp {
+		go f.compress(path)
+	}
 	return path, nil
 }
 
-// 图片压缩
+func (f *File) compress(path string) {
+	data, _ := ioutil.ReadFile(path)
+	fType := GetImageType(data[:512])
+	switch fType {
+	case "jpeg", "png":
+		f.Path = path
+		_ = f.CompressImage(fType)
+	default:
+		// other type
+	}
+}
+
+// CompressImage image compress
 func (f *File) CompressImage(imageType string) error {
-	//图片压缩
 	var img image.Image
 	//imgFile, err := os.Open(f.Path), jpeg.Decode(imgFile)
 	imgFile, err := ioutil.ReadFile(f.Path)
@@ -128,14 +134,14 @@ func (f *File) CompressImage(imageType string) error {
 	defer out.Close()
 
 	switch imageType {
-	case "jpeg":
+	case JPEG:
 		// write new image to file
 		var q *jpeg.Options
 		if f.Quality > 0 {
 			q = &jpeg.Options{Quality: f.Quality}
 		}
 		_ = jpeg.Encode(out, m, q)
-	case "png":
+	case PNG:
 		if ContainsTransparent(m) {
 			_ = png.Encode(out, m) // write new image to file
 		} else {
@@ -183,9 +189,9 @@ func GetImageType(buffer []byte) string {
 
 	switch contentType {
 	case "image/jpeg":
-		return "jpeg"
+		return JPEG
 	case "image/png":
-		return "png"
+		return PNG
 	default:
 		return ""
 	}

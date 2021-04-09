@@ -5,10 +5,10 @@ package gt
 import (
 	"fmt"
 	"github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/result"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/errors"
 	"github.com/dreamlu/gt/tool/util/hump"
+	"github.com/dreamlu/gt/tool/util/result"
 	sq "github.com/dreamlu/gt/tool/util/sql"
 	"github.com/dreamlu/gt/tool/valid"
 	"runtime"
@@ -252,9 +252,6 @@ func (c *Mysql) Error() error {
 	}
 	if c.dbTool.res != nil {
 		c.err = c.dbTool.res.Error
-		if c.err != nil {
-			c.err = sq.GetSQLError(c.err.Error())
-		}
 	}
 	return c.err
 }

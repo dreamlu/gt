@@ -6,11 +6,10 @@ import (
 	sql2 "database/sql"
 	json2 "encoding/json"
 	"fmt"
-	"github.com/dreamlu/gt/tool/result"
+	"github.com/dreamlu/gt/tool/log"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/json"
 	"github.com/dreamlu/gt/tool/type/time"
-	"log"
 	"net/http"
 	"runtime"
 	"testing"
@@ -142,7 +141,7 @@ func TestCrud(t *testing.T) {
 	//args.Add("id", "4")
 	//args.Set("name", "梦4")
 	//err := crud.UpdateForm(cmap.CMap(args))
-	//log.Println(err)
+	//t.Log(err)
 }
 
 // select sql
@@ -245,11 +244,11 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {
-		log.Println(err)
+		t.Log(err)
 	}
 	err = crud.GetMoreBySearch(params).Error()
 	if err != nil {
-		log.Println(err)
+		t.Log(err)
 	}
 	for _, v := range or {
 		t.Log(v)
@@ -460,15 +459,15 @@ func httpServerDemo(w http.ResponseWriter, r *http.Request) {
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 	}
-	_, _ = fmt.Fprintf(w, result.GetSuccess(or).String())
+	_, _ = fmt.Fprintf(w, "ok")
 }
 
 // test mock data
 func TestMock(t *testing.T) {
 	//http.HandleFunc("/", httpServerDemo)
-	//log.Println("http://127.0.0.1:9090")
+	//t.Log("http://127.0.0.1:9090")
 	//err := http.ListenAndServe(":9090", nil)
 	//if err != nil {
 	//	log.Fatal("ListenAndServe: ", err)
@@ -650,6 +649,6 @@ func TestGetMoreSearchResolve(t *testing.T) {
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {
-		log.Println(err)
+		t.Log(err)
 	}
 }
