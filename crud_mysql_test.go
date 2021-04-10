@@ -350,6 +350,7 @@ func TestDBCrud_Select(t *testing.T) {
 	)
 	params.Add("clientPage", "1")
 	params.Add("everyPage", "2")
+	//params.Add("mock", "1")
 	cd := crud.Params(
 		Data(&user),
 	).
@@ -361,11 +362,12 @@ func TestDBCrud_Select(t *testing.T) {
 	// search
 	cd = cd.Search(params)
 	t.Log(cd.Error())
+	t.Log(user)
 	// single
 	cd2 := crud.Params(
 		Data(&user),
 	).
-		Select("select *from user")
+		Select("select *from user limit 2")
 	t.Log(cd2.Single().Error())
 	_, file, line, ok := runtime.Caller(1)
 	if ok {
@@ -379,7 +381,7 @@ func TestDBCrud_Select(t *testing.T) {
 	t.Log(name)
 
 	var names []string
-	cd4 := NewCrud(Data(&names)).Select("select ifnull(name,'') from user where id > 0").Single()
+	cd4 := NewCrud(Data(&names)).Select("select ifnull(name,'') from user where id > 0 limit 2").Single()
 	t.Log(cd4.Error())
 	t.Log(names)
 }
@@ -421,20 +423,6 @@ func TestDBCrud_Create(t *testing.T) {
 			Name: "梦SSS2",
 		})).Create()
 	t.Log(crud.Error())
-}
-
-func TestGetReflectTagMore(t *testing.T) {
-	type UserAndUserInfo struct {
-		UserName     string // will user.name
-		UserInfoSome string `gt:"field:user_info.some"`
-	}
-	var data []*UserAndUserInfo
-	crud.Params(
-		Data(&data),
-		Model(UserAndUserInfo{}),
-		Inner("order:user_id", "user:id", "order", "user_info"))
-	var params = make(cmap.CMap)
-	crud.GetMoreBySearch(params)
 }
 
 func TestGetColSQLAlias(t *testing.T) {
@@ -651,4 +639,20 @@ func TestGetMoreSearchResolve(t *testing.T) {
 	if err != nil {
 		t.Log(err)
 	}
+}
+
+func TestMysql_GetMoreBySearchInnerLeftCondition(t *testing.T) {
+	type UserAndUserInfo struct {
+		UserName     string // will user.name
+		UserInfoSome string `gt:"field:user_info.some"`
+	}
+	var data []*UserAndUserInfo
+	crud.Params(
+		Data(&data),
+		Model(UserAndUserInfo{}),
+		Inner("order:user_id,user_id,id=1", "user:id,id,id=1,id=2"), // "order", "user_info"), // inner/left join on a.column = b.column and ...
+		Left("order:user_id", "user_info:id,id=1"),
+	)
+	var params = make(cmap.CMap)
+	crud.GetMoreBySearch(params)
 }

@@ -238,6 +238,10 @@ func (db *DBTool) GetMoreData(gt *GT) {
 func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
 
 	gt.GetSelectSearchSQL()
+	// isMock
+	if gt.isMock {
+		return
+	}
 	return db.GetBySQLSearch(gt.Data, gt.sql, gt.sqlNt, gt.clientPage, gt.everyPage, gt.Args)
 }
 

@@ -235,3 +235,85 @@ func getParams(typ reflect.Value) (params []interface{}) {
 	}
 	return
 }
+
+func innerLeftSQL(bufNt *bytes.Buffer, DBS map[string]string, tables, fields []string, i int) {
+	if tb := DBS[tables[i]]; tb != "" {
+		bufNt.WriteString("`" + tb + "`.")
+	}
+	bufNt.WriteString("`")
+	bufNt.WriteString(tables[i])
+	bufNt.WriteString("` on ")
+	fieldSQL(bufNt, tables[i-1], tables[i], fields[i-1], fields[i])
+}
+
+// fieldSQL field analyze
+func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
+
+	var (
+		ils  = strings.Split(left, ",")  // left condition column
+		irs  = strings.Split(right, ",") // right condition column
+		ilts []string                    // left table field condition
+		irts []string                    // right table field condition
+	)
+
+	for k := 0; k < len(ils); k++ {
+		is := strings.Split(ils[k], "=")
+		if len(is) > 1 {
+			ilts = append(ilts, ils[k])
+			ils = append(ils[:k], ils[k+1:]...)
+			k--
+		}
+	}
+
+	for k := 0; k < len(irs); k++ {
+		is := strings.Split(irs[k], "=")
+		if len(is) > 1 {
+			irts = append(irts, irs[k])
+			irs = append(irs[:k], irs[k+1:]...)
+			k--
+		}
+	}
+
+	for k := 0; k < len(ils); k++ {
+		bufNt.WriteByte('`')
+		bufNt.WriteString(leftTable)
+		bufNt.WriteString("`.`")
+		bufNt.WriteString(ils[k])
+		bufNt.WriteString("`=`")
+		bufNt.WriteString(rightTable)
+		bufNt.WriteString("`.`")
+		bufNt.WriteString(irs[k])
+		bufNt.WriteString("` and ")
+	}
+
+	for _, v := range ilts {
+		is := strings.Split(v, "=")
+		if len(is) > 1 {
+			bufNt.WriteByte('`')
+			bufNt.WriteString(leftTable)
+			bufNt.WriteString("`.`")
+			bufNt.WriteString(is[0])
+			bufNt.WriteByte('`')
+			bufNt.WriteByte('=')
+			bufNt.WriteString(is[1])
+			bufNt.WriteString(" and ")
+		}
+	}
+	for _, v := range irts {
+		is := strings.Split(v, "=")
+		if len(is) > 1 {
+			bufNt.WriteByte('`')
+			bufNt.WriteString(rightTable)
+			bufNt.WriteString("`.`")
+			bufNt.WriteString(is[0])
+			bufNt.WriteByte('`')
+			bufNt.WriteByte('=')
+			bufNt.WriteString(is[1])
+			bufNt.WriteString(" and ")
+		}
+	}
+	nBuf := bytes.NewBuffer(bufNt.Bytes()[:bufNt.Len()-4])
+	defer nBuf.Reset()
+	bufNt.Reset()
+	bufNt.Write(nBuf.Bytes())
+}
