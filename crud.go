@@ -33,11 +33,11 @@ type Crud interface {
 
 	// get url params
 	// like form data
-	GetBySearch(params cmap.CMap) Crud     // search
+	GetBySearch(params cmap.CMap) Crud     // search single table
 	Get(params cmap.CMap) Crud             // get data no search
 	GetMore(params cmap.CMap) Crud         // get data more table no search
 	GetByID(id interface{}) Crud           // by id
-	GetMoreBySearch(params cmap.CMap) Crud // more search
+	GetMoreBySearch(params cmap.CMap) Crud // more search, more tables inner/left join
 
 	// delete by id/ids
 	Delete(id interface{}) Crud // delete
@@ -59,7 +59,7 @@ type Crud interface {
 	Select(q interface{}, args ...interface{}) Crud // select sql
 	From(query string) Crud                         // from sql, if use search, From must only once
 	Group(query string) Crud                        // the last group by
-	Search(params cmap.CMap) Crud                   // search pager
+	Search(params cmap.CMap) Crud                   // Select Search pager, params only support Pager and Mock
 	Single() Crud                                   // no search
 	Exec() Crud                                     // exec insert/update/delete sql
 	Error() error                                   // crud error

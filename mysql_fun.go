@@ -231,39 +231,12 @@ func (gt *GT) moreSql() (tables []string) {
 	// inner join
 	for i := 1; i < len(innerTables); i += 2 {
 		bufNt.WriteString("inner join ")
-		// innerDB not support ``
-		if tb := DBS[innerTables[i]]; tb != "" {
-			bufNt.WriteString("`" + tb + "`.")
-		}
-		bufNt.WriteString("`")
-		bufNt.WriteString(innerTables[i])
-		bufNt.WriteString("` on `")
-		bufNt.WriteString(innerTables[i-1])
-		bufNt.WriteString("`.`")
-		bufNt.WriteString(innerField[i-1])
-		bufNt.WriteString("`=`")
-		bufNt.WriteString(innerTables[i])
-		bufNt.WriteString("`.`")
-		bufNt.WriteString(innerField[i])
-		bufNt.WriteString("` ")
+		innerLeftSQL(&bufNt, DBS, innerTables, innerField, i)
 	}
 	// left join
 	for i := 1; i < len(leftTables); i += 2 {
 		bufNt.WriteString("left join ")
-		if tb := DBS[leftTables[i]]; tb != "" {
-			bufNt.WriteString("`" + tb + "`.")
-		}
-		bufNt.WriteString("`")
-		bufNt.WriteString(leftTables[i])
-		bufNt.WriteString("` on `")
-		bufNt.WriteString(leftTables[i-1])
-		bufNt.WriteString("`.`")
-		bufNt.WriteString(leftField[i-1])
-		bufNt.WriteString("`=`")
-		bufNt.WriteString(leftTables[i])
-		bufNt.WriteString("`.`")
-		bufNt.WriteString(leftField[i])
-		bufNt.WriteString("` ")
+		innerLeftSQL(&bufNt, DBS, leftTables, leftField, i)
 	}
 	gt.sqlNt = bufNt.String()
 	sqlBuffer.Set(keyNt, gt.sqlNt)
