@@ -20,17 +20,16 @@ import (
 )
 
 // example
-// 单文件上传
 // use gin upload file
-//file_func UpoadFile(u *gin.Context) {
+// func Upload(u *gin.Context) {
 //
-//	fname := u.PostForm("fname") //指定文件名
+//	name := u.PostForm("name") // set file name
 //	file, err := u.FormFile("file")
 //	if err != nil {
-//		u.JSON(http.StatusOK, lib.MapData{Status: lib.CodeFile, Msg: err.Error()})
+//		u.JSON(http.StatusOK, someErr)
 //	}
-//	path := File{}.GetUploadFile(file, fname)
-//	u.JSON(http.StatusOK, map[string]interface{}{lib.Status: lib.CodeFile, lib.Msg: lib.MsgFile, "path": path})
+//	path := File{Name: name}.GetUploadFile(file)
+//	u.JSON(http.StatusOK, path)
 //}
 
 const (
@@ -40,6 +39,7 @@ const (
 
 // File
 type File struct {
+	File *multipart.FileHeader
 	// file name
 	Name string
 	// path
@@ -55,85 +55,143 @@ type File struct {
 	// default false, no compress
 	IsComp  bool
 	Quality int // default 80, 1-100
+
+	// content type
+	ContentType string
 }
 
-// GetUploadFile return the upload file path
-func (f *File) GetUploadFile(file *multipart.FileHeader) (filename string, err error) {
+// NewFile
+// file sugar
+func NewFile(file *multipart.FileHeader, Name string) *File {
+	return &File{File: file, Name: Name}
+}
 
-	filenameSplit := strings.Split(file.Filename, ".")
-	fType := filenameSplit[len(filenameSplit)-1]
-	//防止文件名中多个“.”,获得文件后缀
-	filename = "." + fType
+// Upload file
+func (f *File) Upload() (err error) {
+	fs := strings.SplitAfter(f.File.Filename, ".")
+	fileName := "." + fs[len(fs)-1]
+	// rename
 	switch f.Name {
-	case "": //重命名
+	case "":
 		snowflakeID, err := gid.NewID(1)
 		if err != nil {
-			return "", err
+			return err
 		}
-		filename = snowflakeID.String() + filename //时间戳"2006-01-02 15:04:05"是参考格式,具体数字可变(经测试)
-	default: //指定文件名
-		//防止文件名中多个“.”,获得文件后缀
-		filename = f.Name + filename
+		f.Name = snowflakeID.String() + fileName
+	default:
+		f.Name += fileName
 	}
-	path, err := f.SaveUploadedFile(file, filename)
+	err = f.Save()
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	// whatever
 	if f.IsComp {
-		go f.compress(path)
+		go f.Compress()
 	}
-	return path, nil
+	return nil
 }
 
-func (f *File) compress(path string) {
-	data, _ := ioutil.ReadFile(path)
-	fType := GetImageType(data[:512])
-	switch fType {
-	case "jpeg", "png":
-		f.Path = path
-		_ = f.CompressImage(fType)
-	default:
-		// other type
-	}
+// Deprecated
+// use Upload replace
+// GetUploadFile upload file
+// return f.Path
+func (f *File) GetUploadFile() (err error) {
+	return f.Upload()
 }
 
-// CompressImage image compress
-func (f *File) CompressImage(imageType string) error {
-	var img image.Image
-	//imgFile, err := os.Open(f.Path), jpeg.Decode(imgFile)
-	imgFile, err := ioutil.ReadFile(f.Path)
+// Save save file
+func (f *File) Save() (err error) {
+
+	if f.Format == "" {
+		f.Format = "20060102"
+	}
+	f.Path = conf.Configger().GetString("app.filepath") + time.Now().Format(f.Format) + "/"
+	if err = os2.Mkdir(f.Path); err != nil {
+		return
+	}
+
+	// File Path
+	f.Path += f.Name
+	src, err := f.File.Open()
 	if err != nil {
-		return err
+		return
 	}
-	//defer ImgFile.Close()
+	defer src.Close()
 
-	switch imageType {
-	case "jpeg":
-		img, err = jpeg.Decode(bytes.NewReader(imgFile))
-	case "png":
-		img, err = png.Decode(bytes.NewReader(imgFile))
-	default:
-		return errors.New("[gt] not support img type:" + imageType)
-	}
-	if err != nil {
-		return err
-	}
-
-	if f.NewPath == "" {
-		f.NewPath = f.Path
-	}
-
-	m := resize.Resize(uint(f.Width), uint(f.Height), img, resize.Lanczos3)
-
-	out, err := os.Create(f.NewPath)
+	out, err := os.Create(f.Path)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 
-	switch imageType {
+	_, err = io.Copy(out, src)
+	return
+}
+
+// ImageConfig return Upload Image Config width/height
+func (f *File) ImageConfig() (*image.Config, error) {
+
+	if f.IsImg() {
+		f, _ := os.Open(f.Path)
+		defer f.Close()
+		c, _, err := image.DecodeConfig(f)
+		return &c, err
+	}
+	return nil, errors.New("not Image type")
+}
+
+// Compress Image
+func (f *File) Compress() {
+	if f.IsImg() {
+		_ = f.compressImage()
+	}
+}
+
+// isImg is image
+func (f *File) IsImg() bool {
+	data, _ := ioutil.ReadFile(f.Path)
+	f.ContentType = GetImageType(data)
+	if strings.Contains(f.ContentType, PNG) || strings.Contains(f.ContentType, JPEG) {
+		return true
+	}
+	return false
+}
+
+// compressImage image compress
+func (f *File) compressImage() error {
+	var img image.Image
+	imgFile, err := ioutil.ReadFile(f.Path)
+	if err != nil {
+		return err
+	}
+
+	switch f.ContentType {
+	case JPEG:
+		img, err = jpeg.Decode(bytes.NewReader(imgFile))
+	case PNG:
+		img, err = png.Decode(bytes.NewReader(imgFile))
+	default:
+		return errors.New("[gt] not support img type:" + f.ContentType)
+	}
+	if err != nil {
+		return err
+	}
+
+	if f.NewPath != "" {
+		f.Path = f.NewPath
+	}
+
+	m := resize.Resize(uint(f.Width), uint(f.Height), img, resize.Lanczos3)
+
+	out, err := os.Create(f.Path)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	switch f.ContentType {
 	case JPEG:
 		// write new image to file
 		var q *jpeg.Options
@@ -152,37 +210,6 @@ func (f *File) CompressImage(imageType string) error {
 	return nil
 }
 
-// save file
-func (f *File) SaveUploadedFile(file *multipart.FileHeader, filename string) (path string, err error) {
-
-	if f.Format == "" {
-		f.Format = "20060102"
-	}
-	filepath := conf.Configger().GetString("app.filepath") + time.Now().Format(f.Format) + "/"
-	if !os2.Exists(filepath) {
-		err = os.MkdirAll(filepath, os.ModePerm)
-		if err != nil {
-			return
-		}
-	}
-
-	path = filepath + filename //文件目录
-	src, err := file.Open()
-	if err != nil {
-		return
-	}
-	defer src.Close()
-
-	out, err := os.Create(path)
-	if err != nil {
-		return "", err
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, src)
-	return
-}
-
 // jpeg,png
 func GetImageType(buffer []byte) string {
 	contentType := GetFileContentType(buffer)
@@ -197,11 +224,12 @@ func GetImageType(buffer []byte) string {
 	}
 }
 
+// GetFileContentType must a file
 // file byte data[:512]
 // image type: "image/jpeg","image/png"
 func GetFileContentType(buffer []byte) string {
 	// Use the net/http package's handy DectectContentType function. Always returns a valid
 	// content-type by returning "application/octet-stream" if no others seemed to match.
-	contentType := http.DetectContentType(buffer)
+	contentType := http.DetectContentType(buffer[:512])
 	return contentType
 }

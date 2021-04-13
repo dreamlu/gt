@@ -57,7 +57,7 @@ func ProjectPath() (path string) {
 
 // judge file/dir exists
 func Exists(path string) bool {
-	_, err := os.Stat(path) //os.Stat获取文件信息
+	_, err := os.Stat(path)
 	if err != nil {
 		if os.IsExist(err) {
 			return true
@@ -68,9 +68,9 @@ func Exists(path string) bool {
 }
 
 // create dir
-func MakeDir(dir string) error {
+func Mkdir(dir string) error {
 	if !Exists(dir) {
-		if err := os.MkdirAll(dir, 0777); err != nil { //os.ModePerm
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil { //os.ModePerm
 			fmt.Println("MakeDir failed:", err)
 			return err
 		}
@@ -102,7 +102,6 @@ func CopyFile(src, des string) (written int64, err error) {
 
 // copy dir
 func CopyDir(srcPath, dstPath string) error {
-	//检查目录是否正确
 	if srcInfo, err := os.Stat(srcPath); err != nil {
 		return err
 	} else {
@@ -128,19 +127,17 @@ func CopyDir(srcPath, dstPath string) error {
 			return err
 		}
 
-		//复制目录是将源目录中的子目录复制到目标路径中，不包含源目录本身
 		if path == srcPath {
 			return nil
 		}
 
-		//生成新路径
 		destNewPath := strings.Replace(path, srcPath, dstPath, -1)
 
 		if !f.IsDir() {
 			_, err = CopyFile(path, destNewPath)
 		} else {
 			if !Exists(destNewPath) {
-				return MakeDir(destNewPath)
+				return Mkdir(destNewPath)
 			}
 		}
 

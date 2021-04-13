@@ -6,13 +6,17 @@ import (
 	"image/png"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
-	"time"
 )
 
 // test upload
 func TestFile_GetUploadFile(t *testing.T) {
-	t.Log(conf.Configger().GetString("app.filepath") + time.Now().Format("20060102") + "/")
+
+	filenameSplit := strings.SplitAfter("test.test.jpg", ".")
+	t.Log(filenameSplit)
+	fType := filenameSplit[len(filenameSplit)-1]
+	t.Log(fType)
 }
 
 // 8.9MB->722.3MB
@@ -21,10 +25,12 @@ func TestCompressImage(t *testing.T) {
 		Path: "../../test/file/呵呵.png",
 		//Width:  200,
 		//Height: 0,
-		NewPath: "../../test/file/呵呵1.png",
-		Quality: 0,
+		//Name: "newName.png",
+		NewPath:     "../../test/file/呵呵1.png",
+		Quality:     0,
+		ContentType: "png",
 	}
-	err := fileImg.CompressImage("png")
+	err := fileImg.compressImage()
 	if err != nil {
 		t.Error(err)
 	}
@@ -39,8 +45,8 @@ func TestConfigger(t *testing.T) {
 }
 
 func TestFileType(t *testing.T) {
-	data, _ := ioutil.ReadFile("../../test/file/呵呵.jpg")
-	contentType := GetFileContentType(data[:512])
+	data, _ := ioutil.ReadFile("../../test/file/呵呵.png")
+	contentType := GetFileContentType(data)
 	t.Log(contentType)
 }
 
