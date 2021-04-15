@@ -12,3 +12,7 @@ func TestGet(t *testing.T) {
 		AddParam("q", "gt").Exec()
 	t.Log(string(b.data))
 }
+
+func TestPostJSON(t *testing.T) {
+
+}

@@ -139,47 +139,45 @@ func (m *Request) Exec() *Response {
 	var body io.Reader
 	var rawQuery string
 
-	if m.method == GET || m.method == HEAD || m.method == DELETE {
-		if len(m.params) > 0 {
-			rawQuery = m.params.Encode()
+	if len(m.params) > 0 {
+		rawQuery = m.params.Encode()
+	}
+
+	if m.body != nil {
+		body = m.body
+	} else if m.file != nil {
+		uploadFile, err := os.Open(m.file.path)
+		if err != nil {
+			return &Response{nil, nil, err}
 		}
-	} else {
-		if m.body != nil {
-			body = m.body
-		} else if m.file != nil {
-			uploadFile, err := os.Open(m.file.path)
-			if err != nil {
-				return &Response{nil, nil, err}
-			}
-			defer uploadFile.Close()
+		defer uploadFile.Close()
 
-			bodyByte := &bytes.Buffer{}
-			writer := multipart.NewWriter(bodyByte)
-			part, err := writer.CreateFormFile(m.file.name, m.file.filename)
-			if err != nil {
-				return &Response{nil, nil, err}
-			}
-			_, err = io.Copy(part, uploadFile)
-			if err != nil {
-				return &Response{nil, nil, err}
-			}
-
-			for key, values := range m.params {
-				for _, value := range values {
-					writer.WriteField(key, value)
-				}
-			}
-
-			err = writer.Close()
-			if err != nil {
-				return &Response{nil, nil, err}
-			}
-
-			m.SetContentType(writer.FormDataContentType())
-			body = bodyByte
-		} else if m.params != nil {
-			body = strings.NewReader(m.params.Encode())
+		bodyByte := &bytes.Buffer{}
+		writer := multipart.NewWriter(bodyByte)
+		part, err := writer.CreateFormFile(m.file.name, m.file.filename)
+		if err != nil {
+			return &Response{nil, nil, err}
 		}
+		_, err = io.Copy(part, uploadFile)
+		if err != nil {
+			return &Response{nil, nil, err}
+		}
+
+		for key, values := range m.params {
+			for _, value := range values {
+				writer.WriteField(key, value)
+			}
+		}
+
+		err = writer.Close()
+		if err != nil {
+			return &Response{nil, nil, err}
+		}
+
+		m.SetContentType(writer.FormDataContentType())
+		body = bodyByte
+	} else if m.params != nil {
+		body = strings.NewReader(m.params.Encode())
 	}
 
 	req, err = http.NewRequest(m.method, m.url, body)
