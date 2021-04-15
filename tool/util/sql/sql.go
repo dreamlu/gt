@@ -119,7 +119,7 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 		if !strings.HasSuffix(t, "_id") &&
 			!strings.HasPrefix(t, "id") {
 
-			tb := UniqueTagTable(t)
+			tb := UniqueTagTable(t, tables...)
 			if tb != "" {
 				writeTagString(buf, tb, t)
 				argsKey = append(argsKey, "%"+v+"%")
@@ -233,16 +233,17 @@ func TableOnly(table string) string {
 }
 
 // return unique table tag
-func UniqueTagTable(tag string) (table string) {
+func UniqueTagTable(tag string, tables ...string) (table string) {
 	var (
 		i = 0
 	)
 
-	for k, tags := range TableCols {
+	for _, v := range tables {
+		tags := TableCols[v]
 		for _, t := range tags {
 			if t == tag {
 				i++
-				table = k
+				table = v
 			}
 		}
 	}

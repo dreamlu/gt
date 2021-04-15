@@ -65,7 +65,7 @@ func getTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 		}
 
 		// sql tag rule
-		tb := sq.UniqueTagTable(tag)
+		tb := sq.UniqueTagTable(tag, tables...)
 		if tb != "" {
 			writeTagString(buf, tb, tag, "")
 			continue

@@ -282,7 +282,7 @@ func (c *Mysql) Begin() Crud {
 }
 
 func (c *Mysql) Commit() Crud {
-	if c.dbTool.res.Error != nil {
+	if c.dbTool.res == nil || c.dbTool.res.Error != nil {
 		c.dbTool.Rollback()
 	}
 	c.dbTool.Commit()
