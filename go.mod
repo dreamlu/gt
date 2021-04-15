@@ -3,6 +3,7 @@ module github.com/dreamlu/gt
 go 1.15
 
 require (
+	github.com/360EntSecGroup-Skylar/excelize/v2 v2.3.2
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/bxcodec/faker/v3 v3.5.0
 	github.com/dreamlu/resize v0.0.0-20180221191011-83c6a9932646

@@ -4,3 +4,4 @@
 /test/main
 /test/sql
 go.sum
+*.xlsx
