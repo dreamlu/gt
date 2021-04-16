@@ -5,7 +5,6 @@ package conf
 import (
 	"errors"
 	"fmt"
-	"github.com/dreamlu/gt/tool/file/file_func"
 	"github.com/dreamlu/gt/tool/util/cons"
 	"log"
 )
@@ -38,7 +37,7 @@ func NewConfig(params ...string) *Config {
 // change dir to abs /xxx/conf/
 // new abs conf dir
 func newConf(dir string) string {
-	return file_func.ProjectPath() + dir
+	return ProjectPath() + dir
 }
 
 // find yaml dev mode

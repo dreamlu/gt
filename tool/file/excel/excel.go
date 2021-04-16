@@ -3,7 +3,7 @@ package excel
 import (
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/tag"
+	"github.com/dreamlu/gt/tool/util/tag"
 	"strconv"
 )
 

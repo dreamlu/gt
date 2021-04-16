@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/dreamlu/gt/tool/conf"
 	time2 "github.com/dreamlu/gt/tool/type/time"
-	os2 "github.com/dreamlu/gt/tool/util/os"
+	"github.com/dreamlu/gt/tool/util/gos"
 	"github.com/lestrrat-go/file-rotatelogs"
 	"github.com/pkg/errors"
 	"github.com/rifflock/lfshook"
@@ -72,7 +72,7 @@ func NewLog() *Log {
 // new output file log
 func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationTime time.Duration) {
 
-	if !os2.Exists(logPath) {
+	if !gos.Exists(logPath) {
 		_ = os.Mkdir(logPath, os.ModePerm)
 	}
 

@@ -198,7 +198,7 @@ func (m *Request) Exec() *Response {
 		defer resp.Body.Close()
 	}
 	if err != nil {
-		return &Response{nil, nil, err}
+		return &Response{resp, nil, err}
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)

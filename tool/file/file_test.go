@@ -6,6 +6,7 @@ import (
 	"image/png"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -17,6 +18,8 @@ func TestFile_GetUploadFile(t *testing.T) {
 	t.Log(filenameSplit)
 	fType := filenameSplit[len(filenameSplit)-1]
 	t.Log(fType)
+
+	t.Log(filepath.Ext("test.test.jpg"))
 }
 
 // 8.9MB->722.3MB

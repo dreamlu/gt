@@ -23,5 +23,5 @@ func TestExportExcel(t *testing.T) {
 		t.Log(err)
 		return
 	}
-	t.Log(e.SaveAs("1.xlsx"))
+	t.Log(e.SaveAs("test.xlsx"))
 }

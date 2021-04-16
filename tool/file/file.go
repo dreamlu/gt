@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"github.com/dreamlu/gt/tool/conf"
-	os2 "github.com/dreamlu/gt/tool/file/file_func"
 	"github.com/dreamlu/gt/tool/gid"
+	"github.com/dreamlu/gt/tool/util/gos"
 	"github.com/dreamlu/resize"
 	"image"
 	"image/jpeg"
@@ -15,6 +15,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -68,18 +69,16 @@ func NewFile(file *multipart.FileHeader, Name string) *File {
 
 // Upload file
 func (f *File) Upload() (err error) {
-	fs := strings.SplitAfter(f.File.Filename, ".")
-	fileName := "." + fs[len(fs)-1]
-	// rename
+	fileExt := filepath.Ext(f.File.Filename)
 	switch f.Name {
 	case "":
 		snowflakeID, err := gid.NewID(1)
 		if err != nil {
 			return err
 		}
-		f.Name = snowflakeID.String() + fileName
+		f.Name = snowflakeID.String() + fileExt
 	default:
-		f.Name += fileName
+		f.Name += fileExt
 	}
 	err = f.Save()
 	if err != nil {
@@ -108,7 +107,7 @@ func (f *File) Save() (err error) {
 		f.Format = "20060102"
 	}
 	f.Path = conf.Configger().GetString("app.filepath") + time.Now().Format(f.Format) + "/"
-	if err = os2.Mkdir(f.Path); err != nil {
+	if err = gos.Mkdir(f.Path); err != nil {
 		return
 	}
 
@@ -151,8 +150,10 @@ func (f *File) Compress() {
 
 // isImg is image
 func (f *File) IsImg() bool {
-	data, _ := ioutil.ReadFile(f.Path)
-	f.ContentType = GetImageType(data)
+	if f.ContentType == "" {
+		data, _ := ioutil.ReadFile(f.Path)
+		f.ContentType = GetImageType(data)
+	}
 	if strings.Contains(f.ContentType, PNG) || strings.Contains(f.ContentType, JPEG) {
 		return true
 	}
@@ -210,7 +211,7 @@ func (f *File) compressImage() error {
 	return nil
 }
 
-// jpeg,png
+// GetImageType jpeg,png
 func GetImageType(buffer []byte) string {
 	contentType := GetFileContentType(buffer)
 
