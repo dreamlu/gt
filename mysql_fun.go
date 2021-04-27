@@ -67,12 +67,8 @@ func (gt *GT) GetMoreSQL() {
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
 			}
-			var tablens = append(tables, tables...)
-			for k, v := range tablens {
-				tablens[k] += ":" + v
-			}
 			// more tables key search
-			sqlKey, argsKey := sq.GetMoreKeySQL(v[0], gt.KeyModel, tablens...)
+			sqlKey, argsKey := sq.GetMoreKeySQL(v[0], gt.KeyModel, tables...)
 			bufW.WriteString(sqlKey)
 			gt.Args = append(gt.Args, argsKey...)
 			continue
@@ -176,15 +172,17 @@ func (gt *GT) GetSelectSearchSQL() {
 
 // other tables where
 func otherTableWhere(bufW *bytes.Buffer, tables []string, k string) (b bool) {
+
+	tb := sq.UniqueTagTable(k, tables...)
+	if tb != "" {
+		writeBufWhere(bufW, tb, k)
+		return
+	}
+
 	// other tables, except tables[0]
 	for _, v := range tables {
-		switch {
-		case !strings.Contains(k, v+"_id") && strings.Contains(k, v+"_"):
-			bufW.WriteString("`")
-			bufW.WriteString(v)
-			bufW.WriteString("`.`")
-			bufW.WriteString(string([]byte(k)[len(v)+1:]))
-			bufW.WriteString("` = ? and ")
+		if !strings.Contains(k, v+"_id") && strings.Contains(k, v+"_") {
+			writeBufWhere(bufW, v, string([]byte(k)[len(v)+1:]))
 			b = true
 			return
 		}

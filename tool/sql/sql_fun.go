@@ -107,30 +107,19 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 	var (
 		tags = tag.GetTags(model)
 		buf  = bytes.NewBuffer(nil)
-		v    = keys[0]
+		v    = "%" + keys[0] + "%"
 	)
 	buf.WriteString("(")
 	for _, t := range tags {
 		if !strings.HasSuffix(t, "_id") &&
 			!strings.HasPrefix(t, "id") {
 
-			tb := UniqueTagTable(t, tables...)
-			if tb != "" {
-				writeTagString(buf, tb, t)
-				argsKey = append(argsKey, "%"+v+"%")
-				continue
+			// other table column
+			if b := otherTableKeySql(t, buf, tables...); !b {
+				// main table
+				writeTagString(buf, tables[0], t)
 			}
-
-			if b := otherTableKeySql(t, buf, tables...); b == true {
-				argsKey = append(argsKey, "%"+v+"%")
-				continue
-			}
-
-			// 主表
-			ts := strings.Split(tables[0], ":")
-			alias := ts[1]
-			writeTagString(buf, alias, t)
-			argsKey = append(argsKey, "%"+v+"%")
+			argsKey = append(argsKey, v)
 		}
 	}
 	buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
@@ -149,18 +138,21 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 }
 
 // other table key search sql
-func otherTableKeySql(tag string, buf *bytes.Buffer, tables ...string) (b bool) {
+func otherTableKeySql(tag string, buf *bytes.Buffer, tables ...string) bool {
+
+	tb := UniqueTagTable(tag, tables...)
+	if tb != "" {
+		writeTagString(buf, tb, tag)
+		return true
+	}
+
 	for _, v := range tables {
-		ts := strings.Split(v, ":")
-		table := ts[0]
-		alias := ts[1]
-		if strings.Contains(tag, table+"_") && !strings.Contains(tag, table+"_id") {
-			writeTagString(buf, alias, string([]byte(tag)[len(table)+1:]))
-			b = true
-			return
+		if strings.Contains(tag, v+"_") && !strings.Contains(tag, v+"_id") {
+			writeTagString(buf, v, string([]byte(tag)[len(v)+1:]))
+			return true
 		}
 	}
-	return
+	return false
 }
 
 // write tag sql
