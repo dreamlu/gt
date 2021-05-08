@@ -66,3 +66,17 @@ func GetTags(model interface{}) (arr []string) {
 	//}
 	return getTags(reflect.TypeOf(model))
 }
+
+// GetPartTags remove some like id,_id
+func GetPartTags(model interface{}) (arr []string) {
+	arr = GetTags(model)
+	for i := 0; i < len(arr); i++ {
+		v := arr[i]
+		if strings.HasSuffix(v, "_id") ||
+			strings.HasPrefix(v, "id") {
+			arr = append(arr[:i], arr[i+1:]...)
+			i--
+		}
+	}
+	return
+}
