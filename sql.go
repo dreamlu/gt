@@ -119,7 +119,6 @@ func writeBufWhere(buf *bytes.Buffer, tb, tag string) {
 	buf.WriteString(tb)
 	buf.WriteString("`.`")
 	buf.WriteString(tag)
-	buf.WriteString("`")
 	buf.WriteString("` = ? and ")
 }
 
