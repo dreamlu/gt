@@ -29,8 +29,9 @@ type User struct {
 }
 
 type UserInfo struct {
-	ID   uint64 `json:"id"`
-	Some string `json:"some"`
+	ID     uint64 `json:"id"`
+	UserID uint64 `json:"user_id"`
+	Some   string `json:"some"`
 }
 
 func (u User) String() string {
@@ -58,10 +59,11 @@ type Order struct {
 // order detail
 type OrderD struct {
 	Order
-	UserName    string     `json:"user_name" gt:"field:user.name"`  // user table column name
-	ServiceName string     `json:"service_name"`                    // service table column `name`
-	Info        json.CJSON `json:"info" gt:"sub_sql" faker:"cjson"` // json
-	BirthDate   time.CDate `gorm:"type:date"`                       // data
+	UserName     string     `json:"user_name" gt:"field:user.name"`           // user table column name
+	ServiceName  string     `json:"service_name"`                             // service table column `name`
+	Info         json.CJSON `json:"info" gt:"sub_sql" faker:"cjson"`          // json
+	BirthDate    time.CDate `gorm:"type:date"`                                // data
+	UserInfoSome string     `json:"user_info_some" gt:"field:user_info.some"` // user_info.some
 }
 
 // 局部
@@ -217,7 +219,7 @@ func TestGetDataBySearch(t *testing.T) {
 	}
 }
 
-// 测试多表连接
+// TestGetMoreDataBySearch
 func TestGetMoreDataBySearch(t *testing.T) {
 
 	type Key struct {
@@ -235,7 +237,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	crud := NewCrud(
 		// 支持同一个mysql多数据库跨库查询
 		Inner("order", "gt.user"),
-		Left("order", "service"),
+		Left("order", "service", "user:id", "user_info:user_id"),
 		Model(OrderD{}),
 		Data(&or),
 		//KeyModel(Key{}),

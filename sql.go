@@ -60,20 +60,20 @@ func getTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 		}
 		// gt tag rule
 		if tagTable != "" {
-			writeTagString(buf, tagTable, tag, oTag)
+			writeBufTag(buf, tagTable, tag, oTag)
 			continue
 		}
 
 		// sql tag rule
 		tb := sq.UniqueTagTable(tag, tables...)
 		if tb != "" {
-			writeTagString(buf, tb, tag, "")
+			writeBufTag(buf, tb, tag, "")
 			continue
 		}
 
 		// default tag rule
 		if b = otherTableTagSQL(oTag, tag, buf, tables...); !b {
-			writeTagString(buf, tables[0], tag, "")
+			writeBufTag(buf, tables[0], tag, "")
 		}
 	}
 }
@@ -92,7 +92,7 @@ func otherTableTagSQL(oTag, tag string, buf *bytes.Buffer, tables ...string) boo
 			!strings.Contains(tag, "_id") &&
 			!strings.EqualFold(v, tables[0]) {
 
-			writeTagString(buf, v, string([]byte(tag)[len(v)+1:]), oTag)
+			writeBufTag(buf, v, string([]byte(tag)[len(v)+1:]), oTag)
 			return true
 		}
 	}
@@ -100,7 +100,7 @@ func otherTableTagSQL(oTag, tag string, buf *bytes.Buffer, tables ...string) boo
 }
 
 // write tag sql
-func writeTagString(buf *bytes.Buffer, tb, tag, alias string) {
+func writeBufTag(buf *bytes.Buffer, tb, tag, alias string) {
 	buf.WriteString("`")
 	buf.WriteString(tb)
 	buf.WriteString("`.`")
@@ -111,6 +111,15 @@ func writeTagString(buf *bytes.Buffer, tb, tag, alias string) {
 		buf.WriteString(alias)
 	}
 	buf.WriteString(",")
+}
+
+// write where tag sql
+func writeBufWhere(buf *bytes.Buffer, tb, tag string) {
+	buf.WriteString("`")
+	buf.WriteString(tb)
+	buf.WriteString("`.`")
+	buf.WriteString(tag)
+	buf.WriteString("` = ? and ")
 }
 
 // select * replace

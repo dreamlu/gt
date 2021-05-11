@@ -25,7 +25,6 @@ type Crud interface {
 	// init crud
 	Init(param *Params)
 	// DB
-	// Deprecated, use gt.DB() replace
 	DB() *DBTool
 	// new/replace param
 	// return param

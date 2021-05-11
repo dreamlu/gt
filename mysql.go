@@ -16,7 +16,6 @@ import (
 	"gorm.io/gorm"
 	logger2 "gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -172,10 +171,6 @@ func (db *DBTool) clone() *DBTool {
 // get single data
 func (db *DBTool) getBySQL(data interface{}, sql string, args ...interface{}) {
 
-	typ := reflect.TypeOf(data)
-	for typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
 	db.res = db.DB.Raw(sql, args[:]...).Scan(data)
 }
 

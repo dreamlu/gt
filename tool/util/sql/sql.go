@@ -57,23 +57,18 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 	}
 
 	var (
-		tags = tag.GetTags(model)
+		tags = tag.GetPartTags(model)
 		buf  = bytes.NewBuffer(nil)
-		v    = keys[0]
+		v    = "%" + keys[0] + "%"
 	)
 
 	buf.WriteString("(")
 	for _, t := range tags {
-		switch {
-		case !strings.HasSuffix(t, "_id") &&
-			!strings.HasPrefix(t, "id"):
-			buf.WriteString(alias)
-			buf.WriteString(".`")
-			buf.WriteString(t)
-			buf.WriteString("` like binary ? or ")
-			argsKey = append(argsKey, "%"+v+"%")
-		}
-
+		buf.WriteString(alias)
+		buf.WriteString(".`")
+		buf.WriteString(t)
+		buf.WriteString("` like binary ? or ")
+		argsKey = append(argsKey, v)
 	}
 	buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
 	buf.WriteString(") and ")
@@ -110,34 +105,12 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 	}
 
 	var (
-		tags = tag.GetTags(model)
-		buf  = bytes.NewBuffer(nil)
-		v    = keys[0]
+		//tags = tag.GetPartTags(model)
+		buf = bytes.NewBuffer(nil)
+		v   = "%" + keys[0] + "%"
 	)
 	buf.WriteString("(")
-	for _, t := range tags {
-		if !strings.HasSuffix(t, "_id") &&
-			!strings.HasPrefix(t, "id") {
-
-			tb := UniqueTagTable(t, tables...)
-			if tb != "" {
-				writeTagString(buf, tb, t)
-				argsKey = append(argsKey, "%"+v+"%")
-				continue
-			}
-
-			if b := otherTableKeySql(t, buf, tables...); b == true {
-				argsKey = append(argsKey, "%"+v+"%")
-				continue
-			}
-
-			// 主表
-			ts := strings.Split(tables[0], ":")
-			alias := ts[1]
-			writeTagString(buf, alias, t)
-			argsKey = append(argsKey, "%"+v+"%")
-		}
-	}
+	getTagMore(reflect.TypeOf(model), v, &argsKey, buf, tables...)
 	buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
 	buf.WriteString(") and ")
 
@@ -153,19 +126,74 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 	return
 }
 
-// other table key search sql
-func otherTableKeySql(tag string, buf *bytes.Buffer, tables ...string) (b bool) {
-	for _, v := range tables {
-		ts := strings.Split(v, ":")
-		table := ts[0]
-		alias := ts[1]
-		if strings.Contains(tag, table+"_") && !strings.Contains(tag, table+"_id") {
-			writeTagString(buf, alias, string([]byte(tag)[len(table)+1:]))
-			b = true
-			return
+// more tables
+// get sql tag alias recursion
+func getTagMore(ref reflect.Type, v string, argsKey *[]interface{}, buf *bytes.Buffer, tables ...string) {
+
+	var (
+		oTag, tg, tagTable string
+		b                  bool
+	)
+
+	if ref.Kind() != reflect.Struct {
+		return
+	}
+	for i := 0; i < ref.NumField(); i++ {
+		if ref.Field(i).Anonymous {
+			getTagMore(ref.Field(i).Type, v, argsKey, buf, tables[:]...)
+			continue
+		}
+		if tg, tagTable, b = tag.ParseGtTag(ref.Field(i).Tag); b {
+			continue
+		}
+		oTag = tag.GetFieldTag(ref.Field(i))
+		if tg == "" {
+			tg = oTag
+		}
+		// gt tg rule
+		if tagTable != "" {
+			writeTagString(buf, tagTable, tg)
+			*argsKey = append(*argsKey, v)
+			continue
+		}
+
+		// sql tg rule
+		tb := UniqueTagTable(tg, tables...)
+		if tb != "" {
+			writeTagString(buf, tb, tg)
+			*argsKey = append(*argsKey, v)
+			continue
+		}
+
+		// default tg rule
+		if b = otherTableTagSQL(tg, argsKey, buf, tables...); !b {
+			writeTagString(buf, tables[0], tg)
+			*argsKey = append(*argsKey, v)
 		}
 	}
 	return
+}
+
+// if there is tag gt and json, select json tag first
+// more tables, other tables sql tag
+func otherTableTagSQL(tag string, argsKey *[]interface{}, buf *bytes.Buffer, tables ...string) bool {
+	// foreign tables column
+	for _, v := range tables {
+		if strings.Contains(tag, v+"_id") {
+			break
+		}
+		// tables
+		if strings.HasPrefix(tag, v+"_") &&
+			// next two condition, eg: db_test.go==>TestGetReflectTagMore()
+			!strings.Contains(tag, "_id") &&
+			!strings.EqualFold(v, tables[0]) {
+
+			writeTagString(buf, v, string([]byte(tag)[len(v)+1:]))
+			*argsKey = append(*argsKey, v)
+			return true
+		}
+	}
+	return false
 }
 
 // write tag sql
