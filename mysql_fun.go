@@ -74,7 +74,14 @@ func (gt *GT) GetMoreSQL() {
 			continue
 		}
 
-		if b := otherTableWhere(&bufW, tables[1:], k); !b {
+		tb := sq.UniqueTagTable(k, tables...)
+		if tb != "" {
+			writeBufWhere(&bufW, tb, k)
+			gt.Args = append(gt.Args, v[0])
+			continue
+		}
+
+		if !otherTableWhere(&bufW, tables[1:], k) {
 			v[0] = strings.Replace(v[0], "'", "\\'", -1)
 			bufW.WriteString("`")
 			bufW.WriteString(tables[0])
@@ -172,13 +179,6 @@ func (gt *GT) GetSelectSearchSQL() {
 
 // other tables where
 func otherTableWhere(bufW *bytes.Buffer, tables []string, k string) (b bool) {
-
-	tb := sq.UniqueTagTable(k, tables...)
-	if tb != "" {
-		writeBufWhere(bufW, tb, k)
-		return
-	}
-
 	// other tables, except tables[0]
 	for _, v := range tables {
 		if !strings.Contains(k, v+"_id") && strings.Contains(k, v+"_") {
