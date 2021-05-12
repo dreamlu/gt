@@ -54,7 +54,7 @@ func TestMongo_Update(t *testing.T) {
 	t.Log(cd.Error())
 }
 
-func TestMongo_GetByData(t *testing.T) {
+func TestMongo_Get(t *testing.T) {
 
 	var client []*Client
 	cd := NewCrud(
@@ -62,7 +62,7 @@ func TestMongo_GetByData(t *testing.T) {
 		Table("client"),
 		Data(&client),
 	)
-	cd.GetByData(cmap.NewCMap().Set("name", "update"))
+	cd.Get(cmap.NewCMap().Set("name", "update"))
 	t.Log(client)
 
 	var client2 Client
@@ -71,7 +71,7 @@ func TestMongo_GetByData(t *testing.T) {
 		Table("client"),
 		Data(&client2),
 	)
-	cd.GetByData(cmap.NewCMap().Set("name", "update"))
+	cd.Get(cmap.NewCMap().Set("name", "update"))
 	t.Log(client2)
 }
 
@@ -79,11 +79,10 @@ func TestMongo_GetByID(t *testing.T) {
 
 	var client Client
 	cd := NewCrud(
-
 		Table("client"),
 		Data(&client),
 	)
-	objID, _ := primitive.ObjectIDFromHex("5f3cd15cf2f80b74c05f5033")
+	objID, _ := primitive.ObjectIDFromHex("609b451acb2ae879ea3fe8e9")
 	t.Log(objID.String())
 	cd.GetByID(objID)
 	t.Log(client)
@@ -93,15 +92,15 @@ func TestMongo_GetBySearch(t *testing.T) {
 
 	var client []*Client
 	cd := NewCrud(
-
-		Table("client"),
+		Model(Client{}),
+		//Table("client"),
 		Data(&client),
 	)
 	cd.GetBySearch(cmap.NewCMap().
 		Set("clientPage", "1").
 		Set("everyPage", "3").
 		Set("order", "id desc").
-		Set("name", "new_update2"),
+		Set("name", "test"),
 	//Set("create_time", "2020-08-24 16:03:55"),
 	)
 	t.Log(cd.Error())
@@ -123,14 +122,4 @@ func TestMongo_Delete(t *testing.T) {
 	cd.Delete(objID)
 	t.Log(cd.Error())
 	t.Log(cd.RowsAffected())
-}
-
-func TestMongo_Select(t *testing.T) {
-	var client Client
-	cd := NewCrud(
-
-		Data(&client),
-	).Select("client.find()").Single()
-	t.Log(client)
-	t.Log(cd.Error())
 }
