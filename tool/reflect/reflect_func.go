@@ -40,8 +40,11 @@ func ToSlice(arr interface{}) []interface{} {
 
 // return struct string name
 func StructName(st interface{}) string {
-	typ := reflect.TypeOf(st)
-	return typ.Name()
+	v := reflect.TypeOf(st)
+	if v.Kind() != reflect.Slice {
+		return ""
+	}
+	return v.Name()
 }
 
 // struct to map
