@@ -41,6 +41,9 @@ func ToSlice(arr interface{}) []interface{} {
 // return struct string name
 func StructName(st interface{}) string {
 	typ := reflect.TypeOf(st)
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
 	return typ.Name()
 }
 

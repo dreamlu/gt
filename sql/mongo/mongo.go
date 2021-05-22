@@ -35,7 +35,8 @@ func newMongoDB() *mongo.Database {
 	conf.Configger().GetStruct("app.mongo", dbS)
 	//url := fmt.Sprintf("mongodb://%s:%s@%s", dbS.User, dbS.Password, dbS.Host)
 	url := fmt.Sprintf("mongodb://%s", dbS.Host)
-	ctx, _ := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
 	if err != nil {
 		log.Error("[mongodb连接错误]:", err)

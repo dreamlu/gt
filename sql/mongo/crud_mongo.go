@@ -3,10 +3,9 @@ package mongo
 import (
 	"context"
 	"github.com/dreamlu/gt/tool/reflect"
+	"github.com/dreamlu/gt/tool/result"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/hump"
-	"github.com/dreamlu/gt/tool/util/result"
-	sq "github.com/dreamlu/gt/tool/util/sql"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,7 +35,12 @@ func (m *Mongo) Init(param *Params) {
 	return
 }
 
-func (m *Mongo) Params(params ...Param) *Mongo {
+func (m *Mongo) DB() *mongo.Database {
+
+	return m.m
+}
+
+func (m *Mongo) Params(params ...Param) Crud {
 
 	for _, p := range params {
 		p(m.param)
@@ -46,7 +50,7 @@ func (m *Mongo) Params(params ...Param) *Mongo {
 
 // search
 // pager info
-func (m *Mongo) GetBySearch(params cmap.CMap) *Mongo {
+func (m *Mongo) GetBySearch(params cmap.CMap) Crud {
 	clone := m.clone()
 
 	cur, err := m.GetByDataSearch(params)
@@ -59,7 +63,7 @@ func (m *Mongo) GetBySearch(params cmap.CMap) *Mongo {
 	return clone
 }
 
-func (m *Mongo) GetByData(params cmap.CMap) *Mongo {
+func (m *Mongo) Get(params cmap.CMap) Crud {
 	clone := m.clone()
 
 	filter := bson.M{}
@@ -76,7 +80,7 @@ func (m *Mongo) GetByData(params cmap.CMap) *Mongo {
 
 // must be mongodb primitive.ObjectID
 // by id
-func (m *Mongo) GetByID(id interface{}) *Mongo {
+func (m *Mongo) GetByID(id interface{}) Crud {
 	clone := m.clone()
 
 	res := clone.m.Collection(clone.param.Table).FindOne(context.TODO(), bson.M{"_id": id.(primitive.ObjectID)})
@@ -88,7 +92,7 @@ func (m *Mongo) GetByID(id interface{}) *Mongo {
 }
 
 // delete
-func (m *Mongo) Delete(id interface{}) *Mongo {
+func (m *Mongo) Delete(id interface{}) Crud {
 	clone := m.clone()
 
 	res, err := clone.m.Collection(clone.param.Table).DeleteMany(context.TODO(), bson.M{"_id": id.(primitive.ObjectID)})
@@ -101,7 +105,7 @@ func (m *Mongo) Delete(id interface{}) *Mongo {
 
 // update
 // must id string
-func (m *Mongo) Update() *Mongo {
+func (m *Mongo) Update() Crud {
 	clone := m.clone()
 
 	data := bson.M{}
@@ -122,7 +126,7 @@ func (m *Mongo) Update() *Mongo {
 }
 
 // create
-func (m *Mongo) Create() *Mongo {
+func (m *Mongo) Create() Crud {
 	clone := m.clone()
 	_, err := clone.m.Collection(clone.param.Table).InsertOne(context.TODO(), clone.param.Data)
 	m.err = err
@@ -133,39 +137,10 @@ func (m *Mongo) Create() *Mongo {
 }
 
 // create more
-func (m *Mongo) CreateMore() *Mongo {
+func (m *Mongo) CreateMore() Crud {
 	clone := m.clone()
 	_, m.err = clone.m.Collection(clone.param.Table).InsertMany(context.TODO(), reflect.ToSlice(clone.param.Data))
 	return clone
-}
-
-// create
-func (m *Mongo) Select(q interface{}, args ...interface{}) *Mongo {
-
-	clone := m
-	if m.selectSQL == "" {
-		clone = m.clone()
-	}
-
-	var query string
-	switch q.(type) {
-	case string:
-		query = q.(string)
-	//case cmap.CMap:
-	//	query, args = sq.CMapWhereSQL(q.(cmap.CMap))
-	case interface{}:
-		query, args = sq.StructWhereSQL(q)
-	}
-
-	clone.selectSQL += query + " "
-	//clone.args = append(clone.args, args...)
-	return clone
-}
-
-func (m *Mongo) Single() *Mongo {
-	//m.m.Client().
-	//m.err = m.m.RunCommand(context.TODO(), m.selectSQL).Decode(&m.param.Data)
-	return m
 }
 
 func (m *Mongo) Error() error {
