@@ -174,12 +174,14 @@ func parseFieldTag(tagValue string) (table, column string) {
 }
 
 // get struct fields tags via recursion
+// include gt tag rule
 func getTags(ref reflect.Type) (tags []string) {
 	if ref.Kind() != reflect.Struct {
 		return
 	}
 	var (
 		tag string
+		b   bool
 	)
 	for i := 0; i < ref.NumField(); i++ {
 		if ref.Field(i).Anonymous {
@@ -187,19 +189,12 @@ func getTags(ref reflect.Type) (tags []string) {
 			continue
 		}
 
-		//if tag, tagTable, b = ParseGtTag(ref.Field(i).Tag); b {
-		//	continue
-		//}
-		//if tag == "" {
-		tag = GetFieldTag(ref.Field(i))
-		//}
-		//if strings.HasSuffix(tag, "_id") ||
-		//	strings.HasPrefix(tag, "id") {
-		//	continue
-		//}
-		//if tagTable != "" {
-		//	tag = tagTable + "_" + tag
-		//}
+		if tag, _, b = ParseGtTag(ref.Field(i).Tag); b {
+			continue
+		}
+		if tag == "" {
+			tag = GetFieldTag(ref.Field(i))
+		}
 		tags = append(tags, tag)
 	}
 	return tags

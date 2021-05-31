@@ -56,6 +56,7 @@ func (c *Mysql) Params(params ...Param) Crud {
 	for _, p := range params {
 		p(c.param)
 	}
+	c.dbTool.InitColumns(c.param)
 	return c
 }
 
