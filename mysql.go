@@ -406,7 +406,7 @@ func (db *DBTool) InitColumns(param *Params) {
 	tables = append(tables, param.InnerTable...)
 	tables = append(tables, param.LeftTable...)
 
-	for _, v := range param.InnerTable {
+	for _, v := range tables {
 		if v == "" {
 			continue
 		}
