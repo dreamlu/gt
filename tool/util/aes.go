@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 )
 
+// AesKey can be assign
 var AesKey = "github.com/dreamlu/gt dreamlu123"
 
 // is aes encode

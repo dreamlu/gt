@@ -3,9 +3,9 @@ package mongo
 import (
 	"context"
 	"github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/result"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/hump"
+	"github.com/dreamlu/gt/tool/util/result"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

@@ -25,6 +25,9 @@ func TestStructToMap(t *testing.T) {
 	type Name struct {
 		Name string `json:"name"`
 		A    int
+		B    int
+		D    int
+		C    int
 	}
 
 	cm := StructToCMap(&Name{

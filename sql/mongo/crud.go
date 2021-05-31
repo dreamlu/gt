@@ -1,8 +1,8 @@
 package mongo
 
 import (
-	"github.com/dreamlu/gt/tool/result"
 	"github.com/dreamlu/gt/tool/type/cmap"
+	"github.com/dreamlu/gt/tool/util/result"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
