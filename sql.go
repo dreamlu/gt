@@ -22,6 +22,9 @@ var sqlBuffer = cmap.NewCMap()
 // first table must main table, like from a inner join b, first table is a
 func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 	typ := reflect.TypeOf(model)
+	for typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
 	key := typ.PkgPath() + "/more/" + typ.Name()
 	sql = sqlBuffer.Get(key)
 	if sql != "" {
@@ -126,6 +129,9 @@ func writeBufWhere(buf *bytes.Buffer, tb, tag string) {
 // add alias
 func GetColSQLAlias(model interface{}, alias string) (sql string) {
 	typ := reflect.TypeOf(model)
+	for typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
 	key := fmt.Sprintf("%s%s-%s", typ.PkgPath(), typ.Name(), alias)
 	sql = sqlBuffer.Get(key)
 	if sql != "" {
@@ -165,13 +171,16 @@ func getTagAlias(ref reflect.Type, buf *bytes.Buffer, alias string) {
 // select * replace
 func GetColSQL(model interface{}) (sql string) {
 	typ := reflect.TypeOf(model)
+	for typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
 	key := typ.PkgPath() + typ.Name()
 	sql = sqlBuffer.Get(key)
 	if sql != "" {
 		return
 	}
 	var buf bytes.Buffer
-	getTag(reflect.TypeOf(model), &buf)
+	getTag(typ, &buf)
 	sql = string(buf.Bytes()[:buf.Len()-1]) // remove ,
 	sqlBuffer.Set(key, sql)
 	return
@@ -208,8 +217,8 @@ func GetColParamSQL(model interface{}) (sql string) {
 
 // get col ? type
 func getColParamSQLByType(typ reflect.Type, buf *bytes.Buffer) {
-	if typ.Kind() != reflect.Struct {
-		return
+	for typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
 	}
 	for i := 0; i < typ.NumField(); i++ {
 		if typ.Field(i).Anonymous {
