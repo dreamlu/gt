@@ -176,6 +176,9 @@ func parseFieldTag(tagValue string) (table, column string) {
 // get struct fields tags via recursion
 // include gt tag rule
 func getTags(ref reflect.Type) (tags []string) {
+	for ref.Kind() == reflect.Ptr {
+		ref = ref.Elem()
+	}
 	if ref.Kind() != reflect.Struct {
 		return
 	}
