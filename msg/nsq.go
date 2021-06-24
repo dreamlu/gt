@@ -40,6 +40,10 @@ func (n *Nsg) NewConsumer(topic, channel string) Msg {
 	return n
 }
 
+func (n *Nsg) Stop() {
+	n.consumer.Stop()
+}
+
 func (n *Nsg) Pub(topic string, msg interface{}) error {
 
 	b, err := json.Marshal(msg)

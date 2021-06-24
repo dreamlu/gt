@@ -6,17 +6,26 @@ import (
 	"time"
 )
 
+type Notify struct {
+	Name    string `json:"name"`
+	Content string `json:"content"`
+}
+
 func TestNsg(t *testing.T) {
 
-	go func() {
-
-		for {
-			m := NewProducer() // or m := NewProducer(new(Nsg))
-			m.Pub("b", 123)
-			m.MultiPub("b2", "哈", "呵")
-			time.Sleep(2 * time.Second)
-		}
-	}()
+	//go func() {
+	//
+	//	for {
+	//		m := NewProducer() // or m := NewProducer(new(Nsg))
+	//		//m.Pub("b", 123)
+	//		m.Pub("b", Notify{
+	//			Name:    "名称",
+	//			Content: "内容",
+	//		})
+	//		m.MultiPub("b2", "哈", "呵")
+	//		time.Sleep(2 * time.Second)
+	//	}
+	//}()
 
 	c := NewConsumer("b", "b-channel")
 	err := c.Sub(B)
@@ -25,7 +34,6 @@ func TestNsg(t *testing.T) {
 		return
 	}
 	time.Sleep(15 * time.Second)
-
 }
 
 func B(message *Message) error {

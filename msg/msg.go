@@ -6,6 +6,7 @@ import "github.com/nsqio/go-nsq"
 type Msg interface {
 	NewProducer() Msg                                 // new producer
 	NewConsumer(topic, channel string) Msg            // new consumer
+	Stop()                                            // consumer Stop
 	Pub(topic string, msg interface{}) error          // pub interface{} message
 	MultiPub(topic string, msgs ...interface{}) error // MultiPub ...interface{} message
 	Sub(handler HandlerFunc) error                    // sub func to handle your work
