@@ -46,24 +46,8 @@ func GetFieldTag(field reflect.StructField) string {
 }
 
 // get struct model fields tag []string
+// include gt tag rule
 func GetTags(model interface{}) (arr []string) {
-	// problem: map no sort -> struct field sort
-	//tags := ObtainMoreTags(reflect.TypeOf(model), []string{"json", cons.GT}, IsGtTagIgnore)
-	//jsonTags := tags["json"]
-	//gts := tags[cons.GT]
-	//for k, jt := range jsonTags {
-	//	var (
-	//		tag = jt
-	//		gt  = gts[k]
-	//	)
-	//	if strings.Contains(gt, cons.GtField) {
-	//		t, c := parseFieldTag(gt)
-	//		tag = t + "_" + c
-	//	} else if tag == "" || tag == cons.Gt_ {
-	//		tag = hump.HumpToLine(k)
-	//	}
-	//	arr = append(arr, tag)
-	//}
 	return getTags(reflect.TypeOf(model))
 }
 
