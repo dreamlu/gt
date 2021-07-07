@@ -1,4 +1,4 @@
-### [gt 2.0](https://github.com/dreamlu/gt)  
+### [gt 1.30+](https://github.com/dreamlu/gt)  
 
 api快速开发业务框架, 模型生成, 通用增删改查, 支持多表连接  
 

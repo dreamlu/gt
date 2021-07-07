@@ -255,23 +255,24 @@ func TableOnly(table string) string {
 	return table
 }
 
-// return unique table tag
-func UniqueTagTable(tag string, tables ...string) (table string) {
-	var (
-		i = 0
-	)
+// return unique tag table
+func UniqueTagTable(tag string, tables ...string) string {
+	tbs := TagTables(tag, tables...)
+	if len(tbs) == 1 {
+		return tbs[0]
+	}
+	return ""
+}
 
+// return tag tables
+func TagTables(tag string, tables ...string) (tbs []string) {
 	for _, v := range tables {
 		tags := TableCols[v]
 		for _, t := range tags {
 			if t == tag {
-				i++
-				table = v
+				tbs = append(tbs, v)
 			}
 		}
 	}
-	if i == 1 {
-		return
-	}
-	return ""
+	return
 }

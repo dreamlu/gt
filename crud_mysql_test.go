@@ -42,8 +42,9 @@ func (u User) String() string {
 
 // service model
 type Service struct {
-	ID   uint64 `json:"id"`
-	Name string `json:"name"`
+	ID     uint64 `json:"id"`
+	Name   string `json:"name"`
+	UserID uint64 `json:"user_id"` // user's services
 }
 
 // order model
@@ -658,4 +659,17 @@ func TestMysql_GetMoreBySearchInnerLeftCondition(t *testing.T) {
 	)
 	var params = make(cmap.CMap)
 	crud.GetMoreBySearch(params)
+}
+
+func TestMysql_GetMoreBySearchNotUnique(t *testing.T) {
+	type Info struct {
+		UserID uint64 `json:"user_id"`
+	}
+	var data []*Info
+	crud.Params(
+		Data(&data),
+		Model(Info{}),
+		Inner("order", "user", "user:id", "service:user_id"), // "order", "user_info"), // inner/left join on a.column = b.column and ...
+	)
+	crud.GetMoreBySearch(cmap.NewCMap().Set("user_id", "1"))
 }

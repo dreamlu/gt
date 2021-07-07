@@ -74,21 +74,18 @@ func (gt *GT) GetMoreSQL() {
 			continue
 		}
 
-		tb := sq.UniqueTagTable(k, tables...)
-		if tb != "" {
-			writeBufWhere(&bufW, tb, k)
+		tbs := sq.TagTables(k, tables...)
+		if len(tbs) > 0 {
+			// unique or first table where condition
+			writeBufWhere(&bufW, tbs[0], k)
 			gt.Args = append(gt.Args, v[0])
 			continue
 		}
 
 		if !otherTableWhere(&bufW, tables[1:], k) {
-			v[0] = strings.Replace(v[0], "'", "\\'", -1)
-			bufW.WriteString("`")
-			bufW.WriteString(tables[0])
-			bufW.WriteString("`.`")
-			bufW.WriteString(k)
-			bufW.WriteString("` = ? and ")
+			writeBufWhere(&bufW, tables[0], k)
 		}
+		//v[0] = strings.Replace(v[0], "'", "\\'", -1)
 		gt.Args = append(gt.Args, v[0])
 	}
 
