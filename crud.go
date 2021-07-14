@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const Version = "2.0.0+"
+const Version = "1.30+"
 
 func init() {
 	log.Info("[gt version]:", Version)
