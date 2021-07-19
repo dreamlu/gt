@@ -1,6 +1,7 @@
 package mongo
 
 import (
+	"github.com/dreamlu/gt/tool/type/bmap"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/time"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -96,11 +97,12 @@ func TestMongo_GetBySearch(t *testing.T) {
 		//Table("client"),
 		Data(&client),
 	)
-	cd.GetBySearch(cmap.NewCMap().
-		Set("clientPage", "1").
-		Set("everyPage", "3").
+	cd.GetBySearch(bmap.NewBMap().
+		//Set("clientPage", "1").
+		//Set("everyPage", "3").
 		Set("order", "id desc").
-		Set("name", "test"),
+		//Set("name", "test"),
+		Set("account", 0),
 	//Set("create_time", "2020-08-24 16:03:55"),
 	)
 	t.Log(cd.Error())

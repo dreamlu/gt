@@ -2,13 +2,13 @@ package mongo
 
 import (
 	"context"
+	"github.com/dreamlu/gt/tool/type/bmap"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/cons"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"reflect"
-	"strconv"
 	"strings"
 )
 
@@ -29,7 +29,7 @@ func (m *Mongo) CursorScan(cur *mongo.Cursor, data interface{}) {
 	}
 }
 
-func (m *Mongo) GetByDataSearch(params cmap.CMap) (cur *mongo.Cursor, err error) {
+func (m *Mongo) GetByDataSearch(params bmap.BMap) (cur *mongo.Cursor, err error) {
 	var (
 		//clientPage, everyPage int64
 		filter = bson.M{}
@@ -40,13 +40,13 @@ func (m *Mongo) GetByDataSearch(params cmap.CMap) (cur *mongo.Cursor, err error)
 	for k, _ := range params {
 		switch k {
 		case cons.GtClientPage, cons.GtClientPageUnderLine:
-			m.pager.ClientPage, _ = strconv.ParseInt(params.Pop(k), 10, 64)
+			m.pager.ClientPage = params.Pop(k).(int64)
 			continue
 		case cons.GtEveryPage, cons.GtEveryPageUnderLine:
-			m.pager.EveryPage, _ = strconv.ParseInt(params.Pop(k), 10, 64)
+			m.pager.EveryPage = params.Pop(k).(int64)
 			continue
 		case cons.GtOrder:
-			order = params.Pop(k)
+			order = params.Pop(k).(string)
 			continue
 		}
 	}

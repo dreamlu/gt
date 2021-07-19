@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/result"
+	"github.com/dreamlu/gt/tool/type/bmap"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/hump"
 	"go.mongodb.org/mongo-driver/bson"
@@ -50,7 +51,7 @@ func (m *Mongo) Params(params ...Param) Crud {
 
 // search
 // pager info
-func (m *Mongo) GetBySearch(params cmap.CMap) Crud {
+func (m *Mongo) GetBySearch(params bmap.BMap) Crud {
 	clone := m.clone()
 
 	cur, err := m.GetByDataSearch(params)
