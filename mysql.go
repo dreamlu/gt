@@ -118,7 +118,7 @@ func logInfo(dbS *dba) logger2.Interface {
 	if l := dbS.Log; l {
 		lv = logger2.Info
 	}
-	return New(
+	return newMysqlLog(
 		Config{
 			SlowThreshold: 200 * time.Millisecond, // 慢 SQL 阈值
 			LogLevel:      lv,                     // Log level

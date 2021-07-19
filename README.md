@@ -1,9 +1,9 @@
-### [gt 1.30+](https://github.com/dreamlu/gt)  
+### [gt 2.0+](https://github.com/dreamlu/gt)  
 
 api快速开发业务框架, 模型生成, 通用增删改查, 支持多表连接  
 
 ### 解决了什么  
-不仅仅是日常开发中crud，更是解决了绝大多数情况下的多表连接处理逻辑，[三步crud(包含多表)](https://github.com/dreamlu/gt-crud)  
+不仅仅是日常开发中crud，更是解决了绝大多数情况下的多表连接处理逻辑，[两步crud(包含多表)](https://github.com/dreamlu/gt-crud)  
 
 ### 如何进行多表的crud  
 

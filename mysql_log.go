@@ -31,7 +31,7 @@ type Config struct {
 	LogLevel      logger2.LogLevel
 }
 
-func New(config Config) logger2.Interface {
+func newMysqlLog(config Config) logger2.Interface {
 	var (
 		infoStr      = "%s\n[info] "
 		warnStr      = "%s\n[warn] "

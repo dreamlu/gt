@@ -67,7 +67,6 @@ type OrderD struct {
 	UserInfoSome string     `json:"user_info_some" gt:"field:user_info.some"` // user_info.some
 }
 
-// 局部
 var crud Crud
 
 func init() {
@@ -79,24 +78,20 @@ func init() {
 func TestDB(t *testing.T) {
 
 	var user = User{
+		ID:        1,
 		Name:      "测试xx",
 		BirthDate: time.CDate(time2.Now()),
 		//Createtime:JsonDate(time.Now()),
 	}
 
-	// return create id
-	DB().Create("", &user)
-	t.Log("user: ", user)
-	user.Name = "haha"
-	DB().Create("", &user)
-	t.Log("user: ", user)
+	db := DB()
+	db.Create("", &user)
+	t.Log(db.Error, "user: ", user)
 	var user2 User
 	crud.Params(Model(User{}), Data(&user2)).GetByID(1)
 	t.Log(user2)
 }
 
-// 通用增删该查测试
-// 传参可使用url.Values替代param.CMap操作方便
 func TestCrud(t *testing.T) {
 
 	// add
@@ -227,7 +222,6 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		UserName    string `json:"user_name"`
 		UserAccount string `json:"user_account"`
 	}
-	// 多表查询
 	// get more search
 	var params = cmap.NewCMap().
 		Set("key", "梦 test 1"). // key work，& relation
@@ -265,7 +259,6 @@ func TestGetMoreSearchSQL(t *testing.T) {
 		ShopId      int64 `gorm:"type:bigint(20)" json:"shop_id"`
 	}
 
-	// 客户行为详情
 	type CVBDe struct {
 		CVB
 		ClientName string `json:"client_name"`
@@ -283,7 +276,6 @@ func TestGetMoreSearchSQL(t *testing.T) {
 	t.Log(gt.sql)
 }
 
-// 批量创建
 func TestCreateMoreData(t *testing.T) {
 
 	type Par struct {
@@ -322,7 +314,6 @@ func TestCreateMoreData(t *testing.T) {
 	t.Log(err)
 }
 
-// 继承tag解析测试
 func TestExtends(t *testing.T) {
 	type UserDe struct {
 		User
@@ -594,7 +585,6 @@ func TestMysql_GetMoreByData(t *testing.T) {
 	}
 }
 
-// 测试mysql仅时分秒格式
 func TestMysql_Time(t *testing.T) {
 	var or []*Order
 	cd := NewCrud(
