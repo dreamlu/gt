@@ -26,6 +26,7 @@ const (
 	GtTrans  = "trans"
 	GtIgnore = "ignore"
 	Gt_      = "-"
+	GtComma  = ","
 )
 
 // default page
@@ -41,6 +42,7 @@ const (
 	OrderDesc           = "%s.id desc"
 	OrderS              = "order by %s "
 	ParamAnd            = " = ? and "
+	ParamInAnd          = " in (?) and "
 	SelectFrom          = "select %s from %s "
 	Distinct            = "distinct "
 	Count               = "count(*) as total_num"

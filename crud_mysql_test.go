@@ -203,9 +203,10 @@ func TestGetDataBySql(t *testing.T) {
 
 func TestGetDataBySearch(t *testing.T) {
 	var args = make(cmap.CMap)
-	args["key"] = append(args["key"], "梦")
+	//args["key"] = append(args["key"], "梦")
 	args["clientPage"] = append(args["clientPage"], "1")
 	args["everyPage"] = append(args["everyPage"], "2")
+	//args["id"] = append(args["id"], "1,2")
 	var user []*User
 	DB().GetBySearch(&GT{
 		CMaps: args,
@@ -233,6 +234,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	var params = cmap.NewCMap().
 		Set("key", "test 1"). // key work
 		Set("clientPage", "1").
+		//Set("id", "1,2,3").
 		Set("everyPage", "2")
 	//params.Add("mock", "1") // mock data
 	var or []*OrderD
@@ -672,4 +674,13 @@ func TestMysql_GetMoreBySearchNotUnique(t *testing.T) {
 		Inner("order", "user", "user:id", "service:user_id"), // "order", "user_info"), // inner/left join on a.column = b.column and ...
 	)
 	crud.GetMoreBySearch(cmap.NewCMap().Set("user_id", "1"))
+}
+
+func TestGet(t *testing.T) {
+	var data User
+	crud.Params(
+		Model(User{}),
+		Data(&data),
+	).Get(cmap.NewCMap().Set("id", "1,2"))
+	t.Log(data)
 }
