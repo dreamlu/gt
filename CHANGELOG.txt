@@ -1,1 +1,1 @@
-增加Get/GetBySearch/GetMoreBySearch逗号分割筛选支持
+getColSQL增加field支持；其他更新

@@ -169,8 +169,10 @@ func parseFieldTag(tagValue string) (table, column string) {
 	if a := strings.Split(tag, "."); len(a) > 1 { // include table
 		table = a[0]
 		column = a[1]
+		return
 	}
-	return
+	// only tag
+	return "", tag
 }
 
 // get struct fields tags via recursion

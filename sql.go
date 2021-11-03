@@ -156,15 +156,12 @@ func getTagAlias(ref reflect.Type, buf *bytes.Buffer, alias string) {
 			getTagAlias(ref.Field(i).Type, buf, alias)
 			continue
 		}
-		if IsGtTagIgnore(ref.Field(i).Tag) {
-			continue
-		}
-
-		tag := GetFieldTag(ref.Field(i))
-		buf.WriteString(alias)
-		buf.WriteString(".`")
-		buf.WriteString(tag)
-		buf.WriteString("`,")
+		if tag, b := getRTag(ref, i); !b {
+			buf.WriteString(alias)
+			buf.WriteString(".`")
+			buf.WriteString(tag)
+			buf.WriteString("`,")
+		} // continue
 	}
 }
 
@@ -198,14 +195,22 @@ func getTag(ref reflect.Type, buf *bytes.Buffer) {
 			getTag(ref.Field(i).Type, buf)
 			continue
 		}
-		if IsGtTagIgnore(ref.Field(i).Tag) {
-			continue
-		}
-		tag := GetFieldTag(ref.Field(i))
-		buf.WriteString("`")
-		buf.WriteString(tag)
-		buf.WriteString("`,")
+		if tag, b := getRTag(ref, i); !b {
+			buf.WriteString("`")
+			buf.WriteString(tag)
+			buf.WriteString("`,")
+		} // continue
 	}
+}
+
+func getRTag(ref reflect.Type, i int) (tag string, b bool) {
+	if tag, _, b = ParseGtTag(ref.Field(i).Tag); b {
+		return "", true
+	}
+	if tag == "" {
+		tag = GetFieldTag(ref.Field(i))
+	}
+	return tag, b
 }
 
 // get col ?

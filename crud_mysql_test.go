@@ -329,7 +329,7 @@ func TestCreateMoreData(t *testing.T) {
 func TestExtends(t *testing.T) {
 	type UserDe struct {
 		User
-		Other string `json:"other"`
+		Other string `json:"other" gt:"field:others"`
 	}
 
 	type UserDeX struct {

@@ -5,6 +5,7 @@ import (
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/type/time"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"sync"
 	"testing"
 	time2 "time"
 )
@@ -124,4 +125,26 @@ func TestMongo_Delete(t *testing.T) {
 	cd.Delete(objID)
 	t.Log(cd.Error())
 	t.Log(cd.RowsAffected())
+}
+
+func TestMongo_GoRoutine(t *testing.T) {
+
+	cd := NewCrud(
+		Model(Client{}),
+	)
+
+	var g sync.WaitGroup
+	for i := 0; i < 100; i++ {
+		g.Add(1)
+		go func() {
+			defer g.Done()
+			var client []*Client
+			cd.Params(Data(&client))
+			cd.GetBySearch(bmap.NewBMap().
+				Set("order", "id desc"),
+			)
+			t.Log(len(client))
+		}()
+	}
+	g.Wait()
 }
