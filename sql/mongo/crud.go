@@ -1,8 +1,8 @@
 package mongo
 
 import (
+	"github.com/dreamlu/gt/tool/result"
 	"github.com/dreamlu/gt/tool/type/cmap"
-	"github.com/dreamlu/gt/tool/util/result"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -19,7 +19,7 @@ type Crud interface {
 
 	// get url params
 	// like form data
-	GetBySearch(params cmap.CMap) Crud // search single table
+	GetBySearch(params bmap.BMap) Crud // search single table
 	Get(params cmap.CMap) Crud         // get data no search
 	GetByID(id interface{}) Crud       // by id
 

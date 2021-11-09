@@ -1,1 +1,1 @@
-MoreTable where conditions better ;version fix
+getColSQL增加field支持；其他更新

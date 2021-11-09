@@ -77,16 +77,13 @@ func (gt *GT) GetMoreSQL() {
 		tbs := sq.TagTables(k, tables...)
 		if len(tbs) > 0 {
 			// unique or first table where condition
-			writeBufWhere(&bufW, tbs[0], k)
-			gt.Args = append(gt.Args, v[0])
+			gt.whereTbKv(&bufW, tbs[0], k, v[0])
 			continue
 		}
 
-		if !otherTableWhere(&bufW, tables[1:], k) {
-			writeBufWhere(&bufW, tables[0], k)
+		if !gt.otherTableWhere(&bufW, tables[1:], k, v[0]) {
+			gt.whereTbKv(&bufW, tables[0], k, v[0])
 		}
-		//v[0] = strings.Replace(v[0], "'", "\\'", -1)
-		gt.Args = append(gt.Args, v[0])
 	}
 
 	gt.whereSQL(&bufW)
@@ -119,9 +116,7 @@ func (gt *GT) GetSearchSQL() {
 			gt.Args = append(gt.Args, argsKey...)
 			continue
 		}
-		bufW.WriteString(k)
-		bufW.WriteString(cons.ParamAnd)
-		gt.Args = append(gt.Args, v[0]) // args
+		gt.whereKv(&bufW, k, v[0])
 	}
 
 	gt.whereSQL(&bufW)
@@ -150,9 +145,7 @@ func (gt *GT) GetSQL() {
 			gt.Args = append(gt.Args, argsKey...)
 			continue
 		}
-		bufW.WriteString(k)
-		bufW.WriteString(cons.ParamAnd)
-		gt.Args = append(gt.Args, v[0]) // args
+		gt.whereKv(&bufW, k, v[0])
 	}
 
 	gt.whereSQLNt(&bufW)
@@ -175,11 +168,11 @@ func (gt *GT) GetSelectSearchSQL() {
 }
 
 // other tables where
-func otherTableWhere(bufW *bytes.Buffer, tables []string, k string) (b bool) {
+func (gt *GT) otherTableWhere(bufW *bytes.Buffer, tables []string, k, v string) (b bool) {
 	// other tables, except tables[0]
-	for _, v := range tables {
-		if !strings.Contains(k, v+"_id") && strings.Contains(k, v+"_") {
-			writeBufWhere(bufW, v, string([]byte(k)[len(v)+1:]))
+	for _, tb := range tables {
+		if !strings.Contains(k, tb+"_id") && strings.Contains(k, tb+"_") {
+			gt.whereTbKv(bufW, tb, string([]byte(k)[len(tb)+1:]), v)
 			b = true
 			return
 		}
@@ -365,6 +358,34 @@ func (gt *GT) whereSQLNt(bufW *bytes.Buffer) {
 		gt.sql += fmt.Sprintf(cons.OrderS, gt.order)
 	}
 	return
+}
+
+// where k =/in v
+func (gt *GT) whereKv(bufW *bytes.Buffer, k, v string) {
+	bufW.WriteString(k)
+	if strings.Contains(v, cons.GtComma) {
+		bufW.WriteString(cons.ParamInAnd)
+		gt.Args = append(gt.Args, strings.Split(v, cons.GtComma)) // args
+	} else {
+		bufW.WriteString(cons.ParamAnd)
+		gt.Args = append(gt.Args, v) // args
+	}
+}
+
+// where k =/in v
+func (gt *GT) whereTbKv(bufW *bytes.Buffer, tb, k, v string) {
+	bufW.WriteByte('`')
+	bufW.WriteString(tb)
+	bufW.WriteString("`.`")
+	bufW.WriteString(k)
+	bufW.WriteByte('`')
+	if strings.Contains(v, cons.GtComma) {
+		bufW.WriteString(cons.ParamInAnd)
+		gt.Args = append(gt.Args, strings.Split(v, cons.GtComma)) // args
+	} else {
+		bufW.WriteString(cons.ParamAnd)
+		gt.Args = append(gt.Args, v) // args
+	}
 }
 
 // form-data create/update

@@ -32,7 +32,7 @@ func (t CTime) MarshalJSON() ([]byte, error) {
 func (t *CTime) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	if s == "" {
-		s = Layout
+		return nil
 	}
 	ti, err := time.ParseInLocation(Layout, s, time.Local)
 	if err != nil {
@@ -92,7 +92,7 @@ func (t CNTime) MarshalJSON() ([]byte, error) {
 func (t *CNTime) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	if s == "" {
-		s = LayoutN
+		return nil
 	}
 	ti, err := time.ParseInLocation(LayoutN, s, time.Local)
 	if err != nil {
@@ -152,7 +152,7 @@ func (t CDate) MarshalJSON() ([]byte, error) {
 func (t *CDate) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	if s == "" {
-		s = LayoutDate
+		return nil
 	}
 	ti, err := time.ParseInLocation(LayoutDate, s, time.Local)
 	if err != nil {
@@ -211,7 +211,7 @@ func (t CSTime) MarshalJSON() ([]byte, error) {
 func (t *CSTime) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	if s == "" {
-		s = LayoutS
+		return nil
 	}
 	ti, err := time.ParseInLocation(LayoutS, s, time.Local)
 	if err != nil {
