@@ -20,13 +20,15 @@ const (
 	GtKey                 = "key"
 	GtMock                = "mock"
 	// gt tag
-	GT       = "gt"
-	GtField  = "field"
-	GtValid  = "valid"
-	GtTrans  = "trans"
-	GtIgnore = "ignore"
-	Gt_      = "-"
-	GtComma  = ","
+	GT           = "gt"
+	GtField      = "field"
+	GtValid      = "valid"
+	GtTrans      = "trans"
+	GtIgnore     = "ignore"
+	Gt_          = "-"
+	GtComma      = ","
+	GtGorm       = "gorm"
+	GtGormColumn = "column"
 )
 
 // default page

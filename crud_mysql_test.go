@@ -572,7 +572,7 @@ func TestMysql_GetMoreByData(t *testing.T) {
 	cd := NewCrud(
 		// 支持同一个mysql多数据库跨库查询
 		Inner("order", "gt.user"),
-		Left("order", "service"),
+		Left("order", "service", "gt.user:id", "user_info:user_id"),
 		Model(OrderD{}),
 		Data(&or),
 		KeyModel(OrderD{}),

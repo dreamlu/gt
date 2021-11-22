@@ -222,12 +222,7 @@ func (t *CSTime) UnmarshalJSON(b []byte) error {
 }
 
 func (t CSTime) Value() (driver.Value, error) {
-	var zeroTime time.Time
-	var ti = time.Time(t)
-	if ti.UnixNano() == zeroTime.UnixNano() {
-		return nil, nil
-	}
-	return ti, nil
+	return t.String(), nil
 }
 
 func (t *CSTime) Scan(v interface{}) error {

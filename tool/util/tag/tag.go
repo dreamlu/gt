@@ -12,6 +12,48 @@ func IsGtTagIgnore(tag reflect.StructTag) bool {
 	return IsTagIgnore(tag, cons.GT, false, cons.GtIgnore, cons.GtSubSQL)
 }
 
+// ParseTag parse tag
+// gt:"field:table.field"
+// gorm:"column:field"
+// json:"field"
+// gt > gorm > json > struct field
+func ParseTag(field reflect.StructField) (tag, tagTable, jsonTag string, b bool) {
+
+	// ignore
+	if IsGtTagIgnore(field.Tag) {
+		b = true
+		return
+	}
+	// gt
+	tag, tagTable, b = ParseGtTag(field.Tag)
+	// gorm
+	if tag == "" {
+		tag, tagTable, b = ParseFieldTag(field.Tag, cons.GtGorm, cons.GtGormColumn)
+	}
+	// json
+	jsonTag = GetFieldTag(field)
+	// tag still empty
+	if tag == "" {
+		tag = jsonTag
+	}
+	return
+}
+
+// gorm:"column:field"
+func ParseFieldTag(sTag reflect.StructTag, tagV, field string) (tag, tagTable string, b bool) {
+	tagValue := sTag.Get(tagV)
+	if tagValue == "" {
+		return
+	}
+	gtFields := strings.Split(tagValue, ";")
+	for _, v := range gtFields {
+		if strings.Contains(v, field) {
+			tagTable, tag = parseFieldTag(v)
+		}
+	}
+	return
+}
+
 // gt:"field:table.column"
 func ParseGtTag(sTag reflect.StructTag) (tag, tagTable string, b bool) {
 

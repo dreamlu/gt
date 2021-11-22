@@ -131,8 +131,8 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 func getTagMore(ref reflect.Type, v string, argsKey *[]interface{}, buf *bytes.Buffer, tables ...string) {
 
 	var (
-		oTag, tg, tagTable string
-		b                  bool
+		tg, tagTable string
+		b            bool
 	)
 
 	if ref.Kind() != reflect.Struct {
@@ -143,12 +143,8 @@ func getTagMore(ref reflect.Type, v string, argsKey *[]interface{}, buf *bytes.B
 			getTagMore(ref.Field(i).Type, v, argsKey, buf, tables[:]...)
 			continue
 		}
-		if tg, tagTable, b = tag.ParseGtTag(ref.Field(i).Tag); b {
+		if tg, tagTable, _, b = tag.ParseTag(ref.Field(i)); b {
 			continue
-		}
-		oTag = tag.GetFieldTag(ref.Field(i))
-		if tg == "" {
-			tg = oTag
 		}
 		// gt tg rule
 		if tagTable != "" {

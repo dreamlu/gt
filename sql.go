@@ -54,12 +54,8 @@ func getTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
 			getTagMore(ref.Field(i).Type, buf, tables[:]...)
 			continue
 		}
-		if tag, tagTable, b = ParseGtTag(ref.Field(i).Tag); b {
+		if tag, tagTable, oTag, b = ParseTag(ref.Field(i)); b {
 			continue
-		}
-		oTag = GetFieldTag(ref.Field(i))
-		if tag == "" {
-			tag = oTag
 		}
 		// gt tag rule
 		if tagTable != "" {
@@ -204,11 +200,8 @@ func getTag(ref reflect.Type, buf *bytes.Buffer) {
 }
 
 func getRTag(ref reflect.Type, i int) (tag string, b bool) {
-	if tag, _, b = ParseGtTag(ref.Field(i).Tag); b {
+	if tag, _, _, b = ParseTag(ref.Field(i)); b {
 		return "", true
-	}
-	if tag == "" {
-		tag = GetFieldTag(ref.Field(i))
 	}
 	return tag, b
 }
