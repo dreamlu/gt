@@ -31,10 +31,8 @@ func ParseTag(field reflect.StructField) (tag, tagTable, jsonTag string, b bool)
 		tag, tagTable, b = ParseFieldTag(field.Tag, cons.GtGorm, cons.GtGormColumn)
 	}
 	// json
-	jsonTag = GetFieldTag(field)
-	// tag still empty
 	if tag == "" {
-		tag = jsonTag
+		tag = GetFieldTag(field)
 	}
 	return
 }

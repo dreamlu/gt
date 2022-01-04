@@ -7,7 +7,7 @@ import (
 	"github.com/dreamlu/gt/tool/log"
 )
 
-// data model
+// CacheModel data model
 type CacheModel struct {
 	// seconds
 	Time int64 `json:"time,omitempty"`
@@ -35,25 +35,26 @@ func (c CacheModel) Unmarshal(v interface{}) error {
 	return json.Unmarshal(b, v)
 }
 
-// cache manager
+// Cache manager
 type Cache interface {
-	// init cache
+	// NewCache init cache
 	NewCache() error
 	// operate method
-	// set value
+
+	// Set value
 	// if time != 0 set it
 	Set(key interface{}, value CacheModel) error
-	// get value
+	// Get value
 	Get(key interface{}) (CacheModel, error)
-	// delete value
+	// Delete value
 	Delete(key interface{}) error
-	// more del
+	// DeleteMore more del
 	// key will become *key*
 	DeleteMore(key interface{}) error
-	// check value
+	// Check value
 	// flush the time
 	Check(key interface{}) error
-	// expire key time
+	// ExpireKey expire key time
 	ExpireKey(key interface{}, seconds int64) bool
 }
 
@@ -67,7 +68,7 @@ const (
 	CacheWeek   = 7 * CacheDay
 )
 
-// cache sugar
+// NewCache cache sugar
 // the first param is Cache
 // the second param is confDir
 func NewCache(params ...interface{}) (cache Cache) {

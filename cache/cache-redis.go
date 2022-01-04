@@ -11,7 +11,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// impl cache manager
+// RedisManager impl cache manager
 // redis cache
 // interface key, interface value
 type RedisManager struct {
@@ -19,8 +19,6 @@ type RedisManager struct {
 	Rc *redis2.ConnPool
 }
 
-// new cache by redis
-// other cache maybe like this
 func (r *RedisManager) NewCache() error {
 
 	// read config
