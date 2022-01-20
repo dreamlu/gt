@@ -7,39 +7,38 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// Crud
+// Crud mongo
 type Crud interface {
-	// init crud
+	// Init crud
 	Init(param *Params)
-	// DB
+	// DB db
 	DB() *mongo.Database
-	// new/replace param
+	// Params new/replace param
 	// return param
 	Params(param ...Param) Crud
 	// crud method
 
-	// get url params
+	// GetBySearch get url params
 	// like form data
 	GetBySearch(params bmap.BMap) Crud // search single table
 	Get(params cmap.CMap) Crud         // get data no search
 	GetByID(id interface{}) Crud       // by id
 
-	// delete by id/ids
+	// Delete delete by id/ids
 	Delete(id interface{}) Crud // delete
 
-	// crud and search id
+	// Update crud and search id
 	// json data
 	Update() Crud     // update
 	Create() Crud     // create, include res insert id
 	CreateMore() Crud // create more, data must array type, single table
 
-	// select
 	Error() error        // crud error
 	RowsAffected() int64 // inflect rows
 	Pager() result.Pager // search pager
 }
 
-// crud params
+// Params crud params
 type Params struct {
 	// attributes
 	InnerTable []string    // inner join tables
@@ -57,7 +56,7 @@ type Params struct {
 
 type Param func(*Params)
 
-// new crud
+// NewCrud new crud
 func NewCrud(params ...Param) (crud Crud) {
 
 	MongoDB()

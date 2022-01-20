@@ -19,12 +19,36 @@ type RedisManager struct {
 	Rc *redis2.ConnPool
 }
 
+type redisOptions struct {
+	// host:port address.
+	Addr     string `yaml:"addr"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+
+	// Database to be selected after connecting to the server.
+	DB int `yaml:"DB"`
+	// Maximum number of socket connections.
+	// Default is 10 connections per every available CPU as reported by runtime.GOMAXPROCS.
+	PoolSize int `yaml:"poolSize"`
+
+	// Minimum number of idle connections which is useful when establishing
+	// new connection is slow.
+	MinIdleConns int `yaml:"minIdleConns"`
+}
+
 func (r *RedisManager) NewCache() error {
 
 	// read config
 	r.Rc = redis2.InitRedisPool(
 		func(options *redis.Options) {
-			conf.GetStruct("app.redis", options)
+			var opt redisOptions
+			conf.GetStruct("app.redis", &opt)
+			options.Addr = opt.Addr
+			options.Username = opt.Username
+			options.Password = opt.Password
+			options.DB = opt.DB
+			options.PoolSize = opt.PoolSize
+			options.MinIdleConns = opt.MinIdleConns
 		})
 	return nil
 }

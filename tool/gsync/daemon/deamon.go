@@ -7,7 +7,7 @@ import (
 	time2 "time"
 )
 
-// daemon progress
+// Daemon progress
 type Daemon struct {
 	Task  chan *Task // time task
 	tasks []*Task    // task queue
@@ -75,7 +75,7 @@ func newDaemon() *Daemon {
 	}
 }
 
-// add daemon task
+// AddTask add daemon task
 func (d *Daemon) AddTask(params ...Param) *Daemon {
 	task := &Task{}
 
@@ -127,7 +127,6 @@ func (d *Daemon) task() {
 	}
 }
 
-// AddTask
 func AddTask(params ...Param) *Daemon {
 	return Daemoner().AddTask(params...)
 }

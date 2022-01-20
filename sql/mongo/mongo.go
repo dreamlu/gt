@@ -19,14 +19,14 @@ var (
 
 // db params
 type dba struct {
-	User        string
-	Password    string
-	Host        string
-	Name        string
-	MaxIdleConn int
-	MaxOpenConn int
+	User        string `yaml:"user"`
+	Password    string `yaml:"password"`
+	Host        string `yaml:"host"`
+	Name        string `yaml:"name"`
+	MaxIdleConn int    `yaml:"maxIdleConn"`
+	MaxOpenConn int    `yaml:"maxOpenConn"`
 	// db log mode
-	Log bool
+	Log bool `yaml:"log"`
 }
 
 func newMongoDB() *mongo.Database {
@@ -60,7 +60,7 @@ func newMongoDB() *mongo.Database {
 	return client.Database(conf.Configger().GetString("app.mongo.name"))
 }
 
-// single db
+// MongoDB single db
 func MongoDB() *mongo.Database {
 
 	onceMongoDB.Do(func() {

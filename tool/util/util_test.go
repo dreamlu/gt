@@ -6,8 +6,9 @@ import (
 
 func TestAesEn(t *testing.T) {
 
-	t.Log("[aesEn]:", AesEn("admin"))
-	t.Log("[aesDe]:", AesDe("sPa0sTmDf6gasS9tHvIqKw=="))
-	t.Log(IsAes("13242trergf"))
-	t.Log(IsAes("sPa0sTmDf6gasS9tHvIqKw=="))
+	var as = NewAes()
+	t.Log("[aesEn]:", as.AesEn("admin"))
+	t.Log("[aesDe]:", as.AesDe("sPa0sTmDf6gasS9tHvIqKw=="))
+	t.Log(as.IsAes("13242trergf"))
+	t.Log(as.IsAes("sPa0sTmDf6gasS9tHvIqKw=="))
 }

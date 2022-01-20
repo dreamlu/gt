@@ -22,7 +22,7 @@ import (
 )
 
 // DB tool
-type DBTool struct {
+type DB struct {
 	// db driver
 	*gorm.DB
 	res *gorm.DB
@@ -32,18 +32,18 @@ type DBTool struct {
 
 // db params
 type dba struct {
-	User        string
-	Password    string
-	Host        string
-	Name        string
-	MaxIdleConn int
-	MaxOpenConn int
+	User        string `yaml:"user"`
+	Password    string `yaml:"password"`
+	Host        string `yaml:"host"`
+	Name        string `yaml:"name"`
+	MaxIdleConn int    `yaml:"maxIdleConn"`
+	MaxOpenConn int    `yaml:"maxOpenConn"`
 	// db log mode
-	Log bool
+	Log bool `yaml:"log"`
 }
 
-// new db driver
-func (db *DBTool) NewDB() {
+// NewDB new db driver
+func (db *DB) NewDB() {
 
 	dbS := &dba{}
 	conf.GetStruct("app.db", dbS)
@@ -66,12 +66,12 @@ func (db *DBTool) NewDB() {
 	db.NamingStrategy = schema.NamingStrategy{
 		SingularTable: true,
 	}
-	//db.DB.SingularTable(true)
+	//db.db.SingularTable(true)
 
 	//if l := dbS.Log; l {
-	//	db.DB.Logger.LogMode(logger2.Error)
+	//	db.db.Logger.LogMode(logger2.Error)
 	//}
-	//db.DB.SetLogger(defaultLog)
+	//db.db.SetLogger(defaultLog)
 	// connection pool
 	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
 	sdb, _ := db.DB.DB()
@@ -82,7 +82,7 @@ func (db *DBTool) NewDB() {
 	return
 }
 
-func (db *DBTool) open(sql string, dbS *dba) *gorm.DB {
+func (db *DB) open(sql string, dbS *dba) *gorm.DB {
 	// database, initialize once
 	cf := &gorm.Config{
 		Logger:                                   logInfo(dbS),
@@ -90,7 +90,7 @@ func (db *DBTool) open(sql string, dbS *dba) *gorm.DB {
 		DisableForeignKeyConstraintWhenMigrating: true,
 	}
 	DB, err := gorm.Open(mysql.Open(sql), cf)
-	//defer db.DB.Close()
+	//defer db.db.Close()
 	if err != nil {
 		log.Error("[mysql连接错误]:", err)
 		log.Error("[mysql开始尝试重连中]: try it every 5s...")
@@ -100,7 +100,7 @@ func (db *DBTool) open(sql string, dbS *dba) *gorm.DB {
 			// try it every 5s
 			time.Sleep(5 * time.Second)
 			DB, err = gorm.Open(mysql.Open(sql), cf)
-			//defer DB.Close()
+			//defer db.Close()
 			if err != nil {
 				log.Error("[mysql连接错误]:", err)
 				continue
@@ -127,34 +127,35 @@ func logInfo(dbS *dba) logger2.Interface {
 	)
 }
 
-// init DBTool
-func newDBTool() *DBTool {
-
-	dbTool := &DBTool{}
-
-	// init db
-	dbTool.NewDB()
-	return dbTool
+// newDB
+func newDB(db *gorm.DB, log bool) *DB {
+	return &DB{
+		DB:  db,
+		res: nil,
+		log: log,
+	}
 }
 
 var (
 	onceDB sync.Once
 	// dbTool is global
-	dbTool *DBTool
+	dbTool *DB
 )
 
-// single db
-func DB() *DBTool {
+// db single db
+func db() *DB {
 
 	onceDB.Do(func() {
-		dbTool = newDBTool()
+		dbTool = &DB{}
+		// init db
+		dbTool.NewDB()
 	})
 	return dbTool
 }
 
-func (db *DBTool) clone() *DBTool {
+func (db *DB) clone() *DB {
 
-	return &DBTool{
+	return &DB{
 		DB:  db.DB,
 		log: db.log,
 		res: db.res,
@@ -169,23 +170,22 @@ func (db *DBTool) clone() *DBTool {
 ////////////////
 
 // get single data
-func (db *DBTool) getBySQL(data interface{}, sql string, args ...interface{}) {
+func (db *DB) getBySQL(data interface{}, sql string, args ...interface{}) {
 
 	db.res = db.DB.Raw(sql, args[:]...).Scan(data)
 }
 
-// get by id
-func (db *DBTool) GetByID(gt *GT, id interface{}) {
+func (db *DB) GetByID(gt *GT, id interface{}) {
 
 	db.getBySQL(gt.Data, fmt.Sprintf(cons.SelectFrom+"where id = ?", GetColSQL(gt.Model), sq.Table(gt.Table)), id)
 }
 
-// more table
+// GetMoreBySearch more table
 // params: innerTables is inner join tables
 // params: leftTables is left join tables
 // return search info
 // table1 as main table, include other tables_id(foreign key)
-func (db *DBTool) GetMoreBySearch(gt *GT) (pager result.Pager) {
+func (db *DB) GetMoreBySearch(gt *GT) (pager result.Pager) {
 	// more table search
 	gt.GetMoreSQL()
 	// isMock
@@ -195,9 +195,9 @@ func (db *DBTool) GetMoreBySearch(gt *GT) (pager result.Pager) {
 	return db.GetBySQLSearch(gt.Data, gt.sql, gt.sqlNt, gt.clientPage, gt.everyPage, gt.Args)
 }
 
-// single table
+// GetBySearch single table
 // return search info
-func (db *DBTool) GetBySearch(gt *GT) (pager result.Pager) {
+func (db *DB) GetBySearch(gt *GT) (pager result.Pager) {
 
 	gt.GetSearchSQL()
 	// isMock
@@ -207,8 +207,8 @@ func (db *DBTool) GetBySearch(gt *GT) (pager result.Pager) {
 	return db.GetBySQLSearch(gt.Data, gt.sql, gt.sqlNt, gt.clientPage, gt.everyPage, gt.Args)
 }
 
-// 获得数据, no search
-func (db *DBTool) Get(gt *GT) {
+// Get no search
+func (db *DB) Get(gt *GT) {
 
 	gt.GetSQL()
 	// isMock
@@ -218,8 +218,8 @@ func (db *DBTool) Get(gt *GT) {
 	db.getBySQL(gt.Data, gt.sql, gt.Args...)
 }
 
-// 获得数据, no search
-func (db *DBTool) GetMoreData(gt *GT) {
+// GetMoreData no search
+func (db *DB) GetMoreData(gt *GT) {
 
 	gt.GetMoreSQL()
 	// isMock
@@ -229,8 +229,8 @@ func (db *DBTool) GetMoreData(gt *GT) {
 	db.getBySQL(gt.Data, gt.sql, gt.Args...)
 }
 
-// select sql search
-func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
+// GetDataBySelectSQLSearch select sql search
+func (db *DB) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
 
 	gt.GetSelectSearchSQL()
 	// isMock
@@ -240,11 +240,11 @@ func (db *DBTool) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
 	return db.GetBySQLSearch(gt.Data, gt.sql, gt.sqlNt, gt.clientPage, gt.everyPage, gt.Args)
 }
 
-// get sql search data
+// GetBySQLSearch get sql search data
 // clientPage: default 1
 // everyPage: default 10
 // if clientPage or everyPage < 0, return all
-func (db *DBTool) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}) (pager result.Pager) {
+func (db *DB) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}) (pager result.Pager) {
 
 	// if clientPage or everyPage < 0
 	// return all data
@@ -272,16 +272,14 @@ func (db *DBTool) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage
 // exec common
 ////////////////////
 
-// exec sql
-func (db *DBTool) ExecSQL(sql string, args ...interface{}) {
+func (db *DB) ExecSQL(sql string, args ...interface{}) {
 	db.res = db.Exec(sql, args...)
 }
 
 // delete
 ///////////////////
 
-// delete
-func (db *DBTool) Delete(table string, id interface{}) {
+func (db *DB) Delete(table string, id interface{}) {
 	switch id.(type) {
 	case string:
 		if strings.Contains(id.(string), ",") {
@@ -294,8 +292,7 @@ func (db *DBTool) Delete(table string, id interface{}) {
 // update
 ///////////////////
 
-// update
-func (db *DBTool) Update(gt *GT) {
+func (db *DB) Update(gt *GT) {
 
 	if gt.Model == nil {
 		gt.Model = gt.Data
@@ -311,16 +308,16 @@ func (db *DBTool) Update(gt *GT) {
 // create
 ////////////////////
 
-// create single/array
-func (db *DBTool) Create(table string, data interface{}) {
+// Create single/array
+func (db *DB) Create(table string, data interface{}) {
 	db.res = db.Table(table).Create(data)
 }
 
-// data must array type
+// CreateMore data must array type
 // more data create
 // single table
 // also can use Create array
-func (db *DBTool) CreateMore(table string, model interface{}, data interface{}) {
+func (db *DB) CreateMore(table string, model interface{}, data interface{}) {
 	var (
 		buf    bytes.Buffer
 		params []interface{}
@@ -348,24 +345,24 @@ func (db *DBTool) CreateMore(table string, model interface{}, data interface{}) 
 // future will remove
 // use json replace
 
-// via form data update
-func (db *DBTool) UpdateFormData(table string, params cmap.CMap) (err error) {
+// UpdateFormData via form data update
+func (db *DB) UpdateFormData(table string, params cmap.CMap) (err error) {
 
 	sql, args := GetUpdateSQL(table, params)
 	db.ExecSQL(sql, args...)
 	return db.res.Error
 }
 
-// via form data create
-func (db *DBTool) CreateFormData(table string, params cmap.CMap) error {
+// CreateFormData via form data create
+func (db *DB) CreateFormData(table string, params cmap.CMap) error {
 
 	sql, args := GetInsertSQL(table, params)
 	db.ExecSQL(sql, args...)
 	return db.res.Error
 }
 
-// create data return id
-func (db *DBTool) CreateDataResID(table string, params cmap.CMap) (id uint64, err error) {
+// CreateDataResID create data return id
+func (db *DB) CreateDataResID(table string, params cmap.CMap) (id uint64, err error) {
 
 	//开启事务
 	tx := db.DB.Begin()
@@ -395,8 +392,8 @@ func (db *DBTool) CreateDataResID(table string, params cmap.CMap) (id uint64, er
 	return
 }
 
-// init db table columns map
-func (db *DBTool) InitColumns(param *Params) {
+// InitColumns init db table columns map
+func (db *DB) InitColumns(param *Params) {
 
 	var (
 		name   = conf.GetString("app.db.name")

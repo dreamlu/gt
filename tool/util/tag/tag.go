@@ -37,7 +37,7 @@ func ParseTag(field reflect.StructField) (tag, tagTable, jsonTag string, b bool)
 	return
 }
 
-// gorm:"column:field"
+// ParseFieldTag gorm:"column:field"
 func ParseFieldTag(sTag reflect.StructTag, tagV, field string) (tag, tagTable string, b bool) {
 	tagValue := sTag.Get(tagV)
 	if tagValue == "" {
@@ -52,7 +52,7 @@ func ParseFieldTag(sTag reflect.StructTag, tagV, field string) (tag, tagTable st
 	return
 }
 
-// gt:"field:table.column"
+// ParseGtTag gt:"field:table.column"
 func ParseGtTag(sTag reflect.StructTag) (tag, tagTable string, b bool) {
 
 	if IsGtTagIgnore(sTag) {
@@ -72,7 +72,7 @@ func ParseGtTag(sTag reflect.StructTag) (tag, tagTable string, b bool) {
 	return
 }
 
-// get json field tag
+// GetFieldTag get json field tag
 // if no, use HumpToLine
 func GetFieldTag(field reflect.StructField) string {
 
@@ -85,7 +85,7 @@ func GetFieldTag(field reflect.StructField) string {
 	return tag
 }
 
-// get struct model fields tag []string
+// GetTags get struct model fields tag []string
 // include gt tag rule
 func GetTags(model interface{}) (arr []string) {
 	return getTags(reflect.TypeOf(model))

@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-// reflect value via field name
+// GetDataByFieldName reflect value via field name
 func GetDataByFieldName(data interface{}, filedName string) (interface{}, error) {
 	typ := reflect.TypeOf(data)
 
@@ -23,7 +23,7 @@ func GetDataByFieldName(data interface{}, filedName string) (interface{}, error)
 	return nil, errors.New(filedName + "not exit")
 }
 
-// arr must array data
+// ToSlice arr must array data
 // array struct data to []interface
 func ToSlice(arr interface{}) []interface{} {
 	v := reflect.ValueOf(arr)
@@ -38,7 +38,7 @@ func ToSlice(arr interface{}) []interface{} {
 	return ret
 }
 
-// return struct string name
+// StructName return struct string name
 func StructName(st interface{}) string {
 	typ := reflect.TypeOf(st)
 	if typ.Kind() == reflect.Ptr {
@@ -47,7 +47,7 @@ func StructName(st interface{}) string {
 	return typ.Name()
 }
 
-// struct to map
+// ToMap struct to map
 func ToMap(st interface{}) map[string]interface{} {
 	m := make(map[string]interface{})
 	bs, _ := json.Marshal(st)

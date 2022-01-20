@@ -2,7 +2,7 @@ package json
 
 import "encoding/json"
 
-// v to target
+// CUnmarshal v to target
 func CUnmarshal(v, t interface{}) error {
 	b, err := json.Marshal(v)
 	if err != nil {

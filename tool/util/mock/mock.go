@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-// mock data
+// Mock mock data
 func Mock(data interface{}) {
 	//CustomGenerator()
 	err := faker.FakeData(data)

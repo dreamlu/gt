@@ -32,6 +32,7 @@ func IsTagIgnore(tag reflect.StructTag, tagName string, exist bool, extTags ...s
 	return strings.EqualFold(tagValue, "-") || equalFolds(tagValue, extTags...)
 }
 
+// GetGtTags
 // gt:"-"
 // gt:"ignore"
 // gt:"sub_sql"
@@ -106,7 +107,7 @@ func ObtainTags(ref reflect.Type, tagName string, fs ...func(reflect.StructTag) 
 	return ObtainMoreTags(ref, []string{tagName}, fs...)[tagName]
 }
 
-// ObtainTags use to get the specified tag in the structure
+// ObtainMoreTags use to get the specified tag in the structure
 // fs use to filter specified tags, true means filtering
 func ObtainMoreTags(ref reflect.Type, tagNames []string, fs ...func(reflect.StructTag) bool) map[string]map[string]string {
 	if ref.Kind() != reflect.Struct {

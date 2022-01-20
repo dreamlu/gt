@@ -17,7 +17,7 @@ const (
 	LayoutS    = "15:04:05"                // mysql: time
 )
 
-// china time/date
+// CTime china time/date
 // 时间格式化2006-01-02 15:04:05
 type CTime time.Time
 
@@ -42,7 +42,7 @@ func (t *CTime) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// insert problem https://github.com/go-gorm/gorm/issues/1611#issuecomment-329654638
+// Value insert problem https://github.com/go-gorm/gorm/issues/1611#issuecomment-329654638
 func (t CTime) Value() (driver.Value, error) {
 	var zeroTime time.Time
 	var ti = time.Time(t)
@@ -78,7 +78,7 @@ func (t CTime) IsZero() bool {
 	return time.Time(t).IsZero()
 }
 
-// 时间格式化2006-01-02 15:04:05.000
+// CNTime 时间格式化2006-01-02 15:04:05.000
 type CNTime time.Time
 
 func (t CNTime) MarshalJSON() ([]byte, error) {
@@ -102,7 +102,6 @@ func (t *CNTime) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// insert problem https://github.com/go-gorm/gorm/issues/1611#issuecomment-329654638
 func (t CNTime) Value() (driver.Value, error) {
 	var zeroTime time.Time
 	var ti = time.Time(t)
@@ -197,7 +196,7 @@ func (t CDate) IsZero() bool {
 	return time.Time(t).IsZero()
 }
 
-// 时间格式化15:04:05
+// CSTime 时间格式化15:04:05
 type CSTime time.Time
 
 func (t CSTime) MarshalJSON() ([]byte, error) {
@@ -234,7 +233,7 @@ func (t *CSTime) Scan(v interface{}) error {
 	return nil
 }
 
-// gorm bug mysql time to CSTime
+// GormDataType gorm bug mysql time to CSTime
 func (t CSTime) GormDataType() string {
 	return "time;"
 }

@@ -38,7 +38,7 @@ const (
 	PNG  = "png"  // png
 )
 
-// File
+// File upload
 type File struct {
 	File *multipart.FileHeader
 	// file name
@@ -92,15 +92,7 @@ func (f *File) Upload() (err error) {
 	return nil
 }
 
-// Deprecated
-// use Upload replace
-// GetUploadFile upload file
-// return f.Path
-func (f *File) GetUploadFile() (err error) {
-	return f.Upload()
-}
-
-// Save save file
+// Save file
 func (f *File) Save() (err error) {
 
 	if f.Format == "" {
@@ -148,7 +140,6 @@ func (f *File) Compress() {
 	}
 }
 
-// isImg is image
 func (f *File) IsImg() bool {
 	if f.ContentType == "" {
 		data, _ := ioutil.ReadFile(f.Path)

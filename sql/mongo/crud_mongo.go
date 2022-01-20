@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// implement Crud
+// Mongo implement Crud
 type Mongo struct {
 	// crud param
 	param *Params
@@ -49,7 +49,7 @@ func (m *Mongo) Params(params ...Param) Crud {
 	return m
 }
 
-// search
+// GetBySearch
 // pager info
 func (m *Mongo) GetBySearch(params bmap.BMap) Crud {
 	clone := m.clone()
@@ -79,7 +79,7 @@ func (m *Mongo) Get(params cmap.CMap) Crud {
 	return clone
 }
 
-// must be mongodb primitive.ObjectID
+// GetByID must be mongodb primitive.ObjectID
 // by id
 func (m *Mongo) GetByID(id interface{}) Crud {
 	clone := m.clone()
@@ -92,7 +92,6 @@ func (m *Mongo) GetByID(id interface{}) Crud {
 	return clone
 }
 
-// delete
 func (m *Mongo) Delete(id interface{}) Crud {
 	clone := m.clone()
 
@@ -104,7 +103,7 @@ func (m *Mongo) Delete(id interface{}) Crud {
 	return clone
 }
 
-// update
+// Update
 // must id string
 func (m *Mongo) Update() Crud {
 	clone := m.clone()
@@ -126,7 +125,6 @@ func (m *Mongo) Update() Crud {
 	return clone
 }
 
-// create
 func (m *Mongo) Create() Crud {
 	clone := m.clone()
 	_, err := clone.m.Collection(clone.param.Table).InsertOne(context.TODO(), clone.param.Data)
@@ -137,7 +135,6 @@ func (m *Mongo) Create() Crud {
 	return clone
 }
 
-// create more
 func (m *Mongo) CreateMore() Crud {
 	clone := m.clone()
 	_, m.err = clone.m.Collection(clone.param.Table).InsertMany(context.TODO(), reflect.ToSlice(clone.param.Data))

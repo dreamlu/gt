@@ -12,7 +12,7 @@ import (
 // default rule type
 //type defaultRule map[string]func(rule string, data interface{}) error
 
-// add rule
+// AddRule add rule
 func AddRule(key string, f func(rule string, data interface{}) error) {
 	defaultRules[key] = f
 }

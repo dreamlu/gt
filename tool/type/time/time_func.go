@@ -15,7 +15,7 @@ func ParseCTime(value string) CTime {
 	return CTime(ti)
 }
 
-// string to CDate
+// ParseCDate string to CDate
 func ParseCDate(value string) CDate {
 	ti, err := time.ParseInLocation(LayoutDate, value, time.Local)
 	if err != nil {
@@ -24,7 +24,7 @@ func ParseCDate(value string) CDate {
 	return CDate(ti)
 }
 
-// string to CSTime
+// ParseCSTime string to CSTime
 func ParseCSTime(value string) CSTime {
 	ti, err := time.ParseInLocation(LayoutS, value, time.Local)
 	if err != nil {
@@ -33,7 +33,7 @@ func ParseCSTime(value string) CSTime {
 	return CSTime(ti)
 }
 
-// 日期差计算
+// SubDate 日期差计算
 // 年月日计算
 func SubDate(date1, date2 time.Time) string {
 	var y, m, d int

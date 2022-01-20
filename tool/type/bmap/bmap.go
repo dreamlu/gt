@@ -20,7 +20,7 @@ func (v BMap) Get(key string) interface{} {
 	return v[key]
 }
 
-// return Get value and Del key
+// Pop return Get value and Del key
 func (v BMap) Pop(key string) interface{} {
 	s := v.Get(key)
 	v.Del(key)
@@ -40,7 +40,7 @@ func (v BMap) Del(key string) BMap {
 	return v
 }
 
-// BMap to struct data
+// Struct BMap to struct data
 // value like
 // type Te struct {
 //		Name string `json:"name"` // must string type
@@ -58,7 +58,7 @@ func (v BMap) Struct(value interface{}) error {
 	return nil
 }
 
-// struct to BMap, maybe use Encode
+// StructToBMap struct to BMap, maybe use Encode
 // ps: the BMap key->value , value will be string type
 func StructToBMap(v interface{}) (values BMap) {
 	values = NewBMap()
@@ -75,7 +75,6 @@ func StructToBMap(v interface{}) (values BMap) {
 	return
 }
 
-// new BMap
 func NewBMap() BMap {
 	return BMap{}
 }

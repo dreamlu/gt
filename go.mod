@@ -7,6 +7,7 @@ require (
 	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/dreamlu/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/go-redis/redis/v8 v8.11.0
+	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/lestrrat-go/strftime v1.0.5 // indirect

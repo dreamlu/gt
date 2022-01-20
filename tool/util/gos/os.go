@@ -64,7 +64,7 @@ func CopyFile(src, des string) (written int64, err error) {
 	return io.Copy(desFile, srcFile)
 }
 
-// CopyDir
+// CopyDir copy dir
 func CopyDir(srcPath, dstPath string) error {
 
 	if srcPath == dstPath {

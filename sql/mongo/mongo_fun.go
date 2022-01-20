@@ -14,7 +14,7 @@ import (
 
 // ===== search data =========
 
-// scan data to mongo data
+// CursorScan scan data to mongo data
 func (m *Mongo) CursorScan(cur *mongo.Cursor, data interface{}) {
 	typ := reflect.TypeOf(data)
 	for typ.Kind() == reflect.Ptr {

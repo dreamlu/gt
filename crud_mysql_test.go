@@ -70,7 +70,7 @@ type OrderD struct {
 var crud Crud
 
 func init() {
-	err := DB().AutoMigrate(User{}, Order{}, Service{}, UserInfo{})
+	err := db().AutoMigrate(User{}, Order{}, Service{}, UserInfo{})
 	fmt.Println(err)
 	crud = NewCrud()
 }
@@ -84,7 +84,7 @@ func TestDB(t *testing.T) {
 		//Createtime:JsonDate(time.Now()),
 	}
 
-	db := DB()
+	db := db()
 	db.Create("", &user)
 	t.Log(db.Error, "user: ", user)
 	var user2 User
@@ -202,7 +202,7 @@ func TestGetDataBySearch(t *testing.T) {
 	args["everyPage"] = append(args["everyPage"], "2")
 	//args["id"] = append(args["id"], "1,2")
 	var user []*User
-	DB().GetBySearch(&GT{
+	db().GetBySearch(&GT{
 		CMaps: args,
 		Params: &Params{
 			Table: "user",
@@ -210,7 +210,7 @@ func TestGetDataBySearch(t *testing.T) {
 			Data:  &user,
 		},
 	})
-	t.Log(DB().res.Error)
+	t.Log(db().res.Error)
 	if len(user) > 0 {
 		t.Log(user[0])
 	}
@@ -439,7 +439,7 @@ func httpServerDemo(w http.ResponseWriter, r *http.Request) {
 		//Left("order", "service"),
 		Model(OrderD{}),
 		Data(&or),
-		SubWhereSQL("1 = 1", "2 = 2", ""),
+		WhereSQL("1 = 1").WhereSQL("2 = 2"),
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// nsq
+// Nsg nsq
 type Nsg struct {
 	producer *nsq.Producer
 	consumer *nsq.Consumer

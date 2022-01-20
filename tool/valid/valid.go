@@ -63,7 +63,7 @@ func (v *ValidRule) Struct(str string) {
 
 var validBuffer = cmap.NewCMap()
 
-// Valid
+// Valid valid
 func Valid(data interface{}) ValidError {
 
 	typ := reflect.TypeOf(data)
@@ -86,7 +86,7 @@ func Valid(data interface{}) ValidError {
 	return valid(data, typ)
 }
 
-// form/single json data
+// ValidModel form/single json data
 func ValidModel(data interface{}, model interface{}) ValidError {
 
 	return valid(data, reflect.TypeOf(model))
@@ -132,12 +132,16 @@ func valid(data interface{}, typ reflect.Type) ValidError {
 		v.rule[rule.Key] = &vRule{rule}
 	}
 
+	if len(v.rule) == 0 {
+		return nil
+	}
+
 	validBuffer.Set(key, v.rule.String())
 
 	return v.Check()
 }
 
-// Check
+// Check rule
 func (v *Validator) Check() (errs ValidError) {
 
 	errs = make(ValidError)
@@ -189,7 +193,7 @@ func (v *Validator) Check() (errs ValidError) {
 	return errs
 }
 
-//  rule common rule Check
+// Check rule common rule Check
 func (n *Rule) Check(data interface{}) (err error) {
 	// required
 	if !strings.Contains(n.Valid, "required") && data == "" {

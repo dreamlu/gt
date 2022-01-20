@@ -46,7 +46,7 @@ func (f *File) Write(p []byte) (int, error) {
 
 func (f *File) Read(p []byte) (int, error) {
 	if f.closed {
-		return 0, errors.New("File closed")
+		return 0, errors.New("file closed")
 	}
 
 	return f.content.Read(p)

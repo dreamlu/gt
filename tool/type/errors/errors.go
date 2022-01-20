@@ -5,7 +5,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// customize cn text error
+// TextError customize cn text error
 type TextError struct {
 	Msg string
 }
@@ -16,7 +16,7 @@ func (s *TextError) Error() string {
 
 var TextErr *TextError
 
-// return TextError type
+// Text return TextError type
 func Text(msg string) error {
 	return fmt.Errorf("%w", &TextError{Msg: msg})
 }

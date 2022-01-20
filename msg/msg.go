@@ -2,7 +2,7 @@ package msg
 
 import "github.com/nsqio/go-nsq"
 
-// message platform
+// Msg message platform
 type Msg interface {
 	NewProducer() Msg                                 // new producer
 	NewConsumer(topic, channel string) Msg            // new consumer
@@ -18,12 +18,12 @@ type Message struct {
 
 type HandlerFunc func(message *Message) error
 
-// HandleMessage implements the Handler interface
+// HandlerMessage implements the Handler interface
 func (h HandlerFunc) HandlerMessage(message *Message) error {
 	return h(message)
 }
 
-// new producer
+// NewProducer new producer
 func NewProducer(params ...interface{}) (msg Msg) {
 	// default
 	if len(params) == 0 {
@@ -37,7 +37,7 @@ func NewProducer(params ...interface{}) (msg Msg) {
 	return
 }
 
-// new consumer
+// NewConsumer new consumer
 func NewConsumer(topic, channel string, params ...interface{}) (msg Msg) {
 	// default
 	if len(params) == 0 {

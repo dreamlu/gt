@@ -39,7 +39,7 @@ type GT struct {
 //=======================================sql script==========================================
 //===========================================================================================
 
-// more table
+// GetMoreSQL more table
 // params: innerTables is inner join tables, must even number
 // params: leftTables is left join tables
 // return: select sql
@@ -90,7 +90,7 @@ func (gt *GT) GetMoreSQL() {
 	return
 }
 
-// search sql
+// GetSearchSQL search sql
 // default order by id desc
 func (gt *GT) GetSearchSQL() {
 
@@ -123,7 +123,7 @@ func (gt *GT) GetSearchSQL() {
 	return
 }
 
-// get single sql
+// GetSQL get single sql
 func (gt *GT) GetSQL() {
 
 	var (
@@ -152,7 +152,7 @@ func (gt *GT) GetSQL() {
 	return
 }
 
-// select sql
+// GetSelectSearchSQL select sql
 func (gt *GT) GetSelectSearchSQL() {
 
 	gt.whereParams()
@@ -392,7 +392,7 @@ func (gt *GT) whereTbKv(bufW *bytes.Buffer, tb, k, v string) {
 // future will remove
 // use json replace
 
-// get update sql
+// GetUpdateSQL get update sql
 func GetUpdateSQL(table string, params cmap.CMap) (sql string, args []interface{}) {
 
 	// sql connect
@@ -418,7 +418,7 @@ func GetUpdateSQL(table string, params cmap.CMap) (sql string, args []interface{
 	return sql, args
 }
 
-// get insert sql
+// GetInsertSQL get insert sql
 func GetInsertSQL(table string, params cmap.CMap) (sql string, args []interface{}) {
 
 	// sql connect

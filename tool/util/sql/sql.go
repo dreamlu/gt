@@ -18,7 +18,7 @@ type Key struct {
 }
 
 var (
-	// table columns map
+	// TableCols table columns map
 	TableCols = cmap.NewCMap()
 	sqlBuffer = make(map[string]Key)
 )
@@ -40,7 +40,7 @@ func keyAnd(keys []string, buf *bytes.Buffer, num int) (argsKey []interface{}) {
 	return
 }
 
-// key search sql
+// GetKeySQL key search sql
 func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, argsKey []interface{}) {
 
 	var (
@@ -85,7 +85,7 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 	return
 }
 
-// more tables
+// GetMoreKeySQL more tables
 // key search sql
 // tables [table1:table1_alias]
 // searModel : Model
@@ -201,7 +201,7 @@ func writeTagString(buf *bytes.Buffer, tb, tag string) {
 	buf.WriteString("` like binary ? or ")
 }
 
-// struct to where sql
+// StructWhereSQL struct to where sql
 // return key1 = value1 and key2 = value2...
 func StructWhereSQL(st interface{}) (sql string, args []interface{}) {
 	var (
@@ -223,7 +223,7 @@ func StructWhereSQL(st interface{}) (sql string, args []interface{}) {
 	return
 }
 
-// table parse
+// Table table parse
 func Table(table string) string {
 
 	if table == "" {
@@ -241,7 +241,7 @@ func Table(table string) string {
 	return fmt.Sprintf("`%s`", table)
 }
 
-// only table name
+// TableOnly only table name
 func TableOnly(table string) string {
 
 	if table == "" {
@@ -256,7 +256,7 @@ func TableOnly(table string) string {
 	return table
 }
 
-// return unique tag table
+// UniqueTagTable return unique tag table
 func UniqueTagTable(tag string, tables ...string) string {
 	tbs := TagTables(tag, tables...)
 	if len(tbs) == 1 {
@@ -265,7 +265,7 @@ func UniqueTagTable(tag string, tables ...string) string {
 	return ""
 }
 
-// return tag tables
+// TagTables return tag tables
 func TagTables(tag string, tables ...string) (tbs []string) {
 	for _, v := range tables {
 		tags := TableCols[v]

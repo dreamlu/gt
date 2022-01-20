@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-// log
+// Log log
 type Log struct {
 	*logrus.Logger
 	LogWriter
@@ -50,7 +50,7 @@ func init() {
 	})
 }
 
-// one single log
+// Logger one single log
 func Logger() *Log {
 	//onceLog.Do(func() {
 	//	l = NewLog()
@@ -58,7 +58,7 @@ func Logger() *Log {
 	return l
 }
 
-// new log
+// NewLog new log
 func NewLog() *Log {
 
 	lgr := logrus.New()
@@ -69,7 +69,7 @@ func NewLog() *Log {
 	return log
 }
 
-// new output file log
+// FileLog new output file log
 func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationTime time.Duration) {
 
 	if !gos.Exists(logPath) {
@@ -109,7 +109,7 @@ func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationT
 	l.Hooks.Add(lfHook)
 }
 
-// Default file log
+// DefaultFileLog Default file log
 // maintain 7 days data, every 24 hour split file
 func DefaultFileLog() {
 
@@ -134,12 +134,12 @@ func (s *myFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return []byte(msg), nil
 }
 
-// print error line
+// ErrorLine print error line
 func (l *Log) ErrorLine(args ...interface{}) {
 	l.Error(fmt.Sprintf("%+v\n", args))
 }
 
-// sugar
+// Error sugar
 func Error(args ...interface{}) {
 	l.ErrorLine(args...)
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// Md5
+// Md5 md5
 func Md5(b []byte) string {
 	return fmt.Sprintf("%x", md5.Sum(b))
 }

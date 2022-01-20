@@ -28,7 +28,7 @@ func (v CMap) Get(key string) string {
 	return vs[0]
 }
 
-// return Get value and Del key
+// Pop return Get value and Del key
 func (v CMap) Pop(key string) string {
 	s := v.Get(key)
 	v.Del(key)
@@ -93,7 +93,7 @@ func (v CMap) Drop(key, value string) CMap {
 	return v
 }
 
-// CMap to struct data
+// Struct CMap to struct data
 // value like
 // type Te struct {
 //		Name string `json:"name"` // must string type
@@ -115,7 +115,7 @@ func (v CMap) Struct(value interface{}) error {
 	return nil
 }
 
-// struct to CMap, maybe use Encode
+// StructToCMap struct to CMap, maybe use Encode
 func StructToCMap(v interface{}) (values CMap) {
 	values = NewCMap()
 	el := reflect.ValueOf(v)
@@ -153,13 +153,7 @@ func (v CMap) Encode() string {
 	return url.Values(v).Encode()
 }
 
-// url.Values to CMap
-// Deprecated
-func (v CMap) CMap(values url.Values) CMap {
-	return CMap(values)
-}
-
-// url.Values to mongo bson CMap
+// BSON url.Values to mongo bson CMap
 func (v CMap) BSON() (bm bson.M) {
 	bm = make(bson.M)
 	for k, v2 := range v {
@@ -177,7 +171,6 @@ func (v CMap) BSON() (bm bson.M) {
 	return
 }
 
-// new cmap
 func NewCMap() CMap {
 	return CMap{}
 }

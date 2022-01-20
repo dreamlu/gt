@@ -5,12 +5,11 @@ package cons
 // devMode const
 // key words
 const (
-	// devMode
 	Dev  = "dev"
 	Prod = "prod"
-	// default config file dir
-	ConfDir = "conf/"
-	// db sql const
+	// ConfPath default config path
+	ConfPath = "conf/app.yaml"
+
 	GtSubSQL              = "sub_sql"
 	GtClientPage          = "clientPage"
 	GtClientPageUnderLine = "client_page"
@@ -19,7 +18,7 @@ const (
 	GtOrder               = "order"
 	GtKey                 = "key"
 	GtMock                = "mock"
-	// gt tag
+	// GT tag
 	GT           = "gt"
 	GtField      = "field"
 	GtValid      = "valid"

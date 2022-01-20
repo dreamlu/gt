@@ -9,95 +9,65 @@ import (
 	"encoding/base64"
 )
 
-// AesKey can be assign
-var AesKey = "github.com/dreamlu/gt dreamlu123"
+// defaultKey can be assigned
+const defaultKey = "github.com/dreamlu/gt dreamlu123"
 
-// is aes encode
-func IsAes(s string) bool {
+type Aes struct {
+	key string
+}
+
+func NewAes(key ...string) *Aes {
+	var as Aes
+	as.key = defaultKey
+	if len(key) != 0 {
+		as.key = key[0]
+	}
+	return &as
+}
+
+func (as *Aes) IsAes(data string) bool {
 	defer func() {
 		recover()
 	}()
-	AesDe(s)
+	as.AesDe(data)
 	return true
 }
 
-// aes加密,返回16进制数据
-func AesEn(data string) string {
-	// 转成字节数组
+func (as *Aes) AesEn(data string) string {
 	origData := []byte(data)
-	k := []byte(AesKey)
+	k := []byte(as.key)
 
-	// 分组秘钥
 	block, _ := aes.NewCipher(k)
-	// 获取秘钥块的长度
 	blockSize := block.BlockSize()
-	// 补全码
-	origData = PKCS7Padding(origData, blockSize)
-	// 加密模式
+	origData = pKCS7Padding(origData, blockSize)
 	blockMode := cipher.NewCBCEncrypter(block, k[:blockSize])
-	// 创建数组
 	cryted := make([]byte, len(origData))
-	// 加密
 	blockMode.CryptBlocks(cryted, origData)
 
 	return base64.StdEncoding.EncodeToString(cryted)
 }
 
-// 解密
-func AesDe(data string) string {
-	// 转成字节数组
-	crytedByte, _ := base64.StdEncoding.DecodeString(data)
-	k := []byte(AesKey)
+func (as *Aes) AesDe(data string) string {
+	origData, _ := base64.StdEncoding.DecodeString(data)
+	k := []byte(as.key)
 
-	// 分组秘钥
 	block, _ := aes.NewCipher(k)
-	// 获取秘钥块的长度
 	blockSize := block.BlockSize()
-	// 加密模式
 	blockMode := cipher.NewCBCDecrypter(block, k[:blockSize])
-	// 创建数组
-	orig := make([]byte, len(crytedByte))
-	// 解密
-	blockMode.CryptBlocks(orig, crytedByte)
-	// 去补全码
-	orig = PKCS7UnPadding(orig)
+	orig := make([]byte, len(origData))
+	blockMode.CryptBlocks(orig, origData)
+	orig = pKCS7UnPadding(orig)
 	return string(orig)
 }
 
-//补码
-func PKCS7Padding(ciphertext []byte, blocksize int) []byte {
+func pKCS7Padding(ciphertext []byte, blocksize int) []byte {
 	padding := blocksize - len(ciphertext)%blocksize
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
 	return append(ciphertext, padtext...)
 }
 
-//去码
-func PKCS7UnPadding(origData []byte) []byte {
+func pKCS7UnPadding(origData []byte) []byte {
 	length := len(origData)
 	unpadding := int(origData[length-1])
 	return origData[:(length - unpadding)]
-}
-
-// remove duplicate string
-func RemoveDuplicateString(languages []string) []string {
-	var result []string
-	temp := map[string]struct{}{}
-	for _, item := range languages {
-		// one key
-		if _, ok := temp[item]; !ok {
-			temp[item] = struct{}{}
-			result = append(result, item)
-		}
-	}
-	return result
-}
-
-// remove sep in strS
-func RemoveStrings(strS []string, sep string) (res []string) {
-	for _, v := range strS {
-		if v != sep {
-			res = append(res, v)
-		}
-	}
-	return
 }

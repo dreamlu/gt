@@ -11,6 +11,7 @@ import (
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util"
 	"github.com/dreamlu/gt/tool/util/result"
+	"gorm.io/gorm"
 	"strings"
 )
 
@@ -20,18 +21,18 @@ func init() {
 	log.Info("[gt version]:", Version)
 }
 
-// crud is db driver extend
+// Crud interface
 type Crud interface {
-	// init crud
+	// Init init crud
 	Init(param *Params)
-	// DB
-	DB() *DBTool
-	// new/replace param
+	// DB db
+	DB() *DB
+	// Params new/replace param
 	// return param
 	Params(param ...Param) Crud
 	// crud method
 
-	// get url params
+	// GetBySearch get url params
 	// like form data
 	GetBySearch(params cmap.CMap) Crud     // search single table
 	Get(params cmap.CMap) Crud             // get data no search
@@ -39,23 +40,22 @@ type Crud interface {
 	GetByID(id interface{}) Crud           // by id
 	GetMoreBySearch(params cmap.CMap) Crud // more search, more tables inner/left join
 
-	// delete by id/ids
+	// Delete delete by id/ids
 	Delete(id interface{}) Crud // delete
 
-	// crud and search id
+	// UpdateForm crud and search id
 	// form data
 	// [create/update] future all will use json replace form request
 	// form will not update
 	UpdateForm(params cmap.CMap) error // update
 	CreateForm(params cmap.CMap) error // create
 
-	// crud and search id
+	// Update crud and search id
 	// json data
 	Update() Crud     // update
 	Create() Crud     // create, include res insert id
 	CreateMore() Crud // create more, data must array type, single table
 
-	// select
 	Select(q interface{}, args ...interface{}) Crud // select sql
 	From(query string) Crud                         // from sql, if use search, From must only once
 	Group(query string) Crud                        // the last group by
@@ -72,7 +72,7 @@ type Crud interface {
 	RollbackTo(name string) Crud                    // rollback to point
 }
 
-// crud params
+// Params crud params
 type Params struct {
 	// attributes
 	InnerTable []string    // inner join tables
@@ -94,10 +94,19 @@ type Params struct {
 
 type Param func(*Params)
 
-// new crud
+// NewCrud new crud
 func NewCrud(params ...Param) (crud Crud) {
 
-	DB()
+	db()
+	crud = new(Mysql)
+	crud.Init(newParam(params...))
+	return
+}
+
+// NewCusCrud new your custom db crud
+func NewCusCrud(db *gorm.DB, log bool, params ...Param) (crud Crud) {
+
+	newDB(db, log)
 	crud = new(Mysql)
 	crud.Init(newParam(params...))
 	return
@@ -119,23 +128,7 @@ func Inner(InnerTables ...string) Param {
 	}
 }
 
-// Deprecated
-func InnerTable(InnerTables []string) Param {
-
-	return func(params *Params) {
-		params.InnerTable = InnerTables
-	}
-}
-
 func Left(LeftTable ...string) Param {
-
-	return func(params *Params) {
-		params.LeftTable = LeftTable
-	}
-}
-
-// Deprecated
-func LeftTable(LeftTable []string) Param {
 
 	return func(params *Params) {
 		params.LeftTable = LeftTable
@@ -181,20 +174,7 @@ func SubSQL(SubSQL ...string) Param {
 	}
 }
 
-// Deprecated
-// use WhereSQL replace
-func SubWhereSQL(WhereSQL ...string) Param {
-
-	return func(params *Params) {
-		WhereSQL = util.RemoveStrings(WhereSQL, "")
-		if len(WhereSQL) == 0 {
-			return
-		}
-		params.WhereSQL = strings.Join(WhereSQL[:], " and ")
-	}
-}
-
-// where sql and args, can not coexists with SubWhereSQL
+// WhereSQL where sql and args
 func WhereSQL(WhereSQL string, args ...interface{}) Param {
 
 	return func(params *Params) {
@@ -221,7 +201,7 @@ func (p Param) WhereSQL(WhereSQL string, args ...interface{}) Param {
 	}
 }
 
-// inner/left support distinct
+// Distinct inner/left support distinct
 func Distinct(Distinct string) Param {
 
 	return func(params *Params) {

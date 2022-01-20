@@ -42,27 +42,23 @@ func (p *ConnPool) Do(args ...interface{}) *redis.Cmd {
 	return p.redisDB.Do(context.TODO(), args[:]...)
 }
 
-// Set
 func (p *ConnPool) Set(key interface{}, value interface{}) *redis.Cmd {
 	//defer p.Close()
 	return p.Do("SET", key, value)
 }
 
-// Get
 func (p *ConnPool) Get(key interface{}) *redis.Cmd {
 	// get one connection from pool
 	//defer p.Close()
 	return p.Do("GET", key)
 }
 
-// keys
 func (p *ConnPool) Keys(keys interface{}) *redis.Cmd {
 	// get one connection from pool
 	//defer p.Close()
 	return p.Do("KEYS", keys)
 }
 
-// DelKey for key
 func (p *ConnPool) Delete(key interface{}) *redis.Cmd {
 	//defer p.Close()
 	return p.Do("DEL", key)

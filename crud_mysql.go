@@ -15,10 +15,10 @@ import (
 	"strings"
 )
 
-// implement Crud
+// Mysql implement Crud
 type Mysql struct {
-	// DBTool  tool
-	dbTool *DBTool
+	// DB  tool
+	dbTool *DB
 	// error
 	err error
 	// crud param
@@ -34,10 +34,9 @@ type Mysql struct {
 	pager result.Pager
 
 	// transaction
-	isTrans byte // open(0), close(1)
+	isTrans bool
 }
 
-// init DBTool tool
 func (c *Mysql) Init(param *Params) {
 
 	c.dbTool = dbTool
@@ -46,7 +45,7 @@ func (c *Mysql) Init(param *Params) {
 	return
 }
 
-func (c *Mysql) DB() *DBTool {
+func (c *Mysql) DB() *DB {
 	c.common()
 	return c.dbTool
 }
@@ -60,7 +59,7 @@ func (c *Mysql) Params(params ...Param) Crud {
 	return c
 }
 
-// search
+// GetBySearch
 // pager info
 func (c *Mysql) GetBySearch(params cmap.CMap) Crud {
 	c.common()
@@ -93,7 +92,6 @@ func (c *Mysql) GetMore(params cmap.CMap) Crud {
 	return clone
 }
 
-// by id
 func (c *Mysql) GetByID(id interface{}) Crud {
 	c.common()
 
@@ -104,7 +102,7 @@ func (c *Mysql) GetByID(id interface{}) Crud {
 	return clone
 }
 
-// the same as search
+// GetMoreBySearch the same as search
 // more tables
 func (c *Mysql) GetMoreBySearch(params cmap.CMap) Crud {
 	c.common()
@@ -117,7 +115,6 @@ func (c *Mysql) GetMoreBySearch(params cmap.CMap) Crud {
 	return clone
 }
 
-// delete
 func (c *Mysql) Delete(id interface{}) Crud {
 	c.common()
 
@@ -128,14 +125,12 @@ func (c *Mysql) Delete(id interface{}) Crud {
 
 // === form data ===
 
-// update
 func (c *Mysql) UpdateForm(params cmap.CMap) error {
 	c.common()
 
 	return c.dbTool.UpdateFormData(c.param.Table, params)
 }
 
-// create
 func (c *Mysql) CreateForm(params cmap.CMap) error {
 	c.common()
 
@@ -143,7 +138,8 @@ func (c *Mysql) CreateForm(params cmap.CMap) error {
 }
 
 // == json data ==
-// create more
+
+// CreateMore can use Create replace
 func (c *Mysql) CreateMore() Crud {
 	c.common()
 	clone := c.clone()
@@ -155,7 +151,6 @@ func (c *Mysql) CreateMore() Crud {
 	return clone
 }
 
-// update
 func (c *Mysql) Update() Crud {
 	c.common()
 	clone := c.clone()
@@ -167,7 +162,6 @@ func (c *Mysql) Update() Crud {
 	return clone
 }
 
-// create
 func (c *Mysql) Create() Crud {
 	c.common()
 	clone := c.clone()
@@ -179,7 +173,6 @@ func (c *Mysql) Create() Crud {
 	return clone
 }
 
-// create
 func (c *Mysql) Select(q interface{}, args ...interface{}) Crud {
 
 	clone := c
@@ -272,7 +265,7 @@ func (c *Mysql) Pager() result.Pager {
 
 func (c *Mysql) Begin() Crud {
 	clone := c.clone()
-	clone.isTrans = 1
+	clone.isTrans = true
 	clone.dbTool.DB = clone.dbTool.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -287,7 +280,7 @@ func (c *Mysql) Commit() Crud {
 		c.dbTool.Rollback()
 	}
 	c.dbTool.Commit()
-	c.isTrans = 0
+	c.isTrans = false
 	return c
 }
 
@@ -326,7 +319,7 @@ func (c *Mysql) clone() (dbCrud *Mysql) {
 	}
 
 	// isTrans
-	if c.isTrans == 1 {
+	if c.isTrans {
 		return
 	}
 	dbCrud.dbTool = c.dbTool.clone()

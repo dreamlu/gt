@@ -8,7 +8,7 @@ import (
 	"io"
 )
 
-// png to jpeg
+// PngToJpeg png to jpeg
 // quality: -1 noting
 func PngToJpeg(img image.Image, jpegF io.Writer, quality int) error {
 	// create a new Image with the same dimension of PNG image
@@ -34,7 +34,7 @@ func PngToJpeg(img image.Image, jpegF io.Writer, quality int) error {
 	return nil
 }
 
-// judge png contains transparent
+// ContainsTransparent judge png contains transparent
 func ContainsTransparent(img image.Image) bool {
 
 	dx := img.Bounds().Dx()

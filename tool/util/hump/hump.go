@@ -6,7 +6,7 @@ import (
 	"unicode"
 )
 
-// Hump to underline, like json tag
+// HumpToLine Hump to underline, like json tag
 func HumpToLine(str string) string {
 	var buffer bytes.Buffer
 	for i, v := range str {
@@ -22,7 +22,7 @@ func HumpToLine(str string) string {
 	return buffer.String()
 }
 
-// Underscore to hump
+// LineToHump Underscore to hump
 func LineToHump(str string) string {
 	str = strings.Replace(str, "_", " ", -1)
 	str = strings.Title(str)
