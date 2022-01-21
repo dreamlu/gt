@@ -2,3 +2,4 @@ code style issues
 optimize valid
 add NewCusCrud()
 adjust yaml config read
+adjust StructToCMap

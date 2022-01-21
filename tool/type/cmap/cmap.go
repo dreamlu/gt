@@ -126,7 +126,7 @@ func StructToCMap(v interface{}) (values CMap) {
 	typ := iVal.Type()
 	for i := 0; i < iVal.NumField(); i++ {
 		fi := typ.Field(i)
-		name := tag.GetFieldTag(fi)
+		name, _, _, _ := tag.ParseTag(fi)
 		// add support slice
 		if iVal.Field(i).Kind() == reflect.Slice {
 			var buf bytes.Buffer

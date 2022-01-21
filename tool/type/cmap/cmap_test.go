@@ -23,7 +23,7 @@ func TestCMap_Struct(t *testing.T) {
 
 func TestStructToMap(t *testing.T) {
 	type Name struct {
-		Name string `json:"name"`
+		Name string `json:"name" gorm:"column:tb_name" gt:"field:name2"`
 		A    int
 		B    int
 		D    int
