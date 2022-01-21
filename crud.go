@@ -15,10 +15,8 @@ import (
 	"strings"
 )
 
-const Version = "2.0+"
-
 func init() {
-	log.Info("[gt version]:", Version)
+	log.Info("[welcome to gt (´∀｀)]")
 }
 
 // Crud interface
@@ -40,14 +38,15 @@ type Crud interface {
 	GetByID(id interface{}) Crud           // by id
 	GetMoreBySearch(params cmap.CMap) Crud // more search, more tables inner/left join
 
-	// Delete delete by id/ids
+	// Delete delete by id/ids/slice
 	Delete(id interface{}) Crud // delete
 
-	// UpdateForm crud and search id
+	// UpdateForm Deprecated
 	// form data
 	// [create/update] future all will use json replace form request
 	// form will not update
 	UpdateForm(params cmap.CMap) error // update
+	// CreateForm Deprecated
 	CreateForm(params cmap.CMap) error // create
 
 	// Update crud and search id
@@ -90,6 +89,8 @@ type Params struct {
 
 	// distinct
 	distinct string
+
+	valid bool
 }
 
 type Param func(*Params)
@@ -206,5 +207,12 @@ func Distinct(Distinct string) Param {
 
 	return func(params *Params) {
 		params.distinct = Distinct
+	}
+}
+
+func Valid(valid bool) Param {
+
+	return func(params *Params) {
+		params.valid = valid
 	}
 }

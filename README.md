@@ -1,4 +1,4 @@
-### [gt 2.0+](https://github.com/dreamlu/gt)
+### [gt](https://github.com/dreamlu/gt)
 
 API rapid development frame, model generation, general addition, deletion, modification and query, support for
 multi-table connection crud

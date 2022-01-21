@@ -23,5 +23,10 @@ func TestGetDataID(t *testing.T) {
 func TestStructToString(t *testing.T) {
 	type TestDA struct {
 	}
-	t.Log(StructName(TestDA{}))
+	t.Log(Name(TestDA{}))
+}
+
+func TestPath(t *testing.T) {
+	typ := TrueTypeof(Order{})
+	t.Log(Path(typ, "A", "B"))
 }

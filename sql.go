@@ -2,7 +2,7 @@ package gt
 
 import (
 	"bytes"
-	"fmt"
+	mr "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	sq "github.com/dreamlu/gt/tool/util/sql"
 	. "github.com/dreamlu/gt/tool/util/tag"
@@ -21,11 +21,10 @@ var sqlBuffer = cmap.NewCMap()
 // tables : table name / table alias name
 // first table must main table, like from a inner join b, first table is a
 func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
-	typ := reflect.TypeOf(model)
-	for typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
-	key := typ.PkgPath() + "/more/" + typ.Name()
+	var (
+		typ = mr.TrueTypeof(model)
+		key = mr.Path(typ, "more")
+	)
 	sql = sqlBuffer.Get(key)
 	if sql != "" {
 		return
@@ -39,22 +38,22 @@ func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
 
 // more tables
 // get sql tag alias recursion
-func getTagMore(ref reflect.Type, buf *bytes.Buffer, tables ...string) {
+func getTagMore(typ reflect.Type, buf *bytes.Buffer, tables ...string) {
 
 	var (
 		oTag, tag, tagTable string
 		b                   bool
 	)
-
-	if ref.Kind() != reflect.Struct {
+	typ = mr.TrueType(typ)
+	if !mr.IsStruct(typ) {
 		return
 	}
-	for i := 0; i < ref.NumField(); i++ {
-		if ref.Field(i).Anonymous {
-			getTagMore(ref.Field(i).Type, buf, tables[:]...)
+	for i := 0; i < typ.NumField(); i++ {
+		if typ.Field(i).Anonymous {
+			getTagMore(typ.Field(i).Type, buf, tables[:]...)
 			continue
 		}
-		if tag, tagTable, oTag, b = ParseTag(ref.Field(i)); b {
+		if tag, tagTable, oTag, b = ParseTag(typ.Field(i)); b {
 			continue
 		}
 		// gt tag rule
@@ -112,23 +111,13 @@ func writeBufTag(buf *bytes.Buffer, tb, tag, alias string) {
 	buf.WriteString(",")
 }
 
-// write where tag sql
-func writeBufWhere(buf *bytes.Buffer, tb, tag string) {
-	buf.WriteString("`")
-	buf.WriteString(tb)
-	buf.WriteString("`.`")
-	buf.WriteString(tag)
-	buf.WriteString("` = ? and ")
-}
-
 // GetColSQLAlias select * replace
 // add alias
 func GetColSQLAlias(model interface{}, alias string) (sql string) {
-	typ := reflect.TypeOf(model)
-	for typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
-	key := fmt.Sprintf("%s%s-%s", typ.PkgPath(), typ.Name(), alias)
+	var (
+		typ = mr.TrueTypeof(model)
+		key = mr.Path(typ, alias)
+	)
 	sql = sqlBuffer.Get(key)
 	if sql != "" {
 		return
@@ -142,17 +131,17 @@ func GetColSQLAlias(model interface{}, alias string) (sql string) {
 
 // single table
 // get sql tag alias recursion
-func getTagAlias(ref reflect.Type, buf *bytes.Buffer, alias string) {
+func getTagAlias(typ reflect.Type, buf *bytes.Buffer, alias string) {
 
-	if ref.Kind() != reflect.Struct {
+	if !mr.IsStruct(typ) {
 		return
 	}
-	for i := 0; i < ref.NumField(); i++ {
-		if ref.Field(i).Anonymous {
-			getTagAlias(ref.Field(i).Type, buf, alias)
+	for i := 0; i < typ.NumField(); i++ {
+		if typ.Field(i).Anonymous {
+			getTagAlias(typ.Field(i).Type, buf, alias)
 			continue
 		}
-		if tag, b := getRTag(ref, i); !b {
+		if tag, b := getRTag(typ, i); !b {
 			buf.WriteString(alias)
 			buf.WriteString(".`")
 			buf.WriteString(tag)
@@ -163,11 +152,10 @@ func getTagAlias(ref reflect.Type, buf *bytes.Buffer, alias string) {
 
 // GetColSQL select * replace
 func GetColSQL(model interface{}) (sql string) {
-	typ := reflect.TypeOf(model)
-	for typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
-	key := typ.PkgPath() + typ.Name()
+	var (
+		typ = mr.TrueTypeof(model)
+		key = mr.Path(typ)
+	)
 	sql = sqlBuffer.Get(key)
 	if sql != "" {
 		return
@@ -181,17 +169,17 @@ func GetColSQL(model interface{}) (sql string) {
 
 // single table
 // get sql tag recursion
-func getTag(ref reflect.Type, buf *bytes.Buffer) {
+func getTag(typ reflect.Type, buf *bytes.Buffer) {
 
-	if ref.Kind() != reflect.Struct {
+	if !mr.IsStruct(typ) {
 		return
 	}
-	for i := 0; i < ref.NumField(); i++ {
-		if ref.Field(i).Anonymous {
-			getTag(ref.Field(i).Type, buf)
+	for i := 0; i < typ.NumField(); i++ {
+		if typ.Field(i).Anonymous {
+			getTag(typ.Field(i).Type, buf)
 			continue
 		}
-		if tag, b := getRTag(ref, i); !b {
+		if tag, b := getRTag(typ, i); !b {
 			buf.WriteString("`")
 			buf.WriteString(tag)
 			buf.WriteString("`,")
@@ -215,9 +203,7 @@ func GetColParamSQL(model interface{}) (sql string) {
 
 // get col ? type
 func getColParamSQLByType(typ reflect.Type, buf *bytes.Buffer) {
-	for typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
+	typ = mr.TrueType(typ)
 	for i := 0; i < typ.NumField(); i++ {
 		if typ.Field(i).Anonymous {
 			getColParamSQLByType(typ.Field(i).Type, buf)
@@ -235,9 +221,11 @@ func GetParams(data interface{}) (params []interface{}) {
 
 // get params ? params
 func getParams(typ reflect.Value) (params []interface{}) {
+	// todo mr.TrueType() use go1.18 replace
 	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
 	}
+	// todo mr.IsStruct() use go1.18 replace
 	if typ.Kind() != reflect.Struct {
 		return
 	}

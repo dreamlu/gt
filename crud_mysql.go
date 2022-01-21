@@ -3,10 +3,10 @@
 package gt
 
 import (
+	"errors"
 	"fmt"
 	"github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/type/cmap"
-	"github.com/dreamlu/gt/tool/type/errors"
 	"github.com/dreamlu/gt/tool/util/hump"
 	"github.com/dreamlu/gt/tool/util/result"
 	sq "github.com/dreamlu/gt/tool/util/sql"
@@ -143,9 +143,11 @@ func (c *Mysql) CreateForm(params cmap.CMap) error {
 func (c *Mysql) CreateMore() Crud {
 	c.common()
 	clone := c.clone()
-	clone.err = check(clone.param.Data)
-	if clone.err != nil {
-		return clone
+	if c.param.valid {
+		clone.err = c.valid(clone.param.Data)
+		if clone.err != nil {
+			return clone
+		}
 	}
 	clone.dbTool.CreateMore(clone.param.Table, clone.param.Model, clone.param.Data)
 	return clone
@@ -154,6 +156,12 @@ func (c *Mysql) CreateMore() Crud {
 func (c *Mysql) Update() Crud {
 	c.common()
 	clone := c.clone()
+	if c.param.valid {
+		clone.err = c.valid(clone.param.Data)
+		if clone.err != nil {
+			return clone
+		}
+	}
 	clone.dbTool.Update(&GT{
 		Params: clone.param,
 		Select: clone.selectSQL,
@@ -165,9 +173,11 @@ func (c *Mysql) Update() Crud {
 func (c *Mysql) Create() Crud {
 	c.common()
 	clone := c.clone()
-	clone.err = check(clone.param.Data)
-	if clone.err != nil {
-		return clone
+	if c.param.valid {
+		clone.err = c.valid(clone.param.Data)
+		if clone.err != nil {
+			return clone
+		}
 	}
 	clone.dbTool.Create(clone.param.Table, clone.param.Data)
 	return clone
@@ -304,7 +314,7 @@ func (c *Mysql) clone() (dbCrud *Mysql) {
 	// default table
 	if c.param.Table == "" &&
 		c.param.Model != nil {
-		c.param.Table = hump.HumpToLine(reflect.StructName(c.param.Model))
+		c.param.Table = hump.HumpToLine(reflect.Name(c.param.Model))
 	}
 
 	dbCrud = &Mysql{
@@ -332,6 +342,19 @@ func (c *Mysql) common() {
 	}
 }
 
+func (c *Mysql) valid(data interface{}) error {
+
+	ves := valid.Valid(data)
+	if len(ves) > 0 {
+		var s string
+		for k, v := range ves {
+			s += fmt.Sprintf("%s:%s;", k, v)
+		}
+		return errors.New(strings.TrimSuffix(s, ";"))
+	}
+	return nil
+}
+
 func (c *Mysql) line() {
 	_, fullFile, line, ok := runtime.Caller(3) // 3 skip
 	file := fullFile
@@ -351,18 +374,4 @@ func (c *Mysql) line() {
 		_, _ = fmt.Fprintf(buf, "%s:%d\n", fullFile, line)
 		fmt.Print(buf.String())
 	}
-}
-
-// auto valid data
-func check(data interface{}) error {
-
-	ves := valid.Valid(data)
-	if len(ves) > 0 {
-		var s string
-		for k, v := range ves {
-			s += fmt.Sprintf("%s:%s;", k, v)
-		}
-		return errors.New(strings.TrimSuffix(s, ";"))
-	}
-	return nil
 }

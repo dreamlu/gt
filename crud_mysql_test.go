@@ -134,12 +134,8 @@ func TestCrud(t *testing.T) {
 	t.Log(info2.Error())
 	info2 = crud.Delete("12,13,14")
 	t.Log(info2.Error())
-
-	// update by form request
-	//args.Add("id", "4")
-	//args.Set("name", "梦4")
-	//err := crud.UpdateForm(cmap.CMap(args))
-	//t.Log(err)
+	info2 = crud.Delete([]int{1, 2})
+	t.Log(info2.Error())
 }
 
 // select sql

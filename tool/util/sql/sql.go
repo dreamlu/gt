@@ -3,7 +3,8 @@ package sql
 import (
 	"bytes"
 	"fmt"
-	reflect2 "github.com/dreamlu/gt/tool/reflect"
+	mr "github.com/dreamlu/gt/tool/reflect"
+	"github.com/dreamlu/gt/tool/type/bmap"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/cons"
 	"github.com/dreamlu/gt/tool/util/hump"
@@ -45,8 +46,8 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 
 	var (
 		keys = strings.Fields(key)
-		typ  = reflect.TypeOf(model)
-		ks   = typ.PkgPath() + typ.Name()
+		typ  = mr.TrueTypeof(model)
+		ks   = mr.Path(typ)
 	)
 	sqlKey = sqlBuffer[ks].sql
 	if sqlKey != "" {
@@ -93,8 +94,8 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 
 	var (
 		keys = strings.Split(key, " ") // 空格隔开
-		typ  = reflect.TypeOf(model)
-		ks   = typ.PkgPath() + "/more/" + typ.Name()
+		typ  = mr.TrueTypeof(model)
+		ks   = mr.Path(typ, "more")
 	)
 	sqlKey = sqlBuffer[ks].sql
 	if sqlKey != "" {
@@ -128,22 +129,22 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 
 // more tables
 // get sql tag alias recursion
-func getTagMore(ref reflect.Type, v string, argsKey *[]interface{}, buf *bytes.Buffer, tables ...string) {
+func getTagMore(typ reflect.Type, v string, argsKey *[]interface{}, buf *bytes.Buffer, tables ...string) {
 
 	var (
 		tg, tagTable string
 		b            bool
 	)
 
-	if ref.Kind() != reflect.Struct {
+	if !mr.IsStruct(typ) {
 		return
 	}
-	for i := 0; i < ref.NumField(); i++ {
-		if ref.Field(i).Anonymous {
-			getTagMore(ref.Field(i).Type, v, argsKey, buf, tables[:]...)
+	for i := 0; i < typ.NumField(); i++ {
+		if typ.Field(i).Anonymous {
+			getTagMore(typ.Field(i).Type, v, argsKey, buf, tables[:]...)
 			continue
 		}
-		if tg, tagTable, _, b = tag.ParseTag(ref.Field(i)); b {
+		if tg, tagTable, _, b = tag.ParseTag(typ.Field(i)); b {
 			continue
 		}
 		// gt tg rule
@@ -206,11 +207,11 @@ func writeTagString(buf *bytes.Buffer, tb, tag string) {
 func StructWhereSQL(st interface{}) (sql string, args []interface{}) {
 	var (
 		buf bytes.Buffer
-		m   = reflect2.ToMap(st)
+		m   = bmap.ToBMap(st)
 	)
 
 	for k, v := range m {
-		if reflect2.IsZero(v) {
+		if mr.IsZero(v) {
 			continue
 		}
 		buf.WriteString(hump.HumpToLine(k))

@@ -1,13 +1,12 @@
 package reflect
 
 import (
-	"encoding/json"
 	"errors"
 	"reflect"
 )
 
-// GetDataByFieldName reflect value via field name
-func GetDataByFieldName(data interface{}, filedName string) (interface{}, error) {
+// ValueOfName reflect value via field name
+func ValueOfName(data interface{}, filedName string) (interface{}, error) {
 	typ := reflect.TypeOf(data)
 
 	switch typ.Kind() {
@@ -38,19 +37,7 @@ func ToSlice(arr interface{}) []interface{} {
 	return ret
 }
 
-// StructName return struct string name
-func StructName(st interface{}) string {
-	typ := reflect.TypeOf(st)
-	if typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
-	return typ.Name()
-}
-
-// ToMap struct to map
-func ToMap(st interface{}) map[string]interface{} {
-	m := make(map[string]interface{})
-	bs, _ := json.Marshal(st)
-	_ = json.Unmarshal(bs, &m)
-	return m
+// Name return struct string name
+func Name(v interface{}) string {
+	return TrueTypeof(v).Name()
 }

@@ -46,7 +46,7 @@ func TestGetGtTags(t *testing.T) {
 		for _, v := range m[k].GtTags {
 			t.Log(v)
 		}
-		t.Log(reflect.GetDataByFieldName(u, k))
+		t.Log(reflect.ValueOfName(u, k))
 	}
 }
 

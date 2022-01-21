@@ -1,6 +1,7 @@
 package tag
 
 import (
+	mr "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/util/cons"
 	"reflect"
 	"strings"
@@ -109,8 +110,8 @@ func ObtainTags(ref reflect.Type, tagName string, fs ...func(reflect.StructTag) 
 
 // ObtainMoreTags use to get the specified tag in the structure
 // fs use to filter specified tags, true means filtering
-func ObtainMoreTags(ref reflect.Type, tagNames []string, fs ...func(reflect.StructTag) bool) map[string]map[string]string {
-	if ref.Kind() != reflect.Struct {
+func ObtainMoreTags(typ reflect.Type, tagNames []string, fs ...func(reflect.StructTag) bool) map[string]map[string]string {
+	if !mr.IsStruct(typ) {
 		return nil
 	}
 	var (
@@ -120,8 +121,8 @@ func ObtainMoreTags(ref reflect.Type, tagNames []string, fs ...func(reflect.Stru
 	)
 	for _, tagName := range tagNames {
 		var tags = make(map[string]string)
-		for i := 0; i < ref.NumField(); i++ {
-			field = ref.Field(i)
+		for i := 0; i < typ.NumField(); i++ {
+			field = typ.Field(i)
 			if field.Anonymous {
 				tags = mergeMap(tags, ObtainTags(field.Type, tagName, fs...))
 				continue
@@ -178,28 +179,26 @@ func parseFieldTag(tagValue string) (table, column string) {
 
 // get struct fields tags via recursion
 // include gt tag rule
-func getTags(ref reflect.Type) (tags []string) {
-	for ref.Kind() == reflect.Ptr {
-		ref = ref.Elem()
-	}
-	if ref.Kind() != reflect.Struct {
+func getTags(typ reflect.Type) (tags []string) {
+	typ = mr.TrueType(typ)
+	if !mr.IsStruct(typ) {
 		return
 	}
 	var (
 		tag string
 		b   bool
 	)
-	for i := 0; i < ref.NumField(); i++ {
-		if ref.Field(i).Anonymous {
-			tags = append(tags, getTags(ref.Field(i).Type)...)
+	for i := 0; i < typ.NumField(); i++ {
+		if typ.Field(i).Anonymous {
+			tags = append(tags, getTags(typ.Field(i).Type)...)
 			continue
 		}
 
-		if tag, _, b = ParseGtTag(ref.Field(i).Tag); b {
+		if tag, _, b = ParseGtTag(typ.Field(i).Tag); b {
 			continue
 		}
 		if tag == "" {
-			tag = GetFieldTag(ref.Field(i))
+			tag = GetFieldTag(typ.Field(i))
 		}
 		tags = append(tags, tag)
 	}

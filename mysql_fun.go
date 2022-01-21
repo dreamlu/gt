@@ -5,6 +5,7 @@ package gt
 import (
 	"bytes"
 	"fmt"
+	mr "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util"
 	"github.com/dreamlu/gt/tool/util/cons"
@@ -182,9 +183,11 @@ func (gt *GT) otherTableWhere(bufW *bytes.Buffer, tables []string, k, v string) 
 
 // more sql
 func (gt *GT) moreSql() (tables []string) {
-	typ := reflect.TypeOf(gt.Model)
-	keyNt := typ.PkgPath() + "/sqlNt/" + typ.Name()
-	keyTs := typ.PkgPath() + "/sqlNtTables/" + typ.Name()
+	var (
+		typ   = reflect.TypeOf(gt.Model)
+		keyNt = mr.Path(typ, "sqlNt")
+		keyTs = mr.Path(typ, "sqlNtTables")
+	)
 	gt.sqlNt = sqlBuffer.Get(keyNt)
 	if tables = strings.Split(sqlBuffer.Get(keyTs), ","); tables[0] == "" {
 		tables = []string{}

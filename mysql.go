@@ -56,7 +56,7 @@ func (db *DB) NewDB() {
 	db.DB = db.open(sql, dbS)
 	err := db.DB.Exec("create database if not exists `" + dbS.Name + "`").Error
 	if err != nil {
-		log.Info("[mysql自动连接根数据库失败,尝试直接连接]")
+		log.Info("[mysql connect database error, try connect direct]")
 	}
 
 	sql = fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host, dbS.Name)
@@ -92,8 +92,8 @@ func (db *DB) open(sql string, dbS *dba) *gorm.DB {
 	DB, err := gorm.Open(mysql.Open(sql), cf)
 	//defer db.db.Close()
 	if err != nil {
-		log.Error("[mysql连接错误]:", err)
-		log.Error("[mysql开始尝试重连中]: try it every 5s...")
+		log.Error("[mysql connect error]:", err)
+		log.Error("[mysql try connect again]: try it every 5s...")
 		// try to reconnect
 		for {
 			// go is so fast
@@ -102,10 +102,10 @@ func (db *DB) open(sql string, dbS *dba) *gorm.DB {
 			DB, err = gorm.Open(mysql.Open(sql), cf)
 			//defer db.Close()
 			if err != nil {
-				log.Error("[mysql连接错误]:", err)
+				log.Error("[mysql connect error]:", err)
 				continue
 			}
-			log.Info("[mysql重连成功]")
+			log.Info("[mysql connect success]")
 			break
 		}
 	}
@@ -293,11 +293,6 @@ func (db *DB) Delete(table string, id interface{}) {
 ///////////////////
 
 func (db *DB) Update(gt *GT) {
-
-	if gt.Model == nil {
-		gt.Model = gt.Data
-	}
-
 	if gt.Select != "" {
 		db.res = db.Table(gt.Table).Where(gt.Select, gt.Args).Updates(gt.Data)
 	} else {
@@ -359,37 +354,6 @@ func (db *DB) CreateFormData(table string, params cmap.CMap) error {
 	sql, args := GetInsertSQL(table, params)
 	db.ExecSQL(sql, args...)
 	return db.res.Error
-}
-
-// CreateDataResID create data return id
-func (db *DB) CreateDataResID(table string, params cmap.CMap) (id uint64, err error) {
-
-	//开启事务
-	tx := db.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	sql, args := GetInsertSQL(table, params)
-	dba := tx.Exec(sql, args[:]...)
-
-	tx.Raw("select max(id) as id from ?", table).Scan(&id)
-
-	switch {
-	case dba.Error != nil:
-		err = dba.Error
-	default:
-		err = nil
-	}
-
-	if tx.Error != nil {
-		tx.Rollback()
-	}
-
-	tx.Commit()
-	return
 }
 
 // InitColumns init db table columns map

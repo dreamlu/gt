@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	mr "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/type/bmap"
 	"github.com/dreamlu/gt/tool/type/cmap"
 	"github.com/dreamlu/gt/tool/util/cons"
@@ -16,10 +17,7 @@ import (
 
 // CursorScan scan data to mongo data
 func (m *Mongo) CursorScan(cur *mongo.Cursor, data interface{}) {
-	typ := reflect.TypeOf(data)
-	for typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
+	typ := mr.TrueTypeof(data)
 	switch typ.Kind() {
 	case reflect.Slice:
 		m.err = cur.All(context.TODO(), data)

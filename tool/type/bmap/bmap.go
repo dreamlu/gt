@@ -2,9 +2,6 @@ package bmap
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/dreamlu/gt/tool/util/tag"
-	"reflect"
 )
 
 type BMap map[string]interface{}
@@ -40,13 +37,8 @@ func (v BMap) Del(key string) BMap {
 	return v
 }
 
-// Struct BMap to struct data
-// value like
-// type Te struct {
-//		Name string `json:"name"` // must string type
-//		ID   string `json:"id"` // must string type
-//	}
-func (v BMap) Struct(value interface{}) error {
+// Marshal BMap to v
+func (v BMap) Marshal(value interface{}) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -58,20 +50,12 @@ func (v BMap) Struct(value interface{}) error {
 	return nil
 }
 
-// StructToBMap struct to BMap, maybe use Encode
-// ps: the BMap key->value , value will be string type
-func StructToBMap(v interface{}) (values BMap) {
+// ToBMap struct/slice... to BMap
+// v must be allowed
+func ToBMap(v interface{}) (values BMap) {
 	values = NewBMap()
-	el := reflect.ValueOf(v)
-	if el.Kind() == reflect.Ptr {
-		el = el.Elem()
-	}
-	iVal := el
-	typ := iVal.Type()
-	for i := 0; i < iVal.NumField(); i++ {
-		fi := typ.Field(i)
-		values.Set(tag.GetFieldTag(fi), fmt.Sprint(iVal.Field(i)))
-	}
+	bs, _ := json.Marshal(v)
+	_ = json.Unmarshal(bs, &values)
 	return
 }
 
