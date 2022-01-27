@@ -5,12 +5,26 @@ import (
 	"reflect"
 )
 
-func TrueTypeof(v interface{}) (typ reflect.Type) {
-	typ = reflect.TypeOf(v)
-	return TrueType(typ)
+type Kind interface {
+	Kind() reflect.Kind
+}
+
+func TrueTypeof(v interface{}) reflect.Type {
+	return TrueType(reflect.TypeOf(v))
 }
 
 func TrueType(typ reflect.Type) reflect.Type {
+	for typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+	return typ
+}
+
+func TrueValueOf(v interface{}) reflect.Value {
+	return TrueValue(reflect.ValueOf(v))
+}
+
+func TrueValue(typ reflect.Value) reflect.Value {
 	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
 	}
@@ -30,7 +44,7 @@ func Path(typ reflect.Type, path ...string) string {
 	return fmt.Sprintf("%s%s_%s", typ.PkgPath(), typ.Name(), path)
 }
 
-func IsStruct(typ reflect.Type) bool {
+func IsStruct(typ Kind) bool {
 	if typ.Kind() == reflect.Struct {
 		return true
 	}

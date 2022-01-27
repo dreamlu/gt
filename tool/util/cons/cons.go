@@ -38,6 +38,7 @@ const (
 
 // part sql
 const (
+	SQL_                = "SQL_"
 	WhereS              = "where %s "
 	AndS                = "and %s "
 	OrderDesc           = "%s.id desc"
@@ -51,4 +52,8 @@ const (
 	SelectCount         = "select " + Count + " "
 	SelectCountDistinct = "select " + CountDistinct + " "
 	SelectCountFrom     = SelectCount + "from %s "
+)
+
+var (
+	Backticks uint8 = '`' // different sql mark
 )

@@ -39,7 +39,7 @@ func (p *ConnPool) Close() {
 func (p *ConnPool) Do(args ...interface{}) *redis.Cmd {
 	// close problem
 	//defer p.Close()
-	return p.redisDB.Do(context.TODO(), args[:]...)
+	return p.redisDB.Do(context.TODO(), args...)
 }
 
 func (p *ConnPool) Set(key interface{}, value interface{}) *redis.Cmd {

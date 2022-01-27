@@ -36,6 +36,10 @@ func GetBool(name string) bool {
 	return Configger().GetBool(name)
 }
 
-func GetStruct(name string, s interface{}) {
-	Configger().GetStruct(name, s)
+func GetStruct(name string, v interface{}) {
+	Configger().GetStruct(name, v)
+}
+
+func Unmarshal(v interface{}) {
+	Configger().Unmarshal(v)
 }

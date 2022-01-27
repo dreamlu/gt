@@ -7,8 +7,7 @@ import (
 	"fmt"
 	"github.com/dreamlu/gt/tool/conf"
 	"github.com/dreamlu/gt/tool/log"
-	reflect2 "github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/type/cmap"
+	mr "github.com/dreamlu/gt/tool/reflect"
 	"github.com/dreamlu/gt/tool/util/cons"
 	"github.com/dreamlu/gt/tool/util/result"
 	sq "github.com/dreamlu/gt/tool/util/sql"
@@ -172,7 +171,7 @@ func (db *DB) clone() *DB {
 // get single data
 func (db *DB) getBySQL(data interface{}, sql string, args ...interface{}) {
 
-	db.res = db.DB.Raw(sql, args[:]...).Scan(data)
+	db.res = db.DB.Raw(sql, args...).Scan(data)
 }
 
 func (db *DB) GetByID(gt *GT, id interface{}) {
@@ -258,9 +257,9 @@ func (db *DB) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage, ev
 		sql += fmt.Sprintf("limit %d, %d", (clientPage-1)*everyPage, everyPage)
 	}
 	// sqlNt += limit
-	db.res = db.DB.Raw(sqlNt, args[:]...).Scan(&pager)
+	db.res = db.DB.Raw(sqlNt, args...).Scan(&pager)
 	if db.res.Error == nil && pager.TotalNum > 0 {
-		db.res = db.DB.Raw(sql, args[:]...).Scan(data)
+		db.res = db.DB.Raw(sql, args...).Scan(data)
 		// pager data
 		pager.ClientPage = clientPage
 		pager.EveryPage = everyPage
@@ -314,46 +313,27 @@ func (db *DB) Create(table string, data interface{}) {
 // also can use Create array
 func (db *DB) CreateMore(table string, model interface{}, data interface{}) {
 	var (
-		buf    bytes.Buffer
-		params []interface{}
+		buf       bytes.Buffer
+		params    []interface{}
+		p         = parse(model)
+		arrayData = mr.ToSlice(data) // slice data
+		colPSQL   = GetColParamSQL(p)
 	)
-
-	// array data
-	arrayData := reflect2.ToSlice(data)
-	colPSQL := GetColParamSQL(model)
 
 	for _, v := range arrayData {
 		// buf
-		buf.WriteString("(")
+		buf.WriteByte('(')
 		buf.WriteString(colPSQL)
 		buf.WriteString("),")
 		// params
-		params = append(params, GetParams(v)[:]...)
+		p.Vs = nil
+		parseV(p, v)
+		params = append(params, p.Vs...)
 	}
 	values := string(buf.Bytes()[:buf.Len()-1])
 
 	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", sq.Table(table), GetColSQL(model), values)
-	db.res = db.DB.Exec(sql, params[:]...)
-}
-
-// form-data create/update
-// future will remove
-// use json replace
-
-// UpdateFormData via form data update
-func (db *DB) UpdateFormData(table string, params cmap.CMap) (err error) {
-
-	sql, args := GetUpdateSQL(table, params)
-	db.ExecSQL(sql, args...)
-	return db.res.Error
-}
-
-// CreateFormData via form data create
-func (db *DB) CreateFormData(table string, params cmap.CMap) error {
-
-	sql, args := GetInsertSQL(table, params)
-	db.ExecSQL(sql, args...)
-	return db.res.Error
+	db.res = db.DB.Exec(sql, params...)
 }
 
 // InitColumns init db table columns map

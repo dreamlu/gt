@@ -48,12 +48,11 @@ type GT struct {
 func (gt *GT) GetMoreSQL() {
 
 	var (
-		tables []string
+		tables = gt.moreSql()
+		sql    = GetMoreColSQL(gt.Model, tables...)
 		bufW   bytes.Buffer // gt.sql bytes connect
 		count  = cons.Count
 	)
-	tables = gt.moreSql()
-	var sql = GetMoreTableColumnSQL(gt.Model, tables[:]...)
 	if gt.distinct != "" {
 		count = fmt.Sprintf(cons.CountDistinct, gt.distinct)
 		sql = cons.Distinct + sql
@@ -188,8 +187,8 @@ func (gt *GT) moreSql() (tables []string) {
 		keyNt = mr.Path(typ, "sqlNt")
 		keyTs = mr.Path(typ, "sqlNtTables")
 	)
-	gt.sqlNt = sqlBuffer.Get(keyNt)
-	if tables = strings.Split(sqlBuffer.Get(keyTs), ","); tables[0] == "" {
+	gt.sqlNt = buffer.Get(keyNt)
+	if tables = strings.Split(buffer.Get(keyTs), ","); tables[0] == "" {
 		tables = []string{}
 	}
 	if gt.sqlNt != "" {
@@ -212,13 +211,15 @@ func (gt *GT) moreSql() (tables []string) {
 	bufNt.WriteString(count)
 	bufNt.WriteString("from ")
 	if tb := DBS[tables[0]]; tb != "" {
-		bufNt.WriteString("`")
+		bufNt.WriteByte(cons.Backticks)
 		bufNt.WriteString(tb)
-		bufNt.WriteString("`.")
+		bufNt.WriteByte(cons.Backticks)
+		bufNt.WriteByte('.')
 	}
-	bufNt.WriteString("`")
+	bufNt.WriteByte(cons.Backticks)
 	bufNt.WriteString(tables[0])
-	bufNt.WriteString("` ")
+	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(' ')
 	// inner join
 	for i := 1; i < len(innerTables); i += 2 {
 		bufNt.WriteString("inner join ")
@@ -230,8 +231,8 @@ func (gt *GT) moreSql() (tables []string) {
 		innerLeftSQL(&bufNt, DBS, leftTables, leftField, i)
 	}
 	gt.sqlNt = bufNt.String()
-	sqlBuffer.Set(keyNt, gt.sqlNt)
-	sqlBuffer.Set(keyTs, strings.Join(tables, ","))
+	buffer.Set(keyNt, gt.sqlNt)
+	buffer.Set(keyTs, strings.Join(tables, ","))
 	return
 }
 
@@ -377,11 +378,13 @@ func (gt *GT) whereKv(bufW *bytes.Buffer, k, v string) {
 
 // where k =/in v
 func (gt *GT) whereTbKv(bufW *bytes.Buffer, tb, k, v string) {
-	bufW.WriteByte('`')
+	bufW.WriteByte(cons.Backticks)
 	bufW.WriteString(tb)
-	bufW.WriteString("`.`")
+	bufW.WriteByte(cons.Backticks)
+	bufW.WriteByte('.')
+	bufW.WriteByte(cons.Backticks)
 	bufW.WriteString(k)
-	bufW.WriteByte('`')
+	bufW.WriteByte(cons.Backticks)
 	if strings.Contains(v, cons.GtComma) {
 		bufW.WriteString(cons.ParamInAnd)
 		gt.Args = append(gt.Args, strings.Split(v, cons.GtComma)) // args
@@ -389,63 +392,4 @@ func (gt *GT) whereTbKv(bufW *bytes.Buffer, tb, k, v string) {
 		bufW.WriteString(cons.ParamAnd)
 		gt.Args = append(gt.Args, v) // args
 	}
-}
-
-// form-data create/update
-// future will remove
-// use json replace
-
-// GetUpdateSQL get update sql
-func GetUpdateSQL(table string, params cmap.CMap) (sql string, args []interface{}) {
-
-	// sql connect
-	var (
-		id  string       // id
-		buf bytes.Buffer // sql bytes connect
-	)
-	buf.WriteString("update `")
-	buf.WriteString(table)
-	buf.WriteString("` set ")
-	for k, v := range params {
-		if k == "id" {
-			id = v[0]
-			continue
-		}
-		buf.WriteString("`")
-		buf.WriteString(k)
-		buf.WriteString("` = ?,")
-		args = append(args, v[0])
-	}
-	args = append(args, id)
-	sql = string(buf.Bytes()[:buf.Len()-1]) + " where id = ?"
-	return sql, args
-}
-
-// GetInsertSQL get insert sql
-func GetInsertSQL(table string, params cmap.CMap) (sql string, args []interface{}) {
-
-	// sql connect
-	var (
-		sqlv string
-		buf  bytes.Buffer // sql bytes connect
-	)
-	buf.WriteString("insert `")
-	buf.WriteString(table)
-	buf.WriteString("`(")
-	//sql = "insert `" + table + "`("
-
-	for k, v := range params {
-		buf.WriteString("`")
-		buf.WriteString(k)
-		buf.WriteString("`,")
-
-		args = append(args, v[0])
-		sqlv += "?,"
-	}
-	//sql = buf.Bytes()[:buf.Len()-1]
-	sql = buf.String()
-	sql = string([]byte(sql)[:len(sql)-1]) + ") value(" + sqlv
-	sql = string([]byte(sql)[:len(sql)-1]) + ")" // remove ','
-
-	return sql, args
 }

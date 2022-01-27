@@ -221,12 +221,12 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	}
 	// get more search
 	var params = cmap.NewCMap().
-		Set("key", "梦 test 1"). // key work，& relation
+		//Set("key", "梦 test 1"). // key work，& relation
 		Set("clientPage", "1").
 		//Set("id", "1,2,3").
 		Set("everyPage", "2")
 	//params.Add("mock", "1") // mock data
-	var or []*OrderD
+	var or []OrderD
 	crud := NewCrud(
 		// 支持同一个mysql多数据库跨库查询
 		Inner("order", "gt.user"),
@@ -235,19 +235,20 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		Data(&or),
 		//KeyModel(Key{}),
 		WhereSQL("1 = ?", 1).WhereSQL("2 = ?", 2),
-		Distinct("order.id"),
+		//Distinct("order.id"),
 	)
 	err := crud.GetMoreBySearch(params).Error()
 	if err != nil {
-		t.Log(err)
+		t.Error(err)
+		return
 	}
+	t.Log(or)
 	err = crud.GetMoreBySearch(params).Error()
 	if err != nil {
-		t.Log(err)
+		t.Error(err)
+		return
 	}
-	for _, v := range or {
-		t.Log(v)
-	}
+	t.Log(or)
 }
 
 func TestGetMoreSearchSQL(t *testing.T) {
@@ -330,7 +331,7 @@ func TestExtends(t *testing.T) {
 	}
 	for i := 0; i < 3; i++ {
 		t.Log(GetColSQL(UserDeX{}))
-		t.Log(GetMoreTableColumnSQL(UserMore{}, []string{"user", "shop"}[:]...))
+		t.Log(GetMoreColSQL(UserMore{}, []string{"user", "shop"}...))
 	}
 }
 

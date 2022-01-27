@@ -2,11 +2,9 @@ package gt
 
 import (
 	"bytes"
-	mr "github.com/dreamlu/gt/tool/reflect"
+	"fmt"
 	"github.com/dreamlu/gt/tool/type/cmap"
-	sq "github.com/dreamlu/gt/tool/util/sql"
-	. "github.com/dreamlu/gt/tool/util/tag"
-	"reflect"
+	"github.com/dreamlu/gt/tool/util/cons"
 	"strings"
 )
 
@@ -14,239 +12,121 @@ import (
 // resolve go struct field from model
 
 // sql memory
-var sqlBuffer = cmap.NewCMap()
+var buffer = cmap.NewCMap()
 
-// GetMoreTableColumnSQL select * replace
-// select more tables
-// tables : table name / table alias name
+// GetMoreColSQL select * replace
+// select more tables : table name / table alias name
 // first table must main table, like from a inner join b, first table is a
-func GetMoreTableColumnSQL(model interface{}, tables ...string) (sql string) {
+func GetMoreColSQL(model interface{}, tables ...string) (sql string) {
 	var (
-		typ = mr.TrueTypeof(model)
-		key = mr.Path(typ, "more")
+		p   = parse(model, tables...)
+		key = fmt.Sprintf("%s%s_more", cons.SQL_, p.Key)
 	)
-	sql = sqlBuffer.Get(key)
+	sql = buffer.Get(key)
 	if sql != "" {
 		return
 	}
 	var buf bytes.Buffer
-	getTagMore(typ, &buf, tables[:]...)
+	getTagMoreSQL(p, &buf)
 	sql = string(buf.Bytes()[:buf.Len()-1])
-	sqlBuffer.Set(key, sql)
+	buffer.Set(key, sql)
 	return
 }
 
-// more tables
-// get sql tag alias recursion
-func getTagMore(typ reflect.Type, buf *bytes.Buffer, tables ...string) {
+// get more table tag sql
+func getTagMoreSQL(p *Parses, buf *bytes.Buffer) {
 
-	var (
-		oTag, tag, tagTable string
-		b                   bool
-	)
-	typ = mr.TrueType(typ)
-	if !mr.IsStruct(typ) {
-		return
-	}
-	for i := 0; i < typ.NumField(); i++ {
-		if typ.Field(i).Anonymous {
-			getTagMore(typ.Field(i).Type, buf, tables[:]...)
-			continue
+	for _, tag := range p.Tags {
+		tb := p.TagTb[tag]
+		if tb == "" {
+			tb = p.Table
 		}
-		if tag, tagTable, oTag, b = ParseTag(typ.Field(i)); b {
-			continue
+		buf.WriteByte(cons.Backticks)
+		buf.WriteString(tb)
+		buf.WriteByte(cons.Backticks)
+		buf.WriteByte('.')
+		buf.WriteByte(cons.Backticks)
+		buf.WriteString(p.TagTag[tag])
+		buf.WriteByte(cons.Backticks)
+		if p.OTags[tag] != "" {
+			buf.WriteString(" as ")
+			buf.WriteString(p.OTags[tag])
 		}
-		// gt tag rule
-		if tagTable != "" {
-			writeBufTag(buf, tagTable, tag, oTag)
-			continue
-		}
-
-		// sql tag rule
-		tb := sq.UniqueTagTable(tag, tables...)
-		if tb != "" {
-			writeBufTag(buf, tb, tag, "")
-			continue
-		}
-
-		// default tag rule
-		if b = otherTableTagSQL(oTag, tag, buf, tables...); !b {
-			writeBufTag(buf, tables[0], tag, "")
-		}
-	}
-}
-
-// if there is tag gt and json, select json tag first
-// more tables, other tables sql tag
-func otherTableTagSQL(oTag, tag string, buf *bytes.Buffer, tables ...string) bool {
-	// foreign tables column
-	for _, v := range tables {
-		if strings.Contains(tag, v+"_id") {
-			break
-		}
-		// tables
-		if strings.HasPrefix(tag, v+"_") &&
-			// next two condition, eg: db_test.go==>TestGetReflectTagMore()
-			!strings.Contains(tag, "_id") &&
-			!strings.EqualFold(v, tables[0]) {
-
-			writeBufTag(buf, v, string([]byte(tag)[len(v)+1:]), oTag)
-			return true
-		}
-	}
-	return false
-}
-
-// write tag sql
-func writeBufTag(buf *bytes.Buffer, tb, tag, alias string) {
-	buf.WriteString("`")
-	buf.WriteString(tb)
-	buf.WriteString("`.`")
-	buf.WriteString(tag)
-	buf.WriteString("`")
-	if alias != "" && alias != "-" {
-		buf.WriteString(" as ")
-		buf.WriteString(alias)
-	}
-	buf.WriteString(",")
-}
-
-// GetColSQLAlias select * replace
-// add alias
-func GetColSQLAlias(model interface{}, alias string) (sql string) {
-	var (
-		typ = mr.TrueTypeof(model)
-		key = mr.Path(typ, alias)
-	)
-	sql = sqlBuffer.Get(key)
-	if sql != "" {
-		return
-	}
-	var buf bytes.Buffer
-	getTagAlias(typ, &buf, alias)
-	sql = string(buf.Bytes()[:buf.Len()-1]) //去掉点,
-	sqlBuffer.Set(key, sql)
-	return
-}
-
-// single table
-// get sql tag alias recursion
-func getTagAlias(typ reflect.Type, buf *bytes.Buffer, alias string) {
-
-	if !mr.IsStruct(typ) {
-		return
-	}
-	for i := 0; i < typ.NumField(); i++ {
-		if typ.Field(i).Anonymous {
-			getTagAlias(typ.Field(i).Type, buf, alias)
-			continue
-		}
-		if tag, b := getRTag(typ, i); !b {
-			buf.WriteString(alias)
-			buf.WriteString(".`")
-			buf.WriteString(tag)
-			buf.WriteString("`,")
-		} // continue
+		buf.WriteByte(',')
 	}
 }
 
 // GetColSQL select * replace
 func GetColSQL(model interface{}) (sql string) {
 	var (
-		typ = mr.TrueTypeof(model)
-		key = mr.Path(typ)
+		r   = parse(model)
+		key = fmt.Sprintf("%s%s", cons.SQL_, r.Key)
 	)
-	sql = sqlBuffer.Get(key)
+	sql = buffer.Get(key)
 	if sql != "" {
 		return
 	}
 	var buf bytes.Buffer
-	getTag(typ, &buf)
+	getTagSQL(r, &buf, "")
 	sql = string(buf.Bytes()[:buf.Len()-1]) // remove ,
-	sqlBuffer.Set(key, sql)
+	buffer.Set(key, sql)
 	return
 }
 
-// single table
-// get sql tag recursion
-func getTag(typ reflect.Type, buf *bytes.Buffer) {
-
-	if !mr.IsStruct(typ) {
+// GetColSQLAlias select * replace
+// add alias
+func GetColSQLAlias(model interface{}, alias string) (sql string) {
+	var (
+		r   = parse(model)
+		key = fmt.Sprintf("%s%s_%s", cons.SQL_, r.Key, alias)
+	)
+	sql = buffer.Get(key)
+	if sql != "" {
 		return
 	}
-	for i := 0; i < typ.NumField(); i++ {
-		if typ.Field(i).Anonymous {
-			getTag(typ.Field(i).Type, buf)
-			continue
-		}
-		if tag, b := getRTag(typ, i); !b {
-			buf.WriteString("`")
-			buf.WriteString(tag)
-			buf.WriteString("`,")
-		} // continue
-	}
+	var buf bytes.Buffer
+	getTagSQL(r, &buf, alias)
+	sql = string(buf.Bytes()[:buf.Len()-1])
+	buffer.Set(key, sql)
+	return
 }
 
-func getRTag(ref reflect.Type, i int) (tag string, b bool) {
-	if tag, _, _, b = ParseTag(ref.Field(i)); b {
-		return "", true
+// get tag sql
+func getTagSQL(p *Parses, buf *bytes.Buffer, alias string) {
+	for _, tag := range p.Tags {
+		if alias != "" {
+			buf.WriteString(alias)
+			buf.WriteByte('.')
+		}
+		buf.WriteByte(cons.Backticks)
+		buf.WriteString(tag)
+		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(',')
 	}
-	return tag, b
 }
 
 // GetColParamSQL get col ?
-func GetColParamSQL(model interface{}) (sql string) {
-	var buf bytes.Buffer
-	getColParamSQLByType(reflect.TypeOf(model), &buf)
-	return string(buf.Bytes()[:buf.Len()-1])
-}
-
-// get col ? type
-func getColParamSQLByType(typ reflect.Type, buf *bytes.Buffer) {
-	typ = mr.TrueType(typ)
-	for i := 0; i < typ.NumField(); i++ {
-		if typ.Field(i).Anonymous {
-			getColParamSQLByType(typ.Field(i).Type, buf)
-			continue
-		}
+func GetColParamSQL(p *Parses) (sql string) {
+	var (
+		buf bytes.Buffer
+	)
+	for range p.Tags {
 		buf.WriteString("?,")
 	}
-}
-
-// GetParams get single struct data value
-func GetParams(data interface{}) (params []interface{}) {
-	params = append(params, getParams(reflect.ValueOf(data))...)
-	return
-}
-
-// get params ? params
-func getParams(typ reflect.Value) (params []interface{}) {
-	// todo mr.TrueType() use go1.18 replace
-	for typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
-	// todo mr.IsStruct() use go1.18 replace
-	if typ.Kind() != reflect.Struct {
-		return
-	}
-	for i := 0; i < typ.NumField(); i++ {
-		if typ.Type().Field(i).Anonymous {
-			params = append(params, getParams(typ.Field(i))...)
-			continue
-		}
-		value := typ.Field(i).Interface()
-		params = append(params, value)
-	}
-	return
+	return buf.String()[:buf.Len()-1]
 }
 
 func innerLeftSQL(bufNt *bytes.Buffer, DBS map[string]string, tables, fields []string, i int) {
 	if tb := DBS[tables[i]]; tb != "" {
-		bufNt.WriteString("`" + tb + "`.")
+		bufNt.WriteByte(cons.Backticks)
+		bufNt.WriteString(tb)
+		bufNt.WriteByte(cons.Backticks)
+		bufNt.WriteByte('.')
 	}
-	bufNt.WriteString("`")
+	bufNt.WriteByte(cons.Backticks)
 	bufNt.WriteString(tables[i])
-	bufNt.WriteString("` on ")
+	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteString(" on ")
 	fieldSQL(bufNt, tables[i-1], tables[i], fields[i-1], fields[i])
 }
 
@@ -279,26 +159,14 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 	}
 
 	for k := 0; k < len(ils); k++ {
-		bufNt.WriteByte('`')
-		bufNt.WriteString(leftTable)
-		bufNt.WriteString("`.`")
-		bufNt.WriteString(ils[k])
-		bufNt.WriteString("`=`")
-		bufNt.WriteString(rightTable)
-		bufNt.WriteString("`.`")
-		bufNt.WriteString(irs[k])
-		bufNt.WriteString("` and ")
+		writeField(bufNt, leftTable, ils[k], " = ")
+		writeField(bufNt, rightTable, irs[k], " and ")
 	}
 
 	for _, v := range ilts {
 		is := strings.Split(v, "=")
 		if len(is) > 1 {
-			bufNt.WriteByte('`')
-			bufNt.WriteString(leftTable)
-			bufNt.WriteString("`.`")
-			bufNt.WriteString(is[0])
-			bufNt.WriteByte('`')
-			bufNt.WriteByte('=')
+			writeField(bufNt, leftTable, is[0], " = ")
 			bufNt.WriteString(is[1])
 			bufNt.WriteString(" and ")
 		}
@@ -306,12 +174,7 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 	for _, v := range irts {
 		is := strings.Split(v, "=")
 		if len(is) > 1 {
-			bufNt.WriteByte('`')
-			bufNt.WriteString(rightTable)
-			bufNt.WriteString("`.`")
-			bufNt.WriteString(is[0])
-			bufNt.WriteByte('`')
-			bufNt.WriteByte('=')
+			writeField(bufNt, rightTable, is[0], " = ")
 			bufNt.WriteString(is[1])
 			bufNt.WriteString(" and ")
 		}
@@ -320,4 +183,15 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 	defer nBuf.Reset()
 	bufNt.Reset()
 	bufNt.Write(nBuf.Bytes())
+}
+
+func writeField(bufNt *bytes.Buffer, tb, v, c string) {
+	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteString(tb)
+	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte('.')
+	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteString(v)
+	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteString(c)
 }

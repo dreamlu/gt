@@ -123,22 +123,6 @@ func (c *Mysql) Delete(id interface{}) Crud {
 	return clone
 }
 
-// === form data ===
-
-func (c *Mysql) UpdateForm(params cmap.CMap) error {
-	c.common()
-
-	return c.dbTool.UpdateFormData(c.param.Table, params)
-}
-
-func (c *Mysql) CreateForm(params cmap.CMap) error {
-	c.common()
-
-	return c.dbTool.CreateFormData(c.param.Table, params)
-}
-
-// == json data ==
-
 // CreateMore can use Create replace
 func (c *Mysql) CreateMore() Crud {
 	c.common()

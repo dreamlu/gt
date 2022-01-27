@@ -41,14 +41,6 @@ type Crud interface {
 	// Delete delete by id/ids/slice
 	Delete(id interface{}) Crud // delete
 
-	// UpdateForm Deprecated
-	// form data
-	// [create/update] future all will use json replace form request
-	// form will not update
-	UpdateForm(params cmap.CMap) error // update
-	// CreateForm Deprecated
-	CreateForm(params cmap.CMap) error // create
-
 	// Update crud and search id
 	// json data
 	Update() Crud     // update
