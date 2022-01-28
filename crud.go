@@ -7,10 +7,10 @@
 package gt
 
 import (
-	"github.com/dreamlu/gt/tool/log"
-	"github.com/dreamlu/gt/tool/type/cmap"
-	"github.com/dreamlu/gt/tool/util"
-	"github.com/dreamlu/gt/tool/util/result"
+	"github.com/dreamlu/gt/serv/log"
+	"github.com/dreamlu/gt/src/type/cmap"
+	"github.com/dreamlu/gt/tool"
+	"github.com/dreamlu/gt/tool/result"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -159,7 +159,7 @@ func Data(Data interface{}) Param {
 func SubSQL(SubSQL ...string) Param {
 
 	return func(params *Params) {
-		SubSQL = util.RemoveStrings(SubSQL, "")
+		SubSQL = tool.RemoveStrings(SubSQL, "")
 		if len(SubSQL) == 0 {
 			return
 		}

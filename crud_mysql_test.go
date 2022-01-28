@@ -6,10 +6,10 @@ import (
 	sql2 "database/sql"
 	json2 "encoding/json"
 	"fmt"
-	"github.com/dreamlu/gt/tool/log"
-	"github.com/dreamlu/gt/tool/type/cmap"
-	"github.com/dreamlu/gt/tool/type/json"
-	"github.com/dreamlu/gt/tool/type/time"
+	"github.com/dreamlu/gt/serv/log"
+	"github.com/dreamlu/gt/src/type/cmap"
+	"github.com/dreamlu/gt/src/type/json"
+	time3 "github.com/dreamlu/gt/src/type/time"
 	"net/http"
 	"runtime"
 	"testing"
@@ -21,11 +21,11 @@ import (
 
 // user model
 type User struct {
-	ID         uint64     `json:"id"`
-	Name       string     `json:"name" gt:"valid:len=3-5;trans:名称" gorm:"<-:update"`
-	BirthDate  time.CDate `gorm:"type:date"` // data
-	CreateTime time.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
-	Account    float64    `json:"-" gorm:"type:decimal(10,2)"`
+	ID         uint64      `json:"id"`
+	Name       string      `json:"name" gt:"valid:len=3-5;trans:名称" gorm:"<-:update"`
+	BirthDate  time3.CDate `gorm:"type:date"` // data
+	CreateTime time3.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
+	Account    float64     `json:"-" gorm:"type:decimal(10,2)"`
 }
 
 type UserInfo struct {
@@ -48,23 +48,23 @@ type Service struct {
 
 // order model
 type Order struct {
-	ID         uint64      `json:"id"`
-	UserID     int64       `json:"user_id"` // user id
-	UserInfoID uint64      `json:"user_info_id"`
-	ServiceID  int64       `json:"service_id"` // service table id
-	CreateTime time.CTime  `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
-	StartTime  time.CSTime `json:"start_time"`
-	EndTime    time.CSTime `json:"end_time"`
+	ID         uint64       `json:"id"`
+	UserID     int64        `json:"user_id"` // user id
+	UserInfoID uint64       `json:"user_info_id"`
+	ServiceID  int64        `json:"service_id"` // service table id
+	CreateTime time3.CTime  `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
+	StartTime  time3.CSTime `json:"start_time"`
+	EndTime    time3.CSTime `json:"end_time"`
 }
 
 // order detail
 type OrderD struct {
 	Order
-	UserName     string     `json:"user_name" gt:"field:user.name"`           // user table column name
-	ServiceName  string     `json:"service_name"`                             // service table column `name`
-	Info         json.CJSON `json:"info" gt:"sub_sql" faker:"cjson"`          // json
-	BirthDate    time.CDate `gorm:"type:date"`                                // data
-	UserInfoSome string     `json:"user_info_some" gt:"field:user_info.some"` // user_info.some
+	UserName     string      `json:"user_name" gt:"field:user.name"`           // user table column name
+	ServiceName  string      `json:"service_name"`                             // service table column `name`
+	Info         json.CJSON  `json:"info" gt:"sub_sql" faker:"cjson"`          // json
+	BirthDate    time3.CDate `gorm:"type:date"`                                // data
+	UserInfoSome string      `json:"user_info_some" gt:"field:user_info.some"` // user_info.some
 }
 
 var crud Crud
@@ -80,7 +80,7 @@ func TestDB(t *testing.T) {
 	var user = User{
 		ID:        1,
 		Name:      "测试xx",
-		BirthDate: time.CDate(time2.Now()),
+		BirthDate: time3.CDate(time2.Now()),
 		//Createtime:JsonDate(time.Now()),
 	}
 
@@ -282,8 +282,8 @@ func TestCreateMoreData(t *testing.T) {
 	}
 
 	type UserPar struct {
-		Name       string     `json:"name" gt:"valid:len=2-10"`
-		CreateTime time.CTime `json:"create_time"`
+		Name       string      `json:"name" gt:"valid:len=2-10"`
+		CreateTime time3.CTime `json:"create_time"`
 		Par
 	}
 	type User struct {
@@ -296,7 +296,7 @@ func TestCreateMoreData(t *testing.T) {
 
 	var up = []UserParP{
 		{
-			UserPar{Name: "测试1", CreateTime: time.CTime(time2.Now())},
+			UserPar{Name: "测试1", CreateTime: time3.CTime(time2.Now())},
 		},
 		{
 			UserPar{Name: "测试2"},
@@ -383,7 +383,6 @@ func TestDBCrud_Select(t *testing.T) {
 func TestDBCrud_Update(t *testing.T) {
 
 	crud := crud.Params(
-		//Table("user"),
 		Model(User{}),
 		Data(&User{
 			ID:   1,
@@ -596,14 +595,14 @@ func TestMysql_Time(t *testing.T) {
 	}
 	for _, v := range or {
 		t.Log(v.EndTime.String())
-		s := time.CTime(v.StartTime)
+		s := time3.CTime(v.StartTime)
 		t.Log(s.String())
 		t.Log(v)
 	}
 
 	cd.Params(Data(&Order{
-		StartTime: time.ParseCSTime("12:00:00"),
-		EndTime:   time.ParseCSTime("12:00:00"),
+		StartTime: time3.ParseCSTime("12:00:00"),
+		EndTime:   time3.ParseCSTime("12:00:00"),
 	})).Create()
 }
 

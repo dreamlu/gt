@@ -5,12 +5,11 @@ package gt
 import (
 	"errors"
 	"fmt"
-	"github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/type/cmap"
-	"github.com/dreamlu/gt/tool/util/hump"
-	"github.com/dreamlu/gt/tool/util/result"
-	sq "github.com/dreamlu/gt/tool/util/sql"
-	"github.com/dreamlu/gt/tool/valid"
+	"github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/src/type/cmap"
+	"github.com/dreamlu/gt/src/valid"
+	"github.com/dreamlu/gt/tool/hump"
+	"github.com/dreamlu/gt/tool/result"
 	"runtime"
 	"strings"
 )
@@ -179,7 +178,7 @@ func (c *Mysql) Select(q interface{}, args ...interface{}) Crud {
 	case string:
 		query = q.(string)
 	case interface{}:
-		query, args = sq.StructWhereSQL(q)
+		query, args = StructWhereSQL(q)
 	}
 
 	clone.selectSQL += query + " "

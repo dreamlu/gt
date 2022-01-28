@@ -3,8 +3,8 @@ package gt
 import (
 	"bytes"
 	"fmt"
-	"github.com/dreamlu/gt/tool/type/cmap"
-	"github.com/dreamlu/gt/tool/util/cons"
+	"github.com/dreamlu/gt/src/type/cmap"
+	cons2 "github.com/dreamlu/gt/tool/cons"
 	"strings"
 )
 
@@ -20,7 +20,7 @@ var buffer = cmap.NewCMap()
 func GetMoreColSQL(model interface{}, tables ...string) (sql string) {
 	var (
 		p   = parse(model, tables...)
-		key = fmt.Sprintf("%s%s_more", cons.SQL_, p.Key)
+		key = fmt.Sprintf("%s%s_more", cons2.SQL_, p.Key)
 	)
 	sql = buffer.Get(key)
 	if sql != "" {
@@ -41,13 +41,13 @@ func getTagMoreSQL(p *Parses, buf *bytes.Buffer) {
 		if tb == "" {
 			tb = p.Table
 		}
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		buf.WriteString(tb)
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		buf.WriteByte('.')
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		buf.WriteString(p.TagTag[tag])
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		if p.OTags[tag] != "" {
 			buf.WriteString(" as ")
 			buf.WriteString(p.OTags[tag])
@@ -60,7 +60,7 @@ func getTagMoreSQL(p *Parses, buf *bytes.Buffer) {
 func GetColSQL(model interface{}) (sql string) {
 	var (
 		r   = parse(model)
-		key = fmt.Sprintf("%s%s", cons.SQL_, r.Key)
+		key = fmt.Sprintf("%s%s", cons2.SQL_, r.Key)
 	)
 	sql = buffer.Get(key)
 	if sql != "" {
@@ -78,7 +78,7 @@ func GetColSQL(model interface{}) (sql string) {
 func GetColSQLAlias(model interface{}, alias string) (sql string) {
 	var (
 		r   = parse(model)
-		key = fmt.Sprintf("%s%s_%s", cons.SQL_, r.Key, alias)
+		key = fmt.Sprintf("%s%s_%s", cons2.SQL_, r.Key, alias)
 	)
 	sql = buffer.Get(key)
 	if sql != "" {
@@ -98,9 +98,9 @@ func getTagSQL(p *Parses, buf *bytes.Buffer, alias string) {
 			buf.WriteString(alias)
 			buf.WriteByte('.')
 		}
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		buf.WriteString(tag)
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		buf.WriteByte(',')
 	}
 }
@@ -118,14 +118,14 @@ func GetColParamSQL(p *Parses) (sql string) {
 
 func innerLeftSQL(bufNt *bytes.Buffer, DBS map[string]string, tables, fields []string, i int) {
 	if tb := DBS[tables[i]]; tb != "" {
-		bufNt.WriteByte(cons.Backticks)
+		bufNt.WriteByte(cons2.Backticks)
 		bufNt.WriteString(tb)
-		bufNt.WriteByte(cons.Backticks)
+		bufNt.WriteByte(cons2.Backticks)
 		bufNt.WriteByte('.')
 	}
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteString(tables[i])
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteString(" on ")
 	fieldSQL(bufNt, tables[i-1], tables[i], fields[i-1], fields[i])
 }
@@ -186,12 +186,12 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 }
 
 func writeField(bufNt *bytes.Buffer, tb, v, c string) {
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteString(tb)
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteByte('.')
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteString(v)
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteString(c)
 }

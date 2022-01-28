@@ -3,7 +3,7 @@ package gt
 import (
 	"context"
 	"fmt"
-	"github.com/dreamlu/gt/tool/log"
+	"github.com/dreamlu/gt/serv/log"
 	logger2 "gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
 	"time"

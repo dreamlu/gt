@@ -5,12 +5,11 @@ package gt
 import (
 	"bytes"
 	"fmt"
-	mr "github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/type/cmap"
-	"github.com/dreamlu/gt/tool/util"
-	"github.com/dreamlu/gt/tool/util/cons"
-	"github.com/dreamlu/gt/tool/util/mock"
-	sq "github.com/dreamlu/gt/tool/util/sql"
+	mr "github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/src/type/cmap"
+	"github.com/dreamlu/gt/tool"
+	cons2 "github.com/dreamlu/gt/tool/cons"
+	"github.com/dreamlu/gt/tool/mock"
 	"reflect"
 	"strconv"
 	"strings"
@@ -51,30 +50,30 @@ func (gt *GT) GetMoreSQL() {
 		tables = gt.moreSql()
 		sql    = GetMoreColSQL(gt.Model, tables...)
 		bufW   bytes.Buffer // gt.sql bytes connect
-		count  = cons.Count
+		count  = cons2.Count
 	)
 	if gt.distinct != "" {
-		count = fmt.Sprintf(cons.CountDistinct, gt.distinct)
-		sql = cons.Distinct + sql
+		count = fmt.Sprintf(cons2.CountDistinct, gt.distinct)
+		sql = cons2.Distinct + sql
 	}
 	gt.sql = strings.Replace(gt.sqlNt, count, sql+gt.SubSQL, 1)
 	// default
-	gt.order = fmt.Sprintf(cons.OrderDesc, sq.Table(tables[0]))
+	gt.order = fmt.Sprintf(cons2.OrderDesc, ParseTable(tables[0]))
 
 	gt.whereParams()
 	for k, v := range gt.CMaps {
-		if k == cons.GtKey {
+		if k == cons2.GtKey {
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
 			}
 			// more tables key search
-			sqlKey, argsKey := sq.GetMoreKeySQL(v[0], gt.KeyModel, tables...)
+			sqlKey, argsKey := GetMoreKeySQL(v[0], gt.KeyModel, tables...)
 			bufW.WriteString(sqlKey)
 			gt.Args = append(gt.Args, argsKey...)
 			continue
 		}
 
-		tbs := sq.TagTables(k, tables...)
+		tbs := TagTables(k, tables...)
 		if len(tbs) > 0 {
 			// unique or first table where condition
 			gt.whereTbKv(&bufW, tbs[0], k, v[0])
@@ -96,22 +95,22 @@ func (gt *GT) GetSearchSQL() {
 
 	var (
 		bufW  bytes.Buffer // where sql, sqlNt bytes sql
-		table = sq.Table(gt.Table)
+		table = ParseTable(gt.Table)
 	)
 	// default
-	gt.order = fmt.Sprintf(cons.OrderDesc, table)
+	gt.order = fmt.Sprintf(cons2.OrderDesc, table)
 
 	// select* replace
-	gt.sql = fmt.Sprintf(cons.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, table)
-	gt.sqlNt = fmt.Sprintf(cons.SelectCountFrom, table)
+	gt.sql = fmt.Sprintf(cons2.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, table)
+	gt.sqlNt = fmt.Sprintf(cons2.SelectCountFrom, table)
 
 	gt.whereParams()
 	for k, v := range gt.CMaps {
-		if k == cons.GtKey {
+		if k == cons2.GtKey {
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
 			}
-			sqlKey, argsKey := sq.GetKeySQL(v[0], gt.KeyModel, table)
+			sqlKey, argsKey := GetKeySQL(v[0], gt.KeyModel, table)
 			bufW.WriteString(sqlKey)
 			gt.Args = append(gt.Args, argsKey...)
 			continue
@@ -128,19 +127,19 @@ func (gt *GT) GetSQL() {
 
 	var (
 		bufW  bytes.Buffer // where sql, sqlNt bytes sql
-		table = sq.Table(gt.Table)
+		table = ParseTable(gt.Table)
 	)
 
 	// select* replace
-	gt.sql = fmt.Sprintf(cons.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, table)
+	gt.sql = fmt.Sprintf(cons2.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, table)
 
 	gt.whereParams()
 	for k, v := range gt.CMaps {
-		if k == cons.GtKey {
+		if k == cons2.GtKey {
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
 			}
-			sqlKey, argsKey := sq.GetKeySQL(v[0], gt.KeyModel, table)
+			sqlKey, argsKey := GetKeySQL(v[0], gt.KeyModel, table)
 			bufW.WriteString(sqlKey)
 			gt.Args = append(gt.Args, argsKey...)
 			continue
@@ -160,7 +159,7 @@ func (gt *GT) GetSelectSearchSQL() {
 	if gt.From == "" {
 		gt.From = "from"
 	}
-	gt.sqlNt = cons.SelectCount + gt.From + strings.Join(strings.Split(gt.sql, gt.From)[1:], "")
+	gt.sqlNt = cons2.SelectCount + gt.From + strings.Join(strings.Split(gt.sql, gt.From)[1:], "")
 	if gt.Group != "" {
 		gt.sql += gt.Group
 	}
@@ -198,27 +197,27 @@ func (gt *GT) moreSql() (tables []string) {
 	innerTables, leftTables, innerField, leftField, DBS := gt.moreTables()
 	tables = append(tables, innerTables...)
 	tables = append(tables, leftTables...)
-	tables = util.RemoveDuplicateString(tables)
+	tables = tool.RemoveDuplicateString(tables)
 
 	var (
 		bufNt bytes.Buffer // sql bytes connect
-		count = cons.SelectCount
+		count = cons2.SelectCount
 	)
 	if gt.distinct != "" {
-		count = fmt.Sprintf(cons.SelectCountDistinct, gt.distinct)
+		count = fmt.Sprintf(cons2.SelectCountDistinct, gt.distinct)
 	}
 	// sql and sqlCount
 	bufNt.WriteString(count)
 	bufNt.WriteString("from ")
 	if tb := DBS[tables[0]]; tb != "" {
-		bufNt.WriteByte(cons.Backticks)
+		bufNt.WriteByte(cons2.Backticks)
 		bufNt.WriteString(tb)
-		bufNt.WriteByte(cons.Backticks)
+		bufNt.WriteByte(cons2.Backticks)
 		bufNt.WriteByte('.')
 	}
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteString(tables[0])
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteByte(' ')
 	// inner join
 	for i := 1; i < len(innerTables); i += 2 {
@@ -307,19 +306,19 @@ func (gt *GT) whereParams() {
 			continue
 		}
 		switch k {
-		case cons.GtClientPage, cons.GtClientPageUnderLine:
+		case cons2.GtClientPage, cons2.GtClientPageUnderLine:
 			gt.clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			gt.CMaps.Del(k)
 			continue
-		case cons.GtEveryPage, cons.GtEveryPageUnderLine:
+		case cons2.GtEveryPage, cons2.GtEveryPageUnderLine:
 			gt.everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			gt.CMaps.Del(k)
 			continue
-		case cons.GtOrder:
+		case cons2.GtOrder:
 			gt.order = v[0]
 			gt.CMaps.Del(k)
 			continue
-		case cons.GtMock:
+		case cons2.GtMock:
 			mock.Mock(gt.Data)
 			gt.isMock = true
 			gt.CMaps.Del(k)
@@ -336,12 +335,12 @@ func (gt *GT) whereSQL(bufW *bytes.Buffer) {
 
 	gt.whereSQLNt(bufW)
 	if bufW.Len() != 0 {
-		gt.sqlNt += fmt.Sprintf(cons.WhereS, bufW.Bytes()[:bufW.Len()-5])
+		gt.sqlNt += fmt.Sprintf(cons2.WhereS, bufW.Bytes()[:bufW.Len()-5])
 		if gt.WhereSQL != "" {
-			gt.sqlNt += fmt.Sprintf(cons.AndS, gt.WhereSQL)
+			gt.sqlNt += fmt.Sprintf(cons2.AndS, gt.WhereSQL)
 		}
 	} else if gt.WhereSQL != "" {
-		gt.sqlNt += fmt.Sprintf(cons.WhereS, gt.WhereSQL)
+		gt.sqlNt += fmt.Sprintf(cons2.WhereS, gt.WhereSQL)
 	}
 	return
 }
@@ -349,17 +348,17 @@ func (gt *GT) whereSQL(bufW *bytes.Buffer) {
 // sql where sql
 func (gt *GT) whereSQLNt(bufW *bytes.Buffer) {
 	if bufW.Len() != 0 {
-		gt.sql += fmt.Sprintf(cons.WhereS, bufW.Bytes()[:bufW.Len()-5])
+		gt.sql += fmt.Sprintf(cons2.WhereS, bufW.Bytes()[:bufW.Len()-5])
 		if gt.WhereSQL != "" {
 			gt.Args = append(gt.Args, gt.wArgs...)
-			gt.sql += fmt.Sprintf(cons.AndS, gt.WhereSQL)
+			gt.sql += fmt.Sprintf(cons2.AndS, gt.WhereSQL)
 		}
 	} else if gt.WhereSQL != "" {
 		gt.Args = append(gt.Args, gt.wArgs...)
-		gt.sql += fmt.Sprintf(cons.WhereS, gt.WhereSQL)
+		gt.sql += fmt.Sprintf(cons2.WhereS, gt.WhereSQL)
 	}
 	if gt.order != "" {
-		gt.sql += fmt.Sprintf(cons.OrderS, gt.order)
+		gt.sql += fmt.Sprintf(cons2.OrderS, gt.order)
 	}
 	return
 }
@@ -367,29 +366,29 @@ func (gt *GT) whereSQLNt(bufW *bytes.Buffer) {
 // where k =/in v
 func (gt *GT) whereKv(bufW *bytes.Buffer, k, v string) {
 	bufW.WriteString(k)
-	if strings.Contains(v, cons.GtComma) {
-		bufW.WriteString(cons.ParamInAnd)
-		gt.Args = append(gt.Args, strings.Split(v, cons.GtComma)) // args
+	if strings.Contains(v, cons2.GtComma) {
+		bufW.WriteString(cons2.ParamInAnd)
+		gt.Args = append(gt.Args, strings.Split(v, cons2.GtComma)) // args
 	} else {
-		bufW.WriteString(cons.ParamAnd)
+		bufW.WriteString(cons2.ParamAnd)
 		gt.Args = append(gt.Args, v) // args
 	}
 }
 
 // where k =/in v
 func (gt *GT) whereTbKv(bufW *bytes.Buffer, tb, k, v string) {
-	bufW.WriteByte(cons.Backticks)
+	bufW.WriteByte(cons2.Backticks)
 	bufW.WriteString(tb)
-	bufW.WriteByte(cons.Backticks)
+	bufW.WriteByte(cons2.Backticks)
 	bufW.WriteByte('.')
-	bufW.WriteByte(cons.Backticks)
+	bufW.WriteByte(cons2.Backticks)
 	bufW.WriteString(k)
-	bufW.WriteByte(cons.Backticks)
-	if strings.Contains(v, cons.GtComma) {
-		bufW.WriteString(cons.ParamInAnd)
-		gt.Args = append(gt.Args, strings.Split(v, cons.GtComma)) // args
+	bufW.WriteByte(cons2.Backticks)
+	if strings.Contains(v, cons2.GtComma) {
+		bufW.WriteString(cons2.ParamInAnd)
+		gt.Args = append(gt.Args, strings.Split(v, cons2.GtComma)) // args
 	} else {
-		bufW.WriteString(cons.ParamAnd)
+		bufW.WriteString(cons2.ParamAnd)
 		gt.Args = append(gt.Args, v) // args
 	}
 }

@@ -5,12 +5,11 @@ package gt
 import (
 	"bytes"
 	"fmt"
-	"github.com/dreamlu/gt/tool/conf"
-	"github.com/dreamlu/gt/tool/log"
-	mr "github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/util/cons"
-	"github.com/dreamlu/gt/tool/util/result"
-	sq "github.com/dreamlu/gt/tool/util/sql"
+	"github.com/dreamlu/gt/serv/conf"
+	"github.com/dreamlu/gt/serv/log"
+	mr "github.com/dreamlu/gt/src/reflect"
+	cons2 "github.com/dreamlu/gt/tool/cons"
+	"github.com/dreamlu/gt/tool/result"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	logger2 "gorm.io/gorm/logger"
@@ -45,7 +44,7 @@ type dba struct {
 func (db *DB) NewDB() {
 
 	dbS := &dba{}
-	conf.GetStruct("app.db", dbS)
+	conf.GetStruct(cons2.ConfDB, dbS)
 	db.log = dbS.Log
 	var (
 		sql = fmt.Sprintf("%s:%s@%s/?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host)
@@ -176,7 +175,7 @@ func (db *DB) getBySQL(data interface{}, sql string, args ...interface{}) {
 
 func (db *DB) GetByID(gt *GT, id interface{}) {
 
-	db.getBySQL(gt.Data, fmt.Sprintf(cons.SelectFrom+"where id = ?", GetColSQL(gt.Model), sq.Table(gt.Table)), id)
+	db.getBySQL(gt.Data, fmt.Sprintf(cons2.SelectFrom+"where id = ?", GetColSQL(gt.Model), ParseTable(gt.Table)), id)
 }
 
 // GetMoreBySearch more table
@@ -248,10 +247,10 @@ func (db *DB) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage, ev
 	// if clientPage or everyPage < 0
 	// return all data
 	if clientPage == 0 {
-		clientPage = cons.ClientPage
+		clientPage = cons2.ClientPage
 	}
 	if everyPage == 0 {
-		everyPage = cons.EveryPage
+		everyPage = cons2.EveryPage
 	}
 	if clientPage > 0 && everyPage > 0 {
 		sql += fmt.Sprintf("limit %d, %d", (clientPage-1)*everyPage, everyPage)
@@ -285,7 +284,7 @@ func (db *DB) Delete(table string, id interface{}) {
 			id = strings.Split(id.(string), ",")
 		}
 	}
-	db.ExecSQL(fmt.Sprintf("delete from %s where id in (?)", sq.Table(table)), id)
+	db.ExecSQL(fmt.Sprintf("delete from %s where id in (?)", ParseTable(table)), id)
 }
 
 // update
@@ -332,7 +331,7 @@ func (db *DB) CreateMore(table string, model interface{}, data interface{}) {
 	}
 	values := string(buf.Bytes()[:buf.Len()-1])
 
-	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", sq.Table(table), GetColSQL(model), values)
+	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", ParseTable(table), GetColSQL(model), values)
 	db.res = db.DB.Exec(sql, params...)
 }
 
@@ -340,7 +339,7 @@ func (db *DB) CreateMore(table string, model interface{}, data interface{}) {
 func (db *DB) InitColumns(param *Params) {
 
 	var (
-		name   = conf.GetString("app.db.name")
+		name   = conf.GetString(cons2.ConfDBName)
 		tables = []string{param.Table}
 	)
 
@@ -351,12 +350,12 @@ func (db *DB) InitColumns(param *Params) {
 		if v == "" {
 			continue
 		}
-		if _, ok := sq.TableCols[v]; ok {
+		if _, ok := TableCols[v]; ok {
 			continue
 		}
 		var columns []string
-		tb := sq.TableOnly(v)
+		tb := TableOnly(v)
 		db.getBySQL(&columns, "SELECT COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE TABLE_NAME = ? and TABLE_SCHEMA = ?", tb, name)
-		sq.TableCols[tb] = columns
+		TableCols[tb] = columns
 	}
 }

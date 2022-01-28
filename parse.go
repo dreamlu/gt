@@ -3,11 +3,10 @@ package gt
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dreamlu/gt/tool/log"
-	mr "github.com/dreamlu/gt/tool/reflect"
-	"github.com/dreamlu/gt/tool/util/hump"
-	sq "github.com/dreamlu/gt/tool/util/sql"
-	. "github.com/dreamlu/gt/tool/util/tag"
+	"github.com/dreamlu/gt/serv/log"
+	mr "github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/tool/hump"
+	. "github.com/dreamlu/gt/tool/tag"
 	"reflect"
 	"strings"
 )
@@ -95,7 +94,7 @@ func parseTag(r *Parses, typ reflect.Type, tables ...string) {
 		}
 
 		// UniqueTagTable
-		tagTable = sq.UniqueTagTable(tag, tables...)
+		tagTable = UniqueTagTable(tag, tables...)
 		if tagTable != "" {
 			r.TagTb[tag] = tagTable
 			continue
