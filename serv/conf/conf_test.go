@@ -43,6 +43,7 @@ func TestConfigCus(t *testing.T) {
 	t.Log(dba)
 	cf.Unmarshal(cof)
 	t.Log(cof)
+	t.Log(cf.Get("db.user"))
 }
 
 func TestConfigger(t *testing.T) {

@@ -5,13 +5,13 @@ package conf
 import (
 	"errors"
 	"fmt"
-	cons2 "github.com/dreamlu/gt/tool/cons"
+	"github.com/dreamlu/gt/tool/cons"
 	"github.com/imdario/mergo"
 	"strings"
 )
 
 func DevMode(field string) {
-	cons2.DefaultDevMode = field
+	cons.DefaultDevMode = field
 }
 
 // NewConfig new Config
@@ -19,17 +19,20 @@ func DevMode(field string) {
 func NewConfig(params ...string) *Config {
 
 	// default param
-	path := cons2.ConfPath
+	path := cons.ConfPath
 	if len(params) > 0 {
 		path = params[0]
 	}
 	path = newConf(path)
 	c := &Config{
-		YamlS: make(map[string]*Yaml, 2),
-		path:  path,
+		//YamlS: make([]*Yaml, 2),
+		path: path,
 	}
 	// devMode
 	devMode := c.getDevMode()
+	if devMode == "" {
+		return c
+	}
 
 	// try
 	devModePath := fmt.Sprintf("-%s", devMode)
@@ -42,7 +45,7 @@ func NewConfig(params ...string) *Config {
 	yaml := c.loadYaml()
 
 	// add yamlS data
-	c.YamlS[devMode] = yaml
+	c.YamlS = append(c.YamlS, yaml)
 	return c
 }
 
@@ -58,14 +61,13 @@ func newConf(dir string) string {
 // use 'app' as the map key
 func (c *Config) getDevMode() (devMode string) {
 	yaml := c.loadYaml()
-
-	// add yamlS data
-	c.YamlS["app"] = yaml
-
 	if yaml.data == nil {
 		panic(errors.New("no yaml: " + c.path))
 	}
-	return yaml.Get(cons2.DefaultDevMode).(string)
+
+	// add yamlS data
+	c.YamlS = append(c.YamlS, yaml)
+	return yaml.GetString(cons.DefaultDevMode)
 }
 
 // load dev mode data
@@ -79,40 +81,33 @@ func (c *Config) loadYaml() *Yaml {
 }
 
 // Get yaml data
-func (c *Config) Get(name string) interface{} {
+// find the first data, must different from app.yaml
+func (c *Config) Get(name string) (value interface{}) {
 	for _, v := range c.YamlS {
-		if value := v.Get(name); value != nil {
-			return value
-		}
+		value = v.Get(name)
 	}
-	return nil
+	return value
 }
 
-func (c *Config) GetString(name string) string {
+func (c *Config) GetString(name string) (value string) {
 	for _, v := range c.YamlS {
-		if value := v.GetString(name); value != "" {
-			return value
-		}
+		value = v.GetString(name)
 	}
-	return ""
+	return value
 }
 
-func (c *Config) GetInt(name string) int {
+func (c *Config) GetInt(name string) (value int) {
 	for _, v := range c.YamlS {
-		if value := v.GetInt(name); value != 0 {
-			return value
-		}
+		value = v.GetInt(name)
 	}
-	return 0
+	return value
 }
 
-func (c *Config) GetBool(name string) bool {
+func (c *Config) GetBool(name string) (value bool) {
 	for _, v := range c.YamlS {
-		if value := v.GetBool(name); value != false {
-			return value
-		}
+		value = v.GetBool(name)
 	}
-	return false
+	return value
 }
 
 // GetStruct yaml to struct
