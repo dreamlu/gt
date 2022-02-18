@@ -4,7 +4,7 @@ import "sync"
 
 type Config struct {
 	// different devMode yaml data
-	YamlS map[string]*Yaml
+	YamlS []*Yaml
 	// yaml project path
 	path string
 }
