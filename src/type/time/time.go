@@ -117,7 +117,7 @@ func (t *CNTime) Scan(v interface{}) error {
 		*t = CNTime(value)
 		return nil
 	}
-	return fmt.Errorf("can not convert %v to CTime", v)
+	return fmt.Errorf("can not convert %v to CNTime", v)
 }
 
 func (CNTime) GormDataType() string {
@@ -137,7 +137,7 @@ func (t CNTime) IsZero() bool {
 	return time.Time(t).IsZero()
 }
 
-// 时间格式化2006-01-02
+// CDate 时间格式化2006-01-02
 type CDate time.Time
 
 func (t CDate) MarshalJSON() ([]byte, error) {
@@ -225,12 +225,12 @@ func (t CSTime) Value() (driver.Value, error) {
 }
 
 func (t *CSTime) Scan(v interface{}) error {
-	ti, err := time.ParseInLocation(LayoutS, string(v.([]byte)), time.Local)
-	if err != nil {
-		return err
+	value, ok := v.(time.Time)
+	if ok {
+		*t = CSTime(value)
+		return nil
 	}
-	*t = CSTime(ti)
-	return nil
+	return fmt.Errorf("can not convert %v to CSTime", v)
 }
 
 // GormDataType gorm bug mysql time to CSTime
