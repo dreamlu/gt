@@ -5,13 +5,23 @@ import (
 	"log"
 )
 
+var (
+	//Sets the random size for slices and maps.
+	randomSize = 21
+)
+
 // Mock mock data
 func Mock(data interface{}) {
+	_ = faker.SetRandomMapAndSliceSize(randomSize)
 	//CustomGenerator()
 	err := faker.FakeData(data)
 	if err != nil {
 		log.Println("[mock data Error]:", err)
 	}
+}
+
+func SetRandomSize(size int) {
+	randomSize = size
 }
 
 // no effect, there is a bug for faker
