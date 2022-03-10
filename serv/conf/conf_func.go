@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dreamlu/gt/tool/cons"
+	"github.com/dreamlu/gt/tool/gos"
 	"github.com/imdario/mergo"
 	"strings"
 )
@@ -28,19 +29,17 @@ func NewConfig(params ...string) *Config {
 		//YamlS: make([]*Yaml, 2),
 		path: path,
 	}
-	// devMode
-	devMode := c.getDevMode()
-	if devMode == "" {
-		return c
-	}
 
-	// try
-	devModePath := fmt.Sprintf("-%s", devMode)
+	devModePath := fmt.Sprintf("-%s", c.getDevMode())
 	ss := strings.Split(path, ".")
 	if len(ss) > 1 {
 		devModePath += "."
 	}
 	c.path = strings.Join(ss, devModePath)
+	if !gos.Exists(c.path) {
+		return c
+	}
+
 	// load data
 	yaml := c.loadYaml()
 
