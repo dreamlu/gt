@@ -41,7 +41,7 @@ func TestPool_SubmitWait(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		p.Submit(read)
-		readWait := func() interface{} {
+		readWait := func() any {
 			time.Sleep(time.Second)
 			return i
 		}

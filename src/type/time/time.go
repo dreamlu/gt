@@ -52,7 +52,7 @@ func (t CTime) Value() (driver.Value, error) {
 	return ti, nil
 }
 
-func (t *CTime) Scan(v interface{}) error {
+func (t *CTime) Scan(v any) error {
 	value, ok := v.(time.Time)
 	if ok {
 		*t = CTime(value)
@@ -111,7 +111,7 @@ func (t CNTime) Value() (driver.Value, error) {
 	return ti, nil
 }
 
-func (t *CNTime) Scan(v interface{}) error {
+func (t *CNTime) Scan(v any) error {
 	value, ok := v.(time.Time)
 	if ok {
 		*t = CNTime(value)
@@ -170,7 +170,7 @@ func (t CDate) Value() (driver.Value, error) {
 	return ti, nil
 }
 
-func (t *CDate) Scan(v interface{}) error {
+func (t *CDate) Scan(v any) error {
 	value, ok := v.(time.Time)
 	if ok {
 		*t = CDate(value)
@@ -224,7 +224,7 @@ func (t CSTime) Value() (driver.Value, error) {
 	return t.String(), nil
 }
 
-func (t *CSTime) Scan(v interface{}) error {
+func (t *CSTime) Scan(v any) error {
 	value, ok := v.(time.Time)
 	if ok {
 		*t = CSTime(value)

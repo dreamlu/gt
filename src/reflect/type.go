@@ -9,7 +9,7 @@ type Kind interface {
 	Kind() reflect.Kind
 }
 
-func TrueTypeof(v interface{}) reflect.Type {
+func TrueTypeof(v any) reflect.Type {
 	return TrueType(reflect.TypeOf(v))
 }
 
@@ -20,7 +20,7 @@ func TrueType(typ reflect.Type) reflect.Type {
 	return typ
 }
 
-func TrueValueOf(v interface{}) reflect.Value {
+func TrueValueOf(v any) reflect.Value {
 	return TrueValue(reflect.ValueOf(v))
 }
 
@@ -31,7 +31,7 @@ func TrueValue(typ reflect.Value) reflect.Value {
 	return typ
 }
 
-func TrueTypeofValue(v interface{}) (typ reflect.Type, i interface{}) {
+func TrueTypeofValue(v any) (typ reflect.Type, i any) {
 	typ = reflect.TypeOf(v)
 	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()

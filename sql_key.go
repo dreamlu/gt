@@ -3,7 +3,7 @@ package gt
 import (
 	"bytes"
 	"fmt"
-	reflect2 "github.com/dreamlu/gt/src/reflect"
+	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/tool/cons"
@@ -25,7 +25,7 @@ var (
 )
 
 // copy and
-func keyAnd(keys []string, buf *bytes.Buffer, num int) (argsKey []interface{}) {
+func keyAnd(keys []string, buf *bytes.Buffer, num int) (argsKey []any) {
 	var (
 		sqlKey = buf.String()
 		kn     = len(keys)
@@ -42,12 +42,12 @@ func keyAnd(keys []string, buf *bytes.Buffer, num int) (argsKey []interface{}) {
 }
 
 // GetKeySQL key search sql
-func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, argsKey []interface{}) {
+func GetKeySQL(key string, model any, alias string) (sqlKey string, argsKey []any) {
 
 	var (
 		keys = strings.Fields(key)
-		typ  = reflect2.TrueTypeof(model)
-		ks   = reflect2.Path(typ)
+		typ  = mr.TrueTypeof(model)
+		ks   = mr.Path(typ)
 	)
 	sqlKey = sqlBuffer[ks].sql
 	if sqlKey != "" {
@@ -90,12 +90,12 @@ func GetKeySQL(key string, model interface{}, alias string) (sqlKey string, args
 // key search sql
 // tables [table1:table1_alias]
 // searModel : Model
-func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey string, argsKey []interface{}) {
+func GetMoreKeySQL(key string, model any, tables ...string) (sqlKey string, argsKey []any) {
 
 	var (
 		keys = strings.Split(key, " ") // 空格隔开
-		typ  = reflect2.TrueTypeof(model)
-		ks   = reflect2.Path(typ, "more")
+		typ  = mr.TrueTypeof(model)
+		ks   = mr.Path(typ, "more")
 	)
 	sqlKey = sqlBuffer[ks].sql
 	if sqlKey != "" {
@@ -129,14 +129,14 @@ func GetMoreKeySQL(key string, model interface{}, tables ...string) (sqlKey stri
 
 // more tables
 // get sql tag alias recursion
-func getTagMore(typ reflect.Type, v string, argsKey *[]interface{}, buf *bytes.Buffer, tables ...string) {
+func getTagMore(typ reflect.Type, v string, argsKey *[]any, buf *bytes.Buffer, tables ...string) {
 
 	var (
 		tg, tagTable string
 		b            bool
 	)
 
-	if !reflect2.IsStruct(typ) {
+	if !mr.IsStruct(typ) {
 		return
 	}
 	for i := 0; i < typ.NumField(); i++ {
@@ -173,7 +173,7 @@ func getTagMore(typ reflect.Type, v string, argsKey *[]interface{}, buf *bytes.B
 
 // if there is tag gt and json, select json tag first
 // more tables, other tables sql tag
-func otherTableTagSQL(tag string, argsKey *[]interface{}, buf *bytes.Buffer, tables ...string) bool {
+func otherTableTagSQL(tag string, argsKey *[]any, buf *bytes.Buffer, tables ...string) bool {
 	// foreign tables column
 	for _, v := range tables {
 		if strings.Contains(tag, v+"_id") {
@@ -204,14 +204,14 @@ func writeTagString(buf *bytes.Buffer, tb, tag string) {
 
 // StructWhereSQL struct to where sql
 // return key1 = value1 and key2 = value2...
-func StructWhereSQL(st interface{}) (sql string, args []interface{}) {
+func StructWhereSQL(st any) (sql string, args []any) {
 	var (
 		buf bytes.Buffer
 		m   = bmap.ToBMap(st)
 	)
 
 	for k, v := range m {
-		if reflect2.IsZero(v) {
+		if mr.IsZero(v) {
 			continue
 		}
 		buf.WriteString(hump.HumpToLine(k))

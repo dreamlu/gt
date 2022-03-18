@@ -35,49 +35,48 @@ type Crud interface {
 	GetBySearch(params cmap.CMap) Crud     // search single table
 	Get(params cmap.CMap) Crud             // get data no search
 	GetMore(params cmap.CMap) Crud         // get data more table no search
-	GetByID(id interface{}) Crud           // by id
+	GetByID(id any) Crud                   // by id
 	GetMoreBySearch(params cmap.CMap) Crud // more search, more tables inner/left join
 
 	// Delete delete by id/ids/slice
-	Delete(id interface{}) Crud // delete
+	Delete(id any) Crud // delete
 
 	// Update crud and search id
 	// json data
-	Update() Crud     // update
-	Create() Crud     // create, include res insert id
-	CreateMore() Crud // create more, data must array type, single table
+	Update() Crud // update
+	Create() Crud // create (more), include res insert id
 
-	Select(q interface{}, args ...interface{}) Crud // select sql
-	From(query string) Crud                         // from sql, if use search, From must only once
-	Group(query string) Crud                        // the last group by
-	Search(params cmap.CMap) Crud                   // Select Search pager, params only support Pager and Mock
-	Single() Crud                                   // no search
-	Exec() Crud                                     // exec insert/update/delete sql
-	Error() error                                   // crud error
-	RowsAffected() int64                            // inflect rows
-	Pager() result.Pager                            // search pager
-	Begin() Crud                                    // start a transaction
-	Commit() Crud                                   // commit a transaction
-	Rollback() Crud                                 // rollback a transaction
-	SavePoint(name string) Crud                     // save a point
-	RollbackTo(name string) Crud                    // rollback to point
+	Select(q any, args ...any) Crud // select sql
+	From(query string) Crud         // from sql, if use search, From must only once
+	Group(query string) Crud        // the last group by
+	Search(params cmap.CMap) Crud   // Select Search pager, params only support Pager and Mock
+	Single() Crud                   // no search
+	Exec() Crud                     // exec insert/update/delete sql
+	Error() error                   // crud error
+	RowsAffected() int64            // inflect rows
+	Pager() result.Pager            // search pager
+	Begin() Crud                    // start a transaction
+	Commit() Crud                   // commit a transaction
+	Rollback() Crud                 // rollback a transaction
+	SavePoint(name string) Crud     // save a point
+	RollbackTo(name string) Crud    // rollback to point
 }
 
 // Params crud params
 type Params struct {
 	// attributes
-	InnerTable []string    // inner join tables
-	LeftTable  []string    // left join tables
-	Table      string      // table name
-	Model      interface{} // table model, like User{}
-	KeyModel   interface{} // key like model
-	Data       interface{} // table model data, like var user User{}, it is 'user', it store real data
+	InnerTable []string // inner join tables
+	LeftTable  []string // left join tables
+	Table      string   // table name
+	Model      any      // table model, like User{}
+	KeyModel   any      // key like model
+	Data       any      // table model data, like var user User{}, it is 'user', it store real data
 
 	// sub query
 	SubSQL string // SubQuery SQL
 	// where
-	WhereSQL string        // Where SQL
-	wArgs    []interface{} // Where args
+	WhereSQL string // Where SQL
+	wArgs    []any  // Where args
 
 	// distinct
 	distinct string
@@ -135,21 +134,21 @@ func Table(Table string) Param {
 	}
 }
 
-func Model(Model interface{}) Param {
+func Model(Model any) Param {
 
 	return func(params *Params) {
 		params.Model = Model
 	}
 }
 
-func KeyModel(KeyModel interface{}) Param {
+func KeyModel(KeyModel any) Param {
 
 	return func(params *Params) {
 		params.KeyModel = KeyModel
 	}
 }
 
-func Data(Data interface{}) Param {
+func Data(Data any) Param {
 
 	return func(params *Params) {
 		params.Data = Data
@@ -168,7 +167,7 @@ func SubSQL(SubSQL ...string) Param {
 }
 
 // WhereSQL where sql and args
-func WhereSQL(WhereSQL string, args ...interface{}) Param {
+func WhereSQL(WhereSQL string, args ...any) Param {
 
 	return func(params *Params) {
 		if WhereSQL == "" {
@@ -179,7 +178,7 @@ func WhereSQL(WhereSQL string, args ...interface{}) Param {
 	}
 }
 
-func (p Param) WhereSQL(WhereSQL string, args ...interface{}) Param {
+func (p Param) WhereSQL(WhereSQL string, args ...any) Param {
 
 	return func(params *Params) {
 		p(params)

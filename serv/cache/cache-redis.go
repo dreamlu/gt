@@ -43,7 +43,7 @@ func (r *RedisManager) NewCache() error {
 	r.Rc = redis2.InitRedisPool(
 		func(options *redis.Options) {
 			var opt redisOptions
-			conf.GetStruct(cons.ConfRedis, &opt)
+			conf.UnmarshalField(cons.ConfRedis, &opt)
 			options.Addr = opt.Addr
 			options.Username = opt.Username
 			options.Password = opt.Password
@@ -54,7 +54,7 @@ func (r *RedisManager) NewCache() error {
 	return nil
 }
 
-func (r *RedisManager) Set(key interface{}, value CacheModel) error {
+func (r *RedisManager) Set(key any, value CacheModel) error {
 
 	// change key to string
 	keyS, err := json.Marshal(key)
@@ -83,7 +83,7 @@ func (r *RedisManager) Set(key interface{}, value CacheModel) error {
 	return nil
 }
 
-func (r *RedisManager) Get(key interface{}) (CacheModel, error) {
+func (r *RedisManager) Get(key any) (CacheModel, error) {
 
 	var reply CacheModel
 
@@ -108,7 +108,7 @@ func (r *RedisManager) Get(key interface{}) (CacheModel, error) {
 	return reply, nil
 }
 
-func (r *RedisManager) Delete(key interface{}) error {
+func (r *RedisManager) Delete(key any) error {
 
 	// change key to string
 	keyS, err := json.Marshal(key)
@@ -119,7 +119,7 @@ func (r *RedisManager) Delete(key interface{}) error {
 	return r.Rc.Delete(keyS).Err()
 }
 
-func (r *RedisManager) DeleteMore(key interface{}) error {
+func (r *RedisManager) DeleteMore(key any) error {
 
 	// change key to string
 	keyS, err := json.Marshal(key)
@@ -137,7 +137,7 @@ func (r *RedisManager) DeleteMore(key interface{}) error {
 	// keys
 	res := r.Rc.Keys(buf.Bytes()).Val()
 	if res != nil {
-		for _, v := range res.([]interface{}) {
+		for _, v := range res.([]any) {
 			err := r.Rc.Delete(v).Err()
 			if err != nil {
 				return err
@@ -148,7 +148,7 @@ func (r *RedisManager) DeleteMore(key interface{}) error {
 	return nil
 }
 
-func (r *RedisManager) Check(key interface{}) error {
+func (r *RedisManager) Check(key any) error {
 
 	var reply CacheModel
 
@@ -170,7 +170,7 @@ func (r *RedisManager) Check(key interface{}) error {
 	return r.Rc.ExpireKey(keyS, reply.Time).Err()
 }
 
-func (r *RedisManager) ExpireKey(key interface{}, seconds int64) bool {
+func (r *RedisManager) ExpireKey(key any, seconds int64) bool {
 	b, err := r.Rc.ExpireKey(key, seconds).Bool()
 	if err != nil {
 		log.Error(err)

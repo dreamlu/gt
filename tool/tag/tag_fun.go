@@ -41,7 +41,7 @@ func IsTagIgnore(tag reflect.StructTag, tagName string, exist bool, extTags ...s
 // gt:"field:table.column"
 // gt:"field:table.column;excel:NAME"
 // GetGtTags use to analyze and obtain GT tags in the structure model
-func GetGtTags(model interface{}) map[string]gtTags {
+func GetGtTags(model any) map[string]gtTags {
 	return ParseGtTags(reflect.TypeOf(model), IsGtTagIgnore)
 }
 
@@ -77,7 +77,7 @@ func parseGtTag(tagValue string) gtTags {
 }
 
 // GetJsonTags use to analyze and obtain JSON tags in the structure model, but it will ignore the ignored value of json
-func GetJsonTags(model interface{}) map[string]string {
+func GetJsonTags(model any) map[string]string {
 	return ParseJsonTags(reflect.TypeOf(model), func(tag reflect.StructTag) bool {
 		return IsTagIgnore(tag, "json", true)
 	})

@@ -8,7 +8,7 @@ import (
 	"github.com/dreamlu/gt/serv/conf"
 	"github.com/dreamlu/gt/serv/log"
 	mr "github.com/dreamlu/gt/src/reflect"
-	cons2 "github.com/dreamlu/gt/tool/cons"
+	"github.com/dreamlu/gt/tool/cons"
 	"github.com/dreamlu/gt/tool/result"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -44,7 +44,7 @@ type dba struct {
 func (db *DB) NewDB() {
 
 	dbS := &dba{}
-	conf.GetStruct(cons2.ConfDB, dbS)
+	conf.UnmarshalField(cons.ConfDB, dbS)
 	db.log = dbS.Log
 	var (
 		sql = fmt.Sprintf("%s:%s@%s/?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host)
@@ -168,14 +168,14 @@ func (db *DB) clone() *DB {
 ////////////////
 
 // get single data
-func (db *DB) getBySQL(data interface{}, sql string, args ...interface{}) {
+func (db *DB) getBySQL(data any, sql string, args ...any) {
 
 	db.res = db.DB.Raw(sql, args...).Scan(data)
 }
 
-func (db *DB) GetByID(gt *GT, id interface{}) {
+func (db *DB) GetByID(gt *GT, id any) {
 
-	db.getBySQL(gt.Data, fmt.Sprintf(cons2.SelectFrom+"where id = ?", GetColSQL(gt.Model), ParseTable(gt.Table)), id)
+	db.getBySQL(gt.Data, fmt.Sprintf(cons.SelectFrom+"where id = ?", GetColSQL(gt.Model), ParseTable(gt.Table)), id)
 }
 
 // GetMoreBySearch more table
@@ -242,15 +242,15 @@ func (db *DB) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
 // clientPage: default 1
 // everyPage: default 10
 // if clientPage or everyPage < 0, return all
-func (db *DB) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage, everyPage int64, args []interface{}) (pager result.Pager) {
+func (db *DB) GetBySQLSearch(data any, sql, sqlNt string, clientPage, everyPage int64, args []any) (pager result.Pager) {
 
 	// if clientPage or everyPage < 0
 	// return all data
 	if clientPage == 0 {
-		clientPage = cons2.ClientPage
+		clientPage = cons.ClientPage
 	}
 	if everyPage == 0 {
-		everyPage = cons2.EveryPage
+		everyPage = cons.EveryPage
 	}
 	if clientPage > 0 && everyPage > 0 {
 		sql += fmt.Sprintf("limit %d, %d", (clientPage-1)*everyPage, everyPage)
@@ -270,14 +270,14 @@ func (db *DB) GetBySQLSearch(data interface{}, sql, sqlNt string, clientPage, ev
 // exec common
 ////////////////////
 
-func (db *DB) ExecSQL(sql string, args ...interface{}) {
+func (db *DB) ExecSQL(sql string, args ...any) {
 	db.res = db.Exec(sql, args...)
 }
 
 // delete
 ///////////////////
 
-func (db *DB) Delete(table string, id interface{}) {
+func (db *DB) Delete(table string, id any) {
 	switch id.(type) {
 	case string:
 		if strings.Contains(id.(string), ",") {
@@ -302,7 +302,7 @@ func (db *DB) Update(gt *GT) {
 ////////////////////
 
 // Create single/array
-func (db *DB) Create(table string, data interface{}) {
+func (db *DB) Create(table string, data any) {
 	db.res = db.Table(table).Create(data)
 }
 
@@ -310,10 +310,10 @@ func (db *DB) Create(table string, data interface{}) {
 // more data create
 // single table
 // also can use Create array
-func (db *DB) CreateMore(table string, model interface{}, data interface{}) {
+func (db *DB) CreateMore(table string, model any, data any) {
 	var (
 		buf       bytes.Buffer
-		params    []interface{}
+		params    []any
 		p         = parse(model)
 		arrayData = mr.ToSlice(data) // slice data
 		colPSQL   = GetColParamSQL(p)
@@ -339,7 +339,7 @@ func (db *DB) CreateMore(table string, model interface{}, data interface{}) {
 func (db *DB) InitColumns(param *Params) {
 
 	var (
-		name   = conf.GetString(cons2.ConfDBName)
+		name   = conf.Get[string](cons.ConfDBName)
 		tables = []string{param.Table}
 	)
 

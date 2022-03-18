@@ -41,9 +41,9 @@ func (p *Pool) Submit(f func()) {
 	}()
 }
 
-func (p *Pool) SubmitWait(f func() interface{}) interface{} {
+func (p *Pool) SubmitWait(f func() any) any {
 
-	res := make(chan interface{})
+	res := make(chan any)
 	go func() {
 		p.add(1)
 		r := f()

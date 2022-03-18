@@ -11,14 +11,14 @@ import (
 )
 
 // default rule type
-//type defaultRule map[string]func(rule string, data interface{}) error
+//type defaultRule map[string]func(rule string, data any) error
 
 // AddRule add rule
-func AddRule(key string, f func(rule string, data interface{}) error) {
+func AddRule(key string, f func(rule string, data any) error) {
 	defaultRules[key] = f
 }
 
-func (n *Rule) rule(key, rule string, data interface{}) error {
+func (n *Rule) rule(key, rule string, data any) error {
 
 	v, ok := defaultRules[key]
 	if ok {
@@ -46,14 +46,14 @@ const (
 )
 
 // default rules
-var defaultRules = map[string]func(rule string, data interface{}) error{
-	RuleRequired: func(rule string, data interface{}) error {
+var defaultRules = map[string]func(rule string, data any) error{
+	RuleRequired: func(rule string, data any) error {
 		if err := nonzero(data); err != nil {
 			return errors.New("为必填项")
 		}
 		return nil
 	},
-	RuleLen: func(rule string, data interface{}) error {
+	RuleLen: func(rule string, data any) error {
 		min := 0
 		max := 0
 		lg := length(data)
@@ -71,31 +71,31 @@ var defaultRules = map[string]func(rule string, data interface{}) error{
 		}
 		return nil
 	},
-	RuleMax: func(rule string, data interface{}) error {
+	RuleMax: func(rule string, data any) error {
 		if err := max(data, rule); err != nil {
 			return errors.New(fmt.Sprint("最大值为", rule))
 		}
 		return nil
 	},
-	RuleMin: func(rule string, data interface{}) error {
+	RuleMin: func(rule string, data any) error {
 		if err := min(data, rule); err != nil {
 			return errors.New(fmt.Sprint("最小值为", rule))
 		}
 		return nil
 	},
-	RuleRegex: func(rule string, data interface{}) error {
+	RuleRegex: func(rule string, data any) error {
 		if err := regex(data, rule); err != nil {
 			return errors.New(fmt.Sprint("正则规则为", rule))
 		}
 		return nil
 	},
-	RulePhone: func(rule string, data interface{}) error {
+	RulePhone: func(rule string, data any) error {
 		if b, _ := regexp.MatchString(`^1[2-9]\d{9}$`, data.(string)); !b {
 			return errors2.Text("手机号格式非法")
 		}
 		return nil
 	},
-	RuleEmail: func(rule string, data interface{}) error {
+	RuleEmail: func(rule string, data any) error {
 		if b, _ := regexp.MatchString(`^([\w._]{2,10})@(\w+).([a-z]{2,4})$`, data.(string)); !b {
 			return errors2.Text("邮箱格式非法")
 		}
@@ -103,7 +103,7 @@ var defaultRules = map[string]func(rule string, data interface{}) error{
 	},
 }
 
-func nonzero(v interface{}) error {
+func nonzero(v any) error {
 	st := reflect.ValueOf(v)
 	valid := true
 	switch st.Kind() {
@@ -136,7 +136,7 @@ func nonzero(v interface{}) error {
 }
 
 // length
-func length(v interface{}) int {
+func length(v any) int {
 	st := reflect.ValueOf(v)
 	if st.Kind() == reflect.Ptr {
 		if st.IsNil() {
@@ -155,7 +155,7 @@ func length(v interface{}) int {
 }
 
 // min
-func min(v interface{}, param string) error {
+func min(v any, param string) error {
 	st := reflect.ValueOf(v)
 	invalid := false
 	if st.Kind() == reflect.Ptr {
@@ -205,7 +205,7 @@ func min(v interface{}, param string) error {
 }
 
 // max
-func max(v interface{}, param string) error {
+func max(v any, param string) error {
 	st := reflect.ValueOf(v)
 	var invalid bool
 	if st.Kind() == reflect.Ptr {
@@ -255,7 +255,7 @@ func max(v interface{}, param string) error {
 }
 
 // regex
-func regex(v interface{}, param string) error {
+func regex(v any, param string) error {
 	s, ok := v.(string)
 	if !ok {
 		sptr, ok := v.(*string)

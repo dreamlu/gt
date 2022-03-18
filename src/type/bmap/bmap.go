@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 )
 
-type BMap map[string]interface{}
+type BMap map[string]any
 
 // Get gets the first value associated with the given key.
 // If there are no values associated with the key, Get returns
 // the empty string. To access multiple values, use the map
 // directly.
-func (v BMap) Get(key string) interface{} {
+func (v BMap) Get(key string) any {
 	if v == nil {
 		return ""
 	}
@@ -18,7 +18,7 @@ func (v BMap) Get(key string) interface{} {
 }
 
 // Pop return Get value and Del key
-func (v BMap) Pop(key string) interface{} {
+func (v BMap) Pop(key string) any {
 	s := v.Get(key)
 	v.Del(key)
 	return s
@@ -26,7 +26,7 @@ func (v BMap) Pop(key string) interface{} {
 
 // Set sets the key to value. It replaces any existing
 // values.
-func (v BMap) Set(key string, value interface{}) BMap {
+func (v BMap) Set(key string, value any) BMap {
 	v[key] = value
 	return v
 }
@@ -38,7 +38,7 @@ func (v BMap) Del(key string) BMap {
 }
 
 // Marshal BMap to v
-func (v BMap) Marshal(value interface{}) error {
+func (v BMap) Marshal(value any) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func (v BMap) Marshal(value interface{}) error {
 
 // ToBMap struct/slice... to BMap
 // v must be allowed
-func ToBMap(v interface{}) (values BMap) {
+func ToBMap(v any) (values BMap) {
 	values = NewBMap()
 	bs, _ := json.Marshal(v)
 	_ = json.Unmarshal(bs, &values)

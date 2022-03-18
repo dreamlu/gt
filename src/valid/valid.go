@@ -2,7 +2,7 @@ package valid
 
 import (
 	"encoding/json"
-	reflect2 "github.com/dreamlu/gt/src/reflect"
+	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/tool/cons"
 	"github.com/dreamlu/gt/tool/tag"
@@ -14,7 +14,7 @@ import (
 
 type Validator struct {
 	// valid data
-	data interface{}
+	data any
 	// valid rule values
 	rule ValidRule
 }
@@ -57,7 +57,7 @@ func (v *ValidRule) Unmarshal(str string) {
 	}
 }
 
-func (v *ValidRule) parse(value interface{}) {
+func (v *ValidRule) parse(value any) {
 	typ := reflect.TypeOf(value)
 	for i := 0; i < typ.NumField(); i++ {
 		// new rule
@@ -89,10 +89,10 @@ func (v *ValidRule) parse(value interface{}) {
 var validBuffer = cmap.NewCMap()
 
 // Valid valid
-func Valid(data interface{}) ValidError {
+func Valid(data any) ValidError {
 
 	var typ reflect.Type
-	typ, data = reflect2.TrueTypeofValue(data)
+	typ, data = mr.TrueTypeofValue(data)
 
 	if typ.Kind() == reflect.Slice {
 		if errs := validSlice(data, Valid); len(errs) > 0 {
@@ -104,9 +104,9 @@ func Valid(data interface{}) ValidError {
 	return valid(data, typ)
 }
 
-func validSlice(v interface{}, vf func(data interface{}) ValidError) ValidError {
+func validSlice(v any, vf func(data any) ValidError) ValidError {
 	var (
-		sls  = reflect2.ToSlice(v)
+		sls  = mr.ToSlice(v)
 		errs ValidError
 	)
 	for _, s := range sls {
@@ -119,17 +119,17 @@ func validSlice(v interface{}, vf func(data interface{}) ValidError) ValidError 
 }
 
 // ValidModel form/single json data
-func ValidModel(data interface{}, model interface{}) ValidError {
+func ValidModel(data any, model any) ValidError {
 
 	return valid(data, reflect.TypeOf(model))
 }
 
 // valid
-func valid(value interface{}, typ reflect.Type) ValidError {
+func valid(value any, typ reflect.Type) ValidError {
 
 	var (
 		v   = &Validator{data: value}
-		key = reflect2.Path(typ, "valid")
+		key = mr.Path(typ, "valid")
 		vd  = validBuffer.Get(key)
 	)
 
@@ -173,13 +173,13 @@ func (v *Validator) Check() (errs ValidError) {
 	default:
 		for k, r := range v.rule {
 			var (
-				val interface{}
+				val any
 				typ = reflect.TypeOf(d)
 			)
 
 			for i := 0; i < typ.NumField(); i++ {
 				if tag.GetFieldTag(typ.Field(i)) == k {
-					val, _ = reflect2.ValueOfName(d, typ.Field(i).Name)
+					val, _ = mr.FieldName(d, typ.Field(i).Name)
 					break
 				}
 			}
@@ -193,7 +193,7 @@ func (v *Validator) Check() (errs ValidError) {
 }
 
 // Check rule common rule Check
-func (n *Rule) Check(data interface{}) (err error) {
+func (n *Rule) Check(data any) (err error) {
 	// required
 	if !strings.Contains(n.Valid, RuleRequired) && data == "" {
 		return

@@ -16,7 +16,7 @@ import (
 // ===== search data =========
 
 // CursorScan scan data to mongo data
-func (m *Mongo) CursorScan(cur *mongo.Cursor, data interface{}) {
+func (m *Mongo) CursorScan(cur *mongo.Cursor, data any) {
 	typ := mr.TrueTypeof(data)
 	switch typ.Kind() {
 	case reflect.Slice:
@@ -77,7 +77,7 @@ func (m *Mongo) GetByDataSearch(params bmap.BMap) (cur *mongo.Cursor, err error)
 
 // ====== other =====
 // data to bson value
-func dataToBSON(data, value interface{}) error {
+func dataToBSON(data, value any) error {
 
 	switch data.(type) {
 	case cmap.CMap:

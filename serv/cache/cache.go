@@ -12,12 +12,12 @@ type CacheModel struct {
 	// seconds
 	Time int64 `json:"time,omitempty"`
 	// data
-	Data interface{} `json:"data,omitempty"`
+	Data any `json:"data,omitempty"`
 }
 
 // Unmarshal support Struct/Array
 // c.Data to v
-func (c CacheModel) Unmarshal(v interface{}) error {
+func (c CacheModel) Unmarshal(v any) error {
 	b, err := json.Marshal(c.Data)
 	if err != nil {
 		return err
@@ -33,19 +33,19 @@ type Cache interface {
 
 	// Set value
 	// if time != 0 set it
-	Set(key interface{}, value CacheModel) error
+	Set(key any, value CacheModel) error
 	// Get value
-	Get(key interface{}) (CacheModel, error)
+	Get(key any) (CacheModel, error)
 	// Delete value
-	Delete(key interface{}) error
+	Delete(key any) error
 	// DeleteMore more del
 	// key will become *key*
-	DeleteMore(key interface{}) error
+	DeleteMore(key any) error
 	// Check value
 	// flush the time
-	Check(key interface{}) error
+	Check(key any) error
 	// ExpireKey expire key time
-	ExpireKey(key interface{}, seconds int64) bool
+	ExpireKey(key any, seconds int64) bool
 }
 
 // time for cache unit
@@ -61,7 +61,7 @@ const (
 // NewCache cache sugar
 // the first param is Cache
 // the second param is confDir
-func NewCache(params ...interface{}) (cache Cache) {
+func NewCache(params ...any) (cache Cache) {
 
 	// default set
 	if len(params) == 0 {

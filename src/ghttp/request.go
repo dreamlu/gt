@@ -102,7 +102,7 @@ func (m *Request) SetParam(key, value string) *Request {
 }
 
 // SetStructParams struct to Params
-func (m *Request) SetStructParams(v interface{}) *Request {
+func (m *Request) SetStructParams(v any) *Request {
 
 	m.params = cmap.StructToCMap(v)
 	return m

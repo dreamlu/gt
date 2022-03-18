@@ -22,10 +22,10 @@ type Crud interface {
 	// like form data
 	GetBySearch(params bmap.BMap) Crud // search single table
 	Get(params cmap.CMap) Crud         // get data no search
-	GetByID(id interface{}) Crud       // by id
+	GetByID(id any) Crud               // by id
 
 	// Delete delete by id/ids
-	Delete(id interface{}) Crud // delete
+	Delete(id any) Crud // delete
 
 	// Update crud and search id
 	// json data
@@ -41,12 +41,12 @@ type Crud interface {
 // Params crud params
 type Params struct {
 	// attributes
-	InnerTable []string    // inner join tables
-	LeftTable  []string    // left join tables
-	Table      string      // table name
-	Model      interface{} // table model, like User{}
-	KeyModel   interface{} // key like model
-	Data       interface{} // table model data, like var user User{}, it is 'user', it store real data
+	InnerTable []string // inner join tables
+	LeftTable  []string // left join tables
+	Table      string   // table name
+	Model      any      // table model, like User{}
+	KeyModel   any      // key like model
+	Data       any      // table model data, like var user User{}, it is 'user', it store real data
 
 	// count
 	SubSQL string // SubQuery SQL
@@ -81,21 +81,21 @@ func Table(Table string) Param {
 	}
 }
 
-func Model(Model interface{}) Param {
+func Model(Model any) Param {
 
 	return func(params *Params) {
 		params.Model = Model
 	}
 }
 
-func KeyModel(KeyModel interface{}) Param {
+func KeyModel(KeyModel any) Param {
 
 	return func(params *Params) {
 		params.KeyModel = KeyModel
 	}
 }
 
-func Data(Data interface{}) Param {
+func Data(Data any) Param {
 
 	return func(params *Params) {
 		params.Data = Data

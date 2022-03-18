@@ -77,23 +77,23 @@ func (l *logger) LogMode(level logger2.LogLevel) logger2.Interface {
 }
 
 // Info print info
-func (l logger) Info(ctx context.Context, msg string, data ...interface{}) {
+func (l logger) Info(ctx context.Context, msg string, data ...any) {
 	if l.LogLevel >= logger2.Info {
-		l.Infof(l.infoStr+msg, append([]interface{}{}, data...)...)
+		l.Infof(l.infoStr+msg, append([]any{}, data...)...)
 	}
 }
 
 // Warn print warn messages
-func (l logger) Warn(ctx context.Context, msg string, data ...interface{}) {
+func (l logger) Warn(ctx context.Context, msg string, data ...any) {
 	if l.LogLevel >= logger2.Warn {
-		l.Warnf(l.warnStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+		l.Warnf(l.warnStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 	}
 }
 
 // Error print error messages
-func (l logger) Error(ctx context.Context, msg string, data ...interface{}) {
+func (l logger) Error(ctx context.Context, msg string, data ...any) {
 	if l.LogLevel >= logger2.Error {
-		l.Errorf(l.errStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+		l.Errorf(l.errStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 	}
 }
 

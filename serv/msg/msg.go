@@ -4,12 +4,12 @@ import "github.com/nsqio/go-nsq"
 
 // Msg message platform
 type Msg interface {
-	NewProducer() Msg                                 // new producer
-	NewConsumer(topic, channel string) Msg            // new consumer
-	Stop()                                            // consumer Stop
-	Pub(topic string, msg interface{}) error          // pub interface{} message
-	MultiPub(topic string, msgs ...interface{}) error // MultiPub ...interface{} message
-	Sub(handler HandlerFunc) error                    // sub func to handle your work
+	NewProducer() Msg                         // new producer
+	NewConsumer(topic, channel string) Msg    // new consumer
+	Stop()                                    // consumer Stop
+	Pub(topic string, msg any) error          // pub any message
+	MultiPub(topic string, msgs ...any) error // MultiPub ...any message
+	Sub(handler HandlerFunc) error            // sub func to handle your work
 }
 
 type Message struct {
@@ -24,7 +24,7 @@ func (h HandlerFunc) HandlerMessage(message *Message) error {
 }
 
 // NewProducer new producer
-func NewProducer(params ...interface{}) (msg Msg) {
+func NewProducer(params ...any) (msg Msg) {
 	// default
 	if len(params) == 0 {
 		msg = new(Nsg)
@@ -38,7 +38,7 @@ func NewProducer(params ...interface{}) (msg Msg) {
 }
 
 // NewConsumer new consumer
-func NewConsumer(topic, channel string, params ...interface{}) (msg Msg) {
+func NewConsumer(topic, channel string, params ...any) (msg Msg) {
 	// default
 	if len(params) == 0 {
 		msg = new(Nsg)

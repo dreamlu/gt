@@ -24,22 +24,21 @@ func Configger(params ...string) *Config {
 	return config
 }
 
-func GetString(name string) string {
-	return Configger().GetString(name)
+type value interface {
+	int | string | bool | float64
 }
 
-func GetInt(name string) int {
-	return Configger().GetInt(name)
+func Get[T value](name string) (t T) {
+	if v := Configger().Get(name); v != nil {
+		return v.(T)
+	}
+	return
 }
 
-func GetBool(name string) bool {
-	return Configger().GetBool(name)
+func UnmarshalField(name string, v any) {
+	Configger().UnmarshalField(name, v)
 }
 
-func GetStruct(name string, v interface{}) {
-	Configger().GetStruct(name, v)
-}
-
-func Unmarshal(v interface{}) {
+func Unmarshal(v any) {
 	Configger().Unmarshal(v)
 }

@@ -36,36 +36,36 @@ func (p *ConnPool) Close() {
 }
 
 // Do commands
-func (p *ConnPool) Do(args ...interface{}) *redis.Cmd {
+func (p *ConnPool) Do(args ...any) *redis.Cmd {
 	// close problem
 	//defer p.Close()
 	return p.redisDB.Do(context.TODO(), args...)
 }
 
-func (p *ConnPool) Set(key interface{}, value interface{}) *redis.Cmd {
+func (p *ConnPool) Set(key any, value any) *redis.Cmd {
 	//defer p.Close()
 	return p.Do("SET", key, value)
 }
 
-func (p *ConnPool) Get(key interface{}) *redis.Cmd {
+func (p *ConnPool) Get(key any) *redis.Cmd {
 	// get one connection from pool
 	//defer p.Close()
 	return p.Do("GET", key)
 }
 
-func (p *ConnPool) Keys(keys interface{}) *redis.Cmd {
+func (p *ConnPool) Keys(keys any) *redis.Cmd {
 	// get one connection from pool
 	//defer p.Close()
 	return p.Do("KEYS", keys)
 }
 
-func (p *ConnPool) Delete(key interface{}) *redis.Cmd {
+func (p *ConnPool) Delete(key any) *redis.Cmd {
 	//defer p.Close()
 	return p.Do("DEL", key)
 }
 
 // ExpireKey for key
-func (p *ConnPool) ExpireKey(key interface{}, seconds int64) *redis.Cmd {
+func (p *ConnPool) ExpireKey(key any, seconds int64) *redis.Cmd {
 	//defer p.Close()
 	return p.Do("EXPIRE", key, seconds)
 }

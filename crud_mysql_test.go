@@ -275,44 +275,6 @@ func TestGetMoreSearchSQL(t *testing.T) {
 	t.Log(gt.sql)
 }
 
-func TestCreateMoreData(t *testing.T) {
-
-	type Par struct {
-		Account float64 `json:"account"`
-	}
-
-	type UserPar struct {
-		Name       string      `json:"name" gt:"valid:len=2-10"`
-		CreateTime time3.CTime `json:"create_time"`
-		Par
-	}
-	type User struct {
-		ID uint64 `json:"id"`
-		UserPar
-	}
-	type UserParP struct {
-		UserPar
-	}
-
-	var up = []UserParP{
-		{
-			UserPar{Name: "测试1", CreateTime: time3.CTime(time2.Now())},
-		},
-		{
-			UserPar{Name: "测试2"},
-		},
-	}
-	crud := NewCrud(
-		Table("user"),
-		Model(UserParP{}),
-		Data(up),
-		//SubSQL("(asdf) as a","(asdfa) as b"),
-	)
-
-	err := crud.CreateMore().Error()
-	t.Log(err)
-}
-
 func TestExtends(t *testing.T) {
 	type UserDe struct {
 		User

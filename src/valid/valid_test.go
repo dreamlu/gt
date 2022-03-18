@@ -66,7 +66,7 @@ func TestCustomizeValid(t *testing.T) {
 	}
 	t.Log(Valid(test))
 
-	AddRule("large", func(rule string, data interface{}) error {
+	AddRule("large", func(rule string, data any) error {
 		num, _ := strconv.Atoi(rule)
 		if v, ok := data.(string); ok {
 			if length(v) > num {

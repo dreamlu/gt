@@ -81,7 +81,7 @@ func (m *Mongo) Get(params cmap.CMap) Crud {
 
 // GetByID must be mongodb primitive.ObjectID
 // by id
-func (m *Mongo) GetByID(id interface{}) Crud {
+func (m *Mongo) GetByID(id any) Crud {
 	clone := m.clone()
 
 	res := clone.m.Collection(clone.param.Table).FindOne(context.TODO(), bson.M{"_id": id.(primitive.ObjectID)})
@@ -92,7 +92,7 @@ func (m *Mongo) GetByID(id interface{}) Crud {
 	return clone
 }
 
-func (m *Mongo) Delete(id interface{}) Crud {
+func (m *Mongo) Delete(id any) Crud {
 	clone := m.clone()
 
 	res, err := clone.m.Collection(clone.param.Table).DeleteMany(context.TODO(), bson.M{"_id": id.(primitive.ObjectID)})

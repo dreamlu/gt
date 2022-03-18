@@ -2,7 +2,7 @@ package tag
 
 import (
 	"github.com/dreamlu/gt/src/reflect"
-	reflect2 "reflect"
+	mr "reflect"
 	"testing"
 )
 
@@ -46,7 +46,7 @@ func TestGetGtTags(t *testing.T) {
 		for _, v := range m[k].GtTags {
 			t.Log(v)
 		}
-		t.Log(reflect.ValueOfName(u, k))
+		t.Log(reflect.FieldName(u, k))
 	}
 }
 
@@ -61,8 +61,8 @@ func TestObtainTags(t *testing.T) {
 		Age:    18,
 		Gender: 1,
 	}
-	m := ObtainTags(reflect2.TypeOf(u), "gt")
-	a := ObtainMoreTags(reflect2.TypeOf(u), []string{"gt", "json"}, IsGtTagIgnore)
+	m := ObtainTags(mr.TypeOf(u), "gt")
+	a := ObtainMoreTags(mr.TypeOf(u), []string{"gt", "json"}, IsGtTagIgnore)
 	t.Log(m)
 	t.Log(a)
 }

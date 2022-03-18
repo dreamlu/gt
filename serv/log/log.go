@@ -27,7 +27,7 @@ type Log struct {
 
 // LogWriter log writer interface
 type LogWriter interface {
-	Println(v ...interface{})
+	Println(v ...any)
 }
 
 // log level
@@ -89,7 +89,7 @@ func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationT
 		l.Errorf("日志文件系统配置错误. %+v", errors.WithStack(err))
 	}
 
-	level := conf.GetString(cons.ConfLogLevel)
+	level := conf.Get[string](cons.ConfLogLevel)
 	wm := lfshook.WriterMap{}
 	switch level {
 	case DebugLevel, "":
@@ -116,7 +116,7 @@ func DefaultFileLog() {
 
 	var (
 		//projectPath, _ = os.Getwd()
-		projectName = conf.GetString(cons.ConfDBName) // use db name replace
+		projectName = conf.Get[string](cons.ConfDBName) // use db name replace
 	)
 	l.FileLog("log/", projectName+".log", 7, time2.Day)
 }
@@ -136,19 +136,19 @@ func (s *myFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 // ErrorLine print error line
-func (l *Log) ErrorLine(args ...interface{}) {
+func (l *Log) ErrorLine(args ...any) {
 	l.Error(fmt.Sprintf("%+v\n", args))
 }
 
 // Error sugar
-func Error(args ...interface{}) {
+func Error(args ...any) {
 	l.ErrorLine(args...)
 }
 
-func Info(args ...interface{}) {
+func Info(args ...any) {
 	l.Info(args...)
 }
 
-func Warn(args ...interface{}) {
+func Warn(args ...any) {
 	l.Warn(args...)
 }

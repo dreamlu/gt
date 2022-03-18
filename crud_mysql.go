@@ -24,11 +24,11 @@ type Mysql struct {
 	param *Params
 
 	// select
-	selectSQL string        // select/or if
-	from      string        // from sql
-	args      []interface{} // select args
-	argsNt    []interface{} // select nt args, related from
-	group     string        // the last group
+	selectSQL string // select/or if
+	from      string // from sql
+	args      []any  // select args
+	argsNt    []any  // select nt args, related from
+	group     string // the last group
 	// pager
 	pager result.Pager
 
@@ -91,7 +91,7 @@ func (c *Mysql) GetMore(params cmap.CMap) Crud {
 	return clone
 }
 
-func (c *Mysql) GetByID(id interface{}) Crud {
+func (c *Mysql) GetByID(id any) Crud {
 	c.common()
 
 	clone := c.clone()
@@ -114,25 +114,11 @@ func (c *Mysql) GetMoreBySearch(params cmap.CMap) Crud {
 	return clone
 }
 
-func (c *Mysql) Delete(id interface{}) Crud {
+func (c *Mysql) Delete(id any) Crud {
 	c.common()
 
 	clone := c.clone()
 	clone.dbTool.Delete(clone.param.Table, id)
-	return clone
-}
-
-// CreateMore can use Create replace
-func (c *Mysql) CreateMore() Crud {
-	c.common()
-	clone := c.clone()
-	if c.param.valid {
-		clone.err = c.valid(clone.param.Data)
-		if clone.err != nil {
-			return clone
-		}
-	}
-	clone.dbTool.CreateMore(clone.param.Table, clone.param.Model, clone.param.Data)
 	return clone
 }
 
@@ -166,7 +152,7 @@ func (c *Mysql) Create() Crud {
 	return clone
 }
 
-func (c *Mysql) Select(q interface{}, args ...interface{}) Crud {
+func (c *Mysql) Select(q any, args ...any) Crud {
 
 	clone := c
 	if c.selectSQL == "" {
@@ -177,7 +163,7 @@ func (c *Mysql) Select(q interface{}, args ...interface{}) Crud {
 	switch q.(type) {
 	case string:
 		query = q.(string)
-	case interface{}:
+	case any:
 		query, args = StructWhereSQL(q)
 	}
 
@@ -325,7 +311,7 @@ func (c *Mysql) common() {
 	}
 }
 
-func (c *Mysql) valid(data interface{}) error {
+func (c *Mysql) valid(data any) error {
 
 	ves := valid.Valid(data)
 	if len(ves) > 0 {

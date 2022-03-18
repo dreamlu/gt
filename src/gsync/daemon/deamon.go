@@ -61,7 +61,7 @@ func Daemoner() *Daemon {
 // new daemon
 func newDaemon() *Daemon {
 	return &Daemon{
-		Num:  conf.GetInt(cons.ConfTaskNum),
+		Num:  conf.Get[int](cons.ConfTaskNum),
 		Task: make(chan *Task), // must init via make()
 	}
 }

@@ -99,7 +99,7 @@ func (f *File) Save() (err error) {
 	if f.Format == "" {
 		f.Format = "20060102"
 	}
-	f.Path = conf.GetString(cons.ConfFile) + time.Now().Format(f.Format) + "/"
+	f.Path = conf.Get[string](cons.ConfFile) + time.Now().Format(f.Format) + "/"
 	if err = gos.Mkdir(f.Path); err != nil {
 		return
 	}

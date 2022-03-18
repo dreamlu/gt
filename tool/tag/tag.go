@@ -89,12 +89,12 @@ func GetFieldTag(field reflect.StructField) string {
 
 // GetTags get struct model fields tag []string
 // include gt tag rule
-func GetTags(model interface{}) (arr []string) {
+func GetTags(model any) (arr []string) {
 	return getTags(reflect.TypeOf(model))
 }
 
 // GetPartTags remove some like id,_id
-func GetPartTags(model interface{}) (arr []string) {
+func GetPartTags(model any) (arr []string) {
 	arr = GetTags(model)
 	for i := 0; i < len(arr); i++ {
 		v := arr[i]

@@ -5,8 +5,8 @@ import (
 	"reflect"
 )
 
-// ValueOfName reflect value via field name
-func ValueOfName(data interface{}, filedName string) (interface{}, error) {
+// FieldName reflect value via field name
+func FieldName(data any, filedName string) (any, error) {
 	typ := reflect.TypeOf(data)
 
 	switch typ.Kind() {
@@ -24,13 +24,13 @@ func ValueOfName(data interface{}, filedName string) (interface{}, error) {
 
 // ToSlice arr must array data
 // array struct data to []interface
-func ToSlice(arr interface{}) []interface{} {
+func ToSlice(arr any) []any {
 	v := reflect.ValueOf(arr)
 	if v.Kind() != reflect.Slice {
 		return nil
 	}
 	l := v.Len()
-	ret := make([]interface{}, l)
+	ret := make([]any, l)
 	for i := 0; i < l; i++ {
 		ret[i] = v.Index(i).Interface()
 	}
@@ -38,6 +38,6 @@ func ToSlice(arr interface{}) []interface{} {
 }
 
 // Name return struct string name
-func Name(v interface{}) string {
+func Name(v any) string {
 	return TrueTypeof(v).Name()
 }

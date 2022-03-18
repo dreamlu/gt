@@ -20,7 +20,7 @@ type Nsg struct {
 func (n *Nsg) NewProducer() Msg {
 
 	config := nsq.NewConfig()
-	producer, err := nsq.NewProducer(conf.GetString(cons.ConfNsqProducerAddr), config)
+	producer, err := nsq.NewProducer(conf.Get[string](cons.ConfNsqProducerAddr), config)
 	if err != nil {
 		fmt.Printf("[gt]:create producer failed, err:%v\n", err)
 		return nil
@@ -45,7 +45,7 @@ func (n *Nsg) Stop() {
 	n.consumer.Stop()
 }
 
-func (n *Nsg) Pub(topic string, msg interface{}) error {
+func (n *Nsg) Pub(topic string, msg any) error {
 
 	b, err := json.Marshal(msg)
 	if err != nil {
@@ -56,7 +56,7 @@ func (n *Nsg) Pub(topic string, msg interface{}) error {
 	return err
 }
 
-func (n *Nsg) MultiPub(topic string, msgs ...interface{}) error {
+func (n *Nsg) MultiPub(topic string, msgs ...any) error {
 
 	var bs [][]byte
 	for _, v := range msgs {
@@ -82,7 +82,7 @@ func (n *Nsg) Sub(handler HandlerFunc) error {
 	}))
 	// use ',' split address
 	// ConnectToNSQD/ConnectToNSQLookupd
-	err := n.consumer.ConnectToNSQDs(strings.Split(conf.GetString(cons.ConfNsqConsumerAddr), ","))
+	err := n.consumer.ConnectToNSQDs(strings.Split(conf.Get[string](cons.ConfNsqConsumerAddr), ","))
 	if err != nil {
 		log.Error("MSG Consumer ConnectToNSQD err: ", err)
 		return err

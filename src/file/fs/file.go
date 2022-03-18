@@ -94,7 +94,7 @@ func (f *File) IsDir() bool {
 	return false
 }
 
-func (f *File) Sys() interface{} {
+func (f *File) Sys() any {
 	return nil
 }
 

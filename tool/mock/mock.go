@@ -11,7 +11,7 @@ var (
 )
 
 // Mock mock data
-func Mock(data interface{}) {
+func Mock(data any) {
 	_ = faker.SetRandomMapAndSliceSize(randomSize)
 	//CustomGenerator()
 	err := faker.FakeData(data)
@@ -28,7 +28,7 @@ func SetRandomSize(size int) {
 //// CustomGenerator ...
 //func CustomGenerator() {
 //	faker.AddProvider("cjon", func() faker.TaggedFunction {
-//		return func(v reflect.Value) (interface{}, error) {
+//		return func(v reflect.Value) (any, error) {
 //			return "danger-ranger", nil
 //		}
 //	}())

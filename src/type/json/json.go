@@ -16,7 +16,7 @@ func (j CJSON) Value() (driver.Value, error) {
 	return string(j), nil
 }
 
-func (j *CJSON) Scan(value interface{}) error {
+func (j *CJSON) Scan(value any) error {
 	if value == nil {
 		*j = nil
 		return nil
@@ -58,7 +58,7 @@ func (j CJSON) String() string {
 }
 
 // Unmarshal support Struct/Array
-func (j CJSON) Unmarshal(v interface{}) error {
+func (j CJSON) Unmarshal(v any) error {
 	err := json.Unmarshal(j, v)
 	if err != nil {
 		return err

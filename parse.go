@@ -15,7 +15,7 @@ type Parses struct {
 	Table  string // main table
 	Key    string
 	Tags   []string
-	Vs     []interface{}
+	Vs     []any
 	OTags  map[string]string
 	TagTb  map[string]string // part: tag->tb
 	TagTag map[string]string // part: tag->tag
@@ -38,7 +38,7 @@ func (r *Parses) Marshal(v string) {
 	return
 }
 
-func parse(model interface{}, tables ...string) (r *Parses) {
+func parse(model any, tables ...string) (r *Parses) {
 	var (
 		typ = mr.TrueTypeof(model)
 		key = mr.Path(typ, tables...)
@@ -124,7 +124,7 @@ func parseOtherTag(r *Parses, tag, t string, tables ...string) {
 }
 
 // parseV value may be different
-func parseV(r *Parses, v interface{}) {
+func parseV(r *Parses, v any) {
 	var (
 		typ = mr.TrueValueOf(v)
 	)

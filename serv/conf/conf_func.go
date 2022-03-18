@@ -66,7 +66,7 @@ func (c *Config) getDevMode() (devMode string) {
 
 	// add yamlS data
 	c.YamlS = append(c.YamlS, yaml)
-	return yaml.GetString(cons.DefaultDevMode)
+	return yaml.Get(cons.DefaultDevMode).(string)
 }
 
 // load dev mode data
@@ -81,44 +81,25 @@ func (c *Config) loadYaml() *Yaml {
 
 // Get yaml data
 // find the first data, must different from app.yaml
-func (c *Config) Get(name string) (value interface{}) {
+func (c *Config) Get(name string) (value any) {
 	for _, v := range c.YamlS {
-		value = v.Get(name)
+		if t := v.Get(name); t != nil {
+			value = t
+		}
 	}
 	return value
 }
 
-func (c *Config) GetString(name string) (value string) {
-	for _, v := range c.YamlS {
-		value = v.GetString(name)
-	}
-	return value
-}
-
-func (c *Config) GetInt(name string) (value int) {
-	for _, v := range c.YamlS {
-		value = v.GetInt(name)
-	}
-	return value
-}
-
-func (c *Config) GetBool(name string) (value bool) {
-	for _, v := range c.YamlS {
-		value = v.GetBool(name)
-	}
-	return value
-}
-
-// GetStruct yaml to struct
+// UnmarshalField yaml to struct
 // only support Accessible Field
-func (c *Config) GetStruct(name string, s interface{}) {
+func (c *Config) UnmarshalField(name string, s any) {
 	for _, v := range c.YamlS {
 		v.Unmarshal(v.Get(name), s)
 	}
 }
 
-func (c *Config) Unmarshal(s interface{}) {
-	var t interface{}
+func (c *Config) Unmarshal(s any) {
+	var t any
 	for _, v := range c.YamlS {
 		v.Unmarshal(v.data, s)
 		if t != nil {

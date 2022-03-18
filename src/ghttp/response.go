@@ -37,7 +37,7 @@ func (m *Response) MustString() string {
 }
 
 //Unmarshal 返回反序列化JSON
-func (m *Response) Unmarshal(v interface{}) error {
+func (m *Response) Unmarshal(v any) error {
 	if m.error != nil {
 		return m.error
 	}

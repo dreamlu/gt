@@ -33,7 +33,7 @@ type dba struct {
 func newMongoDB() *mongo.Database {
 
 	dbS := &dba{}
-	conf.GetStruct(cons.ConfMongo, dbS)
+	conf.UnmarshalField(cons.ConfMongo, dbS)
 	//url := fmt.Sprintf("mongodb://%s:%s@%s", dbS.User, dbS.Password, dbS.Host)
 	url := fmt.Sprintf("mongodb://%s", dbS.Host)
 	ctx, cancel := context.WithCancel(context.Background())

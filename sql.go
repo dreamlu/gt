@@ -17,7 +17,7 @@ var buffer = cmap.NewCMap()
 // GetMoreColSQL select * replace
 // select more tables : table name / table alias name
 // first table must main table, like from a inner join b, first table is a
-func GetMoreColSQL(model interface{}, tables ...string) (sql string) {
+func GetMoreColSQL(model any, tables ...string) (sql string) {
 	var (
 		p   = parse(model, tables...)
 		key = fmt.Sprintf("%s%s_more", cons2.SQL_, p.Key)
@@ -57,7 +57,7 @@ func getTagMoreSQL(p *Parses, buf *bytes.Buffer) {
 }
 
 // GetColSQL select * replace
-func GetColSQL(model interface{}) (sql string) {
+func GetColSQL(model any) (sql string) {
 	var (
 		r   = parse(model)
 		key = fmt.Sprintf("%s%s", cons2.SQL_, r.Key)
@@ -75,7 +75,7 @@ func GetColSQL(model interface{}) (sql string) {
 
 // GetColSQLAlias select * replace
 // add alias
-func GetColSQLAlias(model interface{}, alias string) (sql string) {
+func GetColSQLAlias(model any, alias string) (sql string) {
 	var (
 		r   = parse(model)
 		key = fmt.Sprintf("%s%s_%s", cons2.SQL_, r.Key, alias)

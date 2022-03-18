@@ -99,8 +99,8 @@ func (v CMap) Drop(key, value string) CMap {
 //		Name string `json:"name"` // must string type
 //		ID   string `json:"id"` // must string type
 //	}
-func (v CMap) Struct(value interface{}) error {
-	var m = map[string]interface{}{}
+func (v CMap) Struct(value any) error {
+	var m = map[string]any{}
 	for k, v := range v {
 		m[k] = v[0]
 	}
@@ -116,7 +116,7 @@ func (v CMap) Struct(value interface{}) error {
 }
 
 // StructToCMap struct to CMap, maybe use Encode
-func StructToCMap(v interface{}) (values CMap) {
+func StructToCMap(v any) (values CMap) {
 	values = NewCMap()
 	el := reflect.ValueOf(v)
 	if el.Kind() == reflect.Ptr {
