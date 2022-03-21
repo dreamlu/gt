@@ -13,10 +13,7 @@ func IsGtTagIgnore(tag reflect.StructTag) bool {
 }
 
 // ParseTag parse tag
-// gt:"field:table.field"
-// gorm:"column:field"
-// json:"field"
-// gt > gorm > json > struct field
+// GtTagIgnore and ParseTagOnly
 func ParseTag(field reflect.StructField) (tag, tagTable, jsonTag string, b bool) {
 
 	// ignore
@@ -24,14 +21,25 @@ func ParseTag(field reflect.StructField) (tag, tagTable, jsonTag string, b bool)
 		b = true
 		return
 	}
+	tag, tagTable, jsonTag = ParseTagOnly(field)
+	return
+}
+
+// ParseTagOnly parse tag
+// gt:"field:table.field"
+// gorm:"column:field"
+// json:"field"
+// gt > gorm > json > struct field
+func ParseTagOnly(field reflect.StructField) (tag, tagTable, jsonTag string) {
+
 	// gt
-	tag, tagTable, b = ParseGtTag(field.Tag)
+	tag, tagTable = ParseGtFieldTag(field)
 	// gorm
 	if tag == "" {
-		tag, tagTable, b = ParseFieldTag(field.Tag, cons.GtGorm, cons.GtGormColumn)
+		tag, tagTable = ParseGormFieldTag(field)
 	}
 	// json
-	jsonTag = GetFieldTag(field)
+	jsonTag = ParseJsonFieldTag(field)
 	// tag still empty
 	if tag == "" {
 		tag = jsonTag
@@ -39,44 +47,33 @@ func ParseTag(field reflect.StructField) (tag, tagTable, jsonTag string, b bool)
 	return
 }
 
-// ParseFieldTag gorm:"column:field"
-func ParseFieldTag(sTag reflect.StructTag, tagV, field string) (tag, tagTable string, b bool) {
-	tagValue := sTag.Get(tagV)
+// ParseGtFieldTag gt:"field:table.column"
+func ParseGtFieldTag(field reflect.StructField) (tag, tagTable string) {
+
+	if v := ParseGtFieldV(field); v != "" {
+		tagTable, tag = parseGtFieldRule(v)
+	}
+	return
+}
+
+// ParseGormFieldTag gorm:"column:field"
+func ParseGormFieldTag(sTag reflect.StructField) (tag, tagTable string) {
+	tagValue := sTag.Tag.Get(cons.GtGorm)
 	if tagValue == "" {
 		return
 	}
 	gtFields := strings.Split(tagValue, ";")
 	for _, v := range gtFields {
-		if strings.Contains(v, field) {
+		if strings.Contains(v, cons.GtGormColumn) {
 			tagTable, tag = parseFieldTag(v)
 		}
 	}
 	return
 }
 
-// ParseGtTag gt:"field:table.column"
-func ParseGtTag(sTag reflect.StructTag) (tag, tagTable string, b bool) {
-
-	if IsGtTagIgnore(sTag) {
-		b = true
-		return
-	}
-	tagValue := sTag.Get(cons.GT)
-	if tagValue == "" {
-		return
-	}
-	gtFields := strings.Split(tagValue, ";")
-	for _, v := range gtFields {
-		if strings.Contains(v, cons.GtField) {
-			tagTable, tag = parseFieldTag(v)
-		}
-	}
-	return
-}
-
-// GetFieldTag get json field tag
+// ParseJsonFieldTag get json field tag
 // if no, use HumpToLine
-func GetFieldTag(field reflect.StructField) string {
+func ParseJsonFieldTag(field reflect.StructField) string {
 
 	tag := field.Tag.Get("json")
 	if tag == "" || tag == "-" {

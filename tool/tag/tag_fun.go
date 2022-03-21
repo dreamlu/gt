@@ -166,15 +166,11 @@ func equalFolds(s string, str ...string) bool {
 }
 
 func parseFieldTag(tagValue string) (table, column string) {
-	tagTmp := strings.Split(tagValue, ":")
-	tag := tagTmp[1]
-	if a := strings.Split(tag, "."); len(a) > 1 { // include table
-		table = a[0]
-		column = a[1]
+	ts := strings.Split(tagValue, ":")
+	if len(ts) == 1 {
 		return
 	}
-	// only tag
-	return "", tag
+	return parseGtFieldRule(ts[1])
 }
 
 // get struct fields tags via recursion
@@ -186,7 +182,6 @@ func getTags(typ reflect.Type) (tags []string) {
 	}
 	var (
 		tag string
-		b   bool
 	)
 	for i := 0; i < typ.NumField(); i++ {
 		if typ.Field(i).Anonymous {
@@ -194,11 +189,11 @@ func getTags(typ reflect.Type) (tags []string) {
 			continue
 		}
 
-		if tag, _, b = ParseGtTag(typ.Field(i).Tag); b {
+		if tag, _ = ParseGtFieldTag(typ.Field(i)); tag == "" {
 			continue
 		}
 		if tag == "" {
-			tag = GetFieldTag(typ.Field(i))
+			tag = ParseJsonFieldTag(typ.Field(i))
 		}
 		tags = append(tags, tag)
 	}

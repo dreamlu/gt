@@ -60,7 +60,7 @@ type Order struct {
 // order detail
 type OrderD struct {
 	Order
-	UserName     string      `json:"user_name" gt:"field:user.name"`           // user table column name
+	UserName     string      `json:"user_name" gt:"field:user.name;like"`      // user table column name
 	ServiceName  string      `json:"service_name"`                             // service table column `name`
 	Info         json.CJSON  `json:"info" gt:"sub_sql" faker:"cjson"`          // json
 	BirthDate    time3.CDate `gorm:"type:date"`                                // data
@@ -223,7 +223,7 @@ func TestGetMoreDataBySearch(t *testing.T) {
 	var params = cmap.NewCMap().
 		//Set("key", "梦 test 1"). // key work，& relation
 		Set("clientPage", "1").
-		//Set("id", "1,2,3").
+		Set("user_name", "like test").
 		Set("everyPage", "2")
 	//params.Add("mock", "1") // mock data
 	var or []OrderD

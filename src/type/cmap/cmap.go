@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/tool/tag"
 	"go.mongodb.org/mongo-driver/bson"
 	"net/url"
@@ -118,10 +119,7 @@ func (v CMap) Struct(value any) error {
 // StructToCMap struct to CMap, maybe use Encode
 func StructToCMap(v any) (values CMap) {
 	values = NewCMap()
-	el := reflect.ValueOf(v)
-	if el.Kind() == reflect.Ptr {
-		el = el.Elem()
-	}
+	el := mr.TrueValueOf(v)
 	iVal := el
 	typ := iVal.Type()
 	for i := 0; i < iVal.NumField(); i++ {

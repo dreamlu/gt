@@ -24,10 +24,12 @@ const (
 	GtValid      = "valid"
 	GtTrans      = "trans"
 	GtIgnore     = "ignore"
+	GtLike       = "like"
 	Gt_          = "-"
 	GtComma      = ","
 	GtGorm       = "gorm"
 	GtGormColumn = "column"
+	GtExist      = "exist"
 )
 
 // default page
@@ -44,6 +46,7 @@ const (
 	OrderDesc           = "%s.id desc"
 	OrderS              = "order by %s "
 	ParamAnd            = " = ? and "
+	ParamLike           = " like binary ? and "
 	ParamInAnd          = " in (?) and "
 	SelectFrom          = "select %s from %s "
 	Distinct            = "distinct "

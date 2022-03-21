@@ -6,6 +6,18 @@ import (
 	"testing"
 )
 
+func TestParseGt(t *testing.T) {
+	type User struct {
+		Name string `json:"name" gt:"field:user.name;like"`
+	}
+	type UserD struct {
+		User
+		Other string `json:"other" gt:"ignore"`
+	}
+	// test tag
+	t.Log(ParseGt(UserD{}))
+}
+
 func TestGetTags(t *testing.T) {
 	type User struct {
 		Name string `json:"name"`

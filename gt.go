@@ -6,10 +6,12 @@ import (
 	"bytes"
 	"fmt"
 	mr "github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/src/type/amap"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/tool"
 	"github.com/dreamlu/gt/tool/cons"
 	"github.com/dreamlu/gt/tool/mock"
+	"github.com/dreamlu/gt/tool/tag"
 	"reflect"
 	"strconv"
 	"strings"
@@ -34,6 +36,14 @@ type GT struct {
 
 	// mock data
 	isMock bool
+
+	// gt parses
+	parses map[string]amap.AMap
+}
+
+func (gt *GT) parse() *GT {
+	gt.parses = tag.ParseGt(gt.Model)
+	return gt
 }
 
 //=======================================sql script==========================================
@@ -45,6 +55,7 @@ type GT struct {
 // return: select sql
 // table1 as main table, include other tables_id(foreign key)
 func (gt *GT) GetMoreSQL() {
+	gt.parse()
 
 	var (
 		tables = gt.moreSql()
@@ -92,6 +103,7 @@ func (gt *GT) GetMoreSQL() {
 // GetSearchSQL search sql
 // default order by id desc
 func (gt *GT) GetSearchSQL() {
+	gt.parse()
 
 	var (
 		bufW  bytes.Buffer // where sql, sqlNt bytes sql
@@ -124,6 +136,7 @@ func (gt *GT) GetSearchSQL() {
 
 // GetSQL get single sql
 func (gt *GT) GetSQL() {
+	gt.parse()
 
 	var (
 		bufW  bytes.Buffer // where sql, sqlNt bytes sql
@@ -366,13 +379,7 @@ func (gt *GT) whereSQLNt(bufW *bytes.Buffer) {
 // where k =/in v
 func (gt *GT) whereKv(bufW *bytes.Buffer, k, v string) {
 	bufW.WriteString(k)
-	if strings.Contains(v, cons.GtComma) {
-		bufW.WriteString(cons.ParamInAnd)
-		gt.Args = append(gt.Args, strings.Split(v, cons.GtComma)) // args
-	} else {
-		bufW.WriteString(cons.ParamAnd)
-		gt.Args = append(gt.Args, v) // args
-	}
+	gt.where(bufW, k, v)
 }
 
 // where k =/in v
@@ -384,11 +391,20 @@ func (gt *GT) whereTbKv(bufW *bytes.Buffer, tb, k, v string) {
 	bufW.WriteByte(cons.Backticks)
 	bufW.WriteString(k)
 	bufW.WriteByte(cons.Backticks)
+	gt.where(bufW, k, v)
+}
+
+func (gt *GT) where(bufW *bytes.Buffer, k, v string) {
 	if strings.Contains(v, cons.GtComma) {
 		bufW.WriteString(cons.ParamInAnd)
 		gt.Args = append(gt.Args, strings.Split(v, cons.GtComma)) // args
 	} else {
-		bufW.WriteString(cons.ParamAnd)
+		if p := gt.parses[k]; p != nil && p.Get(cons.GtLike) == cons.GtExist {
+			bufW.WriteString(cons.ParamLike)
+			v = "%" + v + "%"
+		} else {
+			bufW.WriteString(cons.ParamAnd)
+		}
 		gt.Args = append(gt.Args, v) // args
 	}
 }

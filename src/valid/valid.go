@@ -63,21 +63,12 @@ func (v *ValidRule) parse(value any) {
 		// new rule
 		rule := Rule{}
 		// key
-		rule.Key = tag.GetFieldTag(typ.Field(i))
+		rule.Key = tag.ParseJsonFieldTag(typ.Field(i))
 		// rule
-		gtTag := typ.Field(i).Tag.Get(cons.GT)
-		if gtTag == "" {
-			continue
-		}
-		gtFields := strings.Split(gtTag, ";")
-		for _, v := range gtFields {
-			if strings.Contains(v, cons.GtValid) {
-				rule.Valid = string([]byte(v)[6:])
-			}
-			if strings.Contains(v, cons.GtTrans) {
-				rule.Trans = string([]byte(v)[6:])
-			}
-		}
+
+		field := typ.Field(i)
+		rule.Valid = tag.ParseGtValidV(field)
+		rule.Trans = tag.ParseGtTransV(field)
 		if rule.Valid == "" {
 			continue
 		}
@@ -178,7 +169,7 @@ func (v *Validator) Check() (errs ValidError) {
 			)
 
 			for i := 0; i < typ.NumField(); i++ {
-				if tag.GetFieldTag(typ.Field(i)) == k {
+				if tag.ParseJsonFieldTag(typ.Field(i)) == k {
 					val, _ = mr.FieldName(d, typ.Field(i).Name)
 					break
 				}
