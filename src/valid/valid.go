@@ -5,6 +5,7 @@ import (
 	"github.com/dreamlu/gt/lib/cons"
 	"github.com/dreamlu/gt/lib/tag"
 	mr "github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/src/type/amap"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"log"
 	"net/url"
@@ -77,7 +78,7 @@ func (v *ValidRule) parse(value any) {
 	}
 }
 
-var validBuffer = cmap.NewCMap()
+var validBuffer = amap.NewAMap()
 
 // Valid valid
 func Valid(data any) ValidError {

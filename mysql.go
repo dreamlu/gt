@@ -125,20 +125,23 @@ func logInfo(dbS *dba) logger2.Interface {
 	)
 }
 
-// newDB
-func newDB(db *gorm.DB, log bool) *DB {
-	return &DB{
-		DB:  db,
-		res: nil,
-		log: log,
-	}
-}
-
 var (
 	onceDB sync.Once
 	// dbTool is global
 	dbTool *DB
 )
+
+// cusdb
+func cusdb(db *gorm.DB, log bool) *DB {
+	onceDB.Do(func() {
+		dbTool = &DB{
+			DB:  db,
+			res: nil,
+			log: log,
+		}
+	})
+	return dbTool
+}
 
 // db single db
 func db() *DB {

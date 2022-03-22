@@ -1,20 +1,38 @@
 package tag
 
 import (
+	"encoding/json"
 	"github.com/dreamlu/gt/lib/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/amap"
+	"github.com/dreamlu/gt/third/log"
 	"reflect"
 	"strings"
 )
 
-func ParseGt(model any) (gt map[string]amap.AMap) {
-	gt = make(map[string]amap.AMap)
+type Parse map[string]amap.AMap
+
+func (p *Parse) Marshal(v string) {
+	err := json.Unmarshal([]byte(v), p)
+	if err != nil {
+		log.Info("Parse Marshal error ", err)
+		return
+	}
+	return
+}
+
+func (p *Parse) String() string {
+	b, _ := json.Marshal(p)
+	return string(b)
+}
+
+func ParseGt(model any) (gt Parse) {
+	gt = Parse{}
 	parseGt(mr.TrueTypeof(model), gt)
 	return
 }
 
-func parseGt(typ reflect.Type, gt map[string]amap.AMap) {
+func parseGt(typ reflect.Type, gt Parse) {
 
 	if !mr.IsStruct(typ) {
 		return

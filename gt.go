@@ -9,7 +9,6 @@ import (
 	"github.com/dreamlu/gt/lib/cons"
 	"github.com/dreamlu/gt/lib/tag"
 	mr "github.com/dreamlu/gt/src/reflect"
-	"github.com/dreamlu/gt/src/type/amap"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/third/mock"
 	"reflect"
@@ -38,12 +37,24 @@ type GT struct {
 	isMock bool
 
 	// gt parses
-	parses map[string]amap.AMap
+	parses tag.Parse
 }
 
-func (gt *GT) parse() *GT {
+func (gt *GT) parse() {
+	var (
+		typ = mr.TrueTypeof(gt.Model)
+		key = mr.Path(typ, cons.GT)
+		v   = buffer.Get(key)
+	)
+	if v != "" {
+		gt.parses = tag.Parse{}
+		gt.parses.Marshal(v)
+		return
+	}
 	gt.parses = tag.ParseGt(gt.Model)
-	return gt
+	v = gt.parses.String()
+	buffer.Set(key, v)
+	return
 }
 
 //=======================================sql script==========================================

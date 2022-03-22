@@ -631,3 +631,12 @@ func TestGet(t *testing.T) {
 	).Get(cmap.NewCMap().Set("id", "1,2"))
 	t.Log(data)
 }
+
+func TestNewCusCrud(t *testing.T) {
+	dbTool = nil
+	db := &DB{}
+	// init db
+	db.NewDB()
+	cd := NewCusCrud(db.DB, true).Select("update user set name = 'test' where id = 1").Exec()
+	t.Log(cd.Error())
+}

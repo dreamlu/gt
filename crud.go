@@ -98,7 +98,7 @@ func NewCrud(params ...Param) (crud Crud) {
 // NewCusCrud new your custom db crud
 func NewCusCrud(db *gorm.DB, log bool, params ...Param) (crud Crud) {
 
-	newDB(db, log)
+	cusdb(db, log)
 	crud = new(Mysql)
 	crud.Init(newParam(params...))
 	return
