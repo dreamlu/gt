@@ -158,7 +158,7 @@ func Data(Data any) Param {
 func SubSQL(SubSQL ...string) Param {
 
 	return func(params *Params) {
-		SubSQL = lib.RemoveStrings(SubSQL, "")
+		SubSQL = lib.Remove(SubSQL, "")
 		if len(SubSQL) == 0 {
 			return
 		}

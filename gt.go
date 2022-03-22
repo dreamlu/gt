@@ -221,7 +221,7 @@ func (gt *GT) moreSql() (tables []string) {
 	innerTables, leftTables, innerField, leftField, DBS := gt.moreTables()
 	tables = append(tables, innerTables...)
 	tables = append(tables, leftTables...)
-	tables = lib.RemoveDuplicateString(tables)
+	tables = lib.RemoveDuplicate(tables)
 
 	var (
 		bufNt bytes.Buffer // sql bytes connect
