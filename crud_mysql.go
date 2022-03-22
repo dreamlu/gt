@@ -5,11 +5,11 @@ package gt
 import (
 	"errors"
 	"fmt"
+	"github.com/dreamlu/gt/lib/hump"
+	"github.com/dreamlu/gt/lib/result"
 	"github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/src/valid"
-	"github.com/dreamlu/gt/tool/hump"
-	"github.com/dreamlu/gt/tool/result"
 	"runtime"
 	"strings"
 )

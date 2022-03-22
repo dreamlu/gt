@@ -4,7 +4,7 @@ package cache
 
 import (
 	"encoding/json"
-	"github.com/dreamlu/gt/serv/log"
+	"github.com/dreamlu/gt/third/log"
 )
 
 // CacheModel data model

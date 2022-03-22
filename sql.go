@@ -3,8 +3,8 @@ package gt
 import (
 	"bytes"
 	"fmt"
+	cons2 "github.com/dreamlu/gt/lib/cons"
 	"github.com/dreamlu/gt/src/type/cmap"
-	cons2 "github.com/dreamlu/gt/tool/cons"
 	"strings"
 )
 

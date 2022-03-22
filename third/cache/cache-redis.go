@@ -5,10 +5,10 @@ package cache
 import (
 	"bytes"
 	"encoding/json"
-	redis2 "github.com/dreamlu/gt/serv/cache/redis"
-	"github.com/dreamlu/gt/serv/conf"
-	"github.com/dreamlu/gt/serv/log"
-	"github.com/dreamlu/gt/tool/cons"
+	"github.com/dreamlu/gt/lib/cons"
+	redis2 "github.com/dreamlu/gt/third/cache/redis"
+	"github.com/dreamlu/gt/third/conf"
+	"github.com/dreamlu/gt/third/log"
 	"github.com/go-redis/redis/v8"
 )
 

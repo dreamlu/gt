@@ -4,10 +4,10 @@ package log
 
 import (
 	"fmt"
-	"github.com/dreamlu/gt/serv/conf"
+	"github.com/dreamlu/gt/lib/cons"
+	"github.com/dreamlu/gt/lib/gos"
 	time2 "github.com/dreamlu/gt/src/type/time"
-	"github.com/dreamlu/gt/tool/cons"
-	"github.com/dreamlu/gt/tool/gos"
+	"github.com/dreamlu/gt/third/conf"
 	"github.com/lestrrat-go/file-rotatelogs"
 	"github.com/pkg/errors"
 	"github.com/rifflock/lfshook"

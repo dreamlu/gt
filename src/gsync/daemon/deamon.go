@@ -1,9 +1,9 @@
 package daemon
 
 import (
-	"github.com/dreamlu/gt/serv/conf"
+	"github.com/dreamlu/gt/lib/cons"
 	"github.com/dreamlu/gt/src/type/time"
-	"github.com/dreamlu/gt/tool/cons"
+	"github.com/dreamlu/gt/third/conf"
 	"sync"
 	time2 "time"
 )

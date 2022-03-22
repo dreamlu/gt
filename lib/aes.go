@@ -1,6 +1,6 @@
 // package gt
 
-package tool
+package lib
 
 import (
 	"bytes"

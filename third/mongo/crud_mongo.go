@@ -2,11 +2,11 @@ package mongo
 
 import (
 	"context"
+	"github.com/dreamlu/gt/lib/hump"
+	"github.com/dreamlu/gt/lib/result"
 	"github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
-	"github.com/dreamlu/gt/tool/hump"
-	"github.com/dreamlu/gt/tool/result"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

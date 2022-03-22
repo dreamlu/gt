@@ -2,10 +2,10 @@ package valid
 
 import (
 	"encoding/json"
+	"github.com/dreamlu/gt/lib/cons"
+	"github.com/dreamlu/gt/lib/tag"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/cmap"
-	"github.com/dreamlu/gt/tool/cons"
-	"github.com/dreamlu/gt/tool/tag"
 	"log"
 	"net/url"
 	"reflect"

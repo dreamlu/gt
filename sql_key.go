@@ -3,12 +3,12 @@ package gt
 import (
 	"bytes"
 	"fmt"
+	"github.com/dreamlu/gt/lib/cons"
+	"github.com/dreamlu/gt/lib/hump"
+	"github.com/dreamlu/gt/lib/tag"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
-	"github.com/dreamlu/gt/tool/cons"
-	"github.com/dreamlu/gt/tool/hump"
-	"github.com/dreamlu/gt/tool/tag"
 	"reflect"
 	"strings"
 )

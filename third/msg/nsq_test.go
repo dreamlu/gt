@@ -1,7 +1,7 @@
 package msg
 
 import (
-	"github.com/dreamlu/gt/serv/log"
+	"github.com/dreamlu/gt/third/log"
 	"testing"
 	"time"
 )

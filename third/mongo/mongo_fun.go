@@ -2,10 +2,10 @@ package mongo
 
 import (
 	"context"
+	"github.com/dreamlu/gt/lib/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
-	"github.com/dreamlu/gt/tool/cons"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

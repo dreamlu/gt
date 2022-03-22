@@ -1,4 +1,4 @@
-package tool
+package lib
 
 func RemoveDuplicateString(languages []string) []string {
 	var result []string

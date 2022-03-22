@@ -1,8 +1,8 @@
 package tag
 
 import (
+	"github.com/dreamlu/gt/lib/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
-	"github.com/dreamlu/gt/tool/cons"
 	"reflect"
 	"strings"
 )

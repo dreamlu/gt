@@ -3,9 +3,9 @@ package msg
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dreamlu/gt/serv/conf"
-	"github.com/dreamlu/gt/serv/log"
-	"github.com/dreamlu/gt/tool/cons"
+	"github.com/dreamlu/gt/lib/cons"
+	"github.com/dreamlu/gt/third/conf"
+	"github.com/dreamlu/gt/third/log"
 	"github.com/nsqio/go-nsq"
 	"strings"
 )

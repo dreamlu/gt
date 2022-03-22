@@ -3,9 +3,9 @@ package mongo
 import (
 	"context"
 	"fmt"
-	"github.com/dreamlu/gt/serv/conf"
-	"github.com/dreamlu/gt/serv/log"
-	"github.com/dreamlu/gt/tool/cons"
+	"github.com/dreamlu/gt/lib/cons"
+	"github.com/dreamlu/gt/third/conf"
+	"github.com/dreamlu/gt/third/log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"sync"

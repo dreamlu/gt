@@ -5,8 +5,8 @@ package conf
 import (
 	"errors"
 	"fmt"
-	"github.com/dreamlu/gt/tool/cons"
-	"github.com/dreamlu/gt/tool/gos"
+	"github.com/dreamlu/gt/lib/cons"
+	"github.com/dreamlu/gt/lib/gos"
 	"github.com/imdario/mergo"
 	"strings"
 )

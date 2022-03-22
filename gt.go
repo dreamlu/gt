@@ -5,13 +5,13 @@ package gt
 import (
 	"bytes"
 	"fmt"
+	"github.com/dreamlu/gt/lib"
+	"github.com/dreamlu/gt/lib/cons"
+	"github.com/dreamlu/gt/lib/tag"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/amap"
 	"github.com/dreamlu/gt/src/type/cmap"
-	"github.com/dreamlu/gt/tool"
-	"github.com/dreamlu/gt/tool/cons"
-	"github.com/dreamlu/gt/tool/mock"
-	"github.com/dreamlu/gt/tool/tag"
+	"github.com/dreamlu/gt/third/mock"
 	"reflect"
 	"strconv"
 	"strings"
@@ -210,7 +210,7 @@ func (gt *GT) moreSql() (tables []string) {
 	innerTables, leftTables, innerField, leftField, DBS := gt.moreTables()
 	tables = append(tables, innerTables...)
 	tables = append(tables, leftTables...)
-	tables = tool.RemoveDuplicateString(tables)
+	tables = lib.RemoveDuplicateString(tables)
 
 	var (
 		bufNt bytes.Buffer // sql bytes connect
