@@ -32,12 +32,16 @@ type GT struct {
 	clientPage int64
 	everyPage  int64
 	order      string // order by
+	sqlW       string // where sql
 
 	// mock data
 	isMock bool
 
 	// gt parses
 	parses tag.Parse
+
+	// count
+	isCount bool
 }
 
 func (gt *GT) parse() {
@@ -107,41 +111,7 @@ func (gt *GT) GetMoreSQL() {
 		}
 	}
 
-	gt.whereSQL(&bufW)
-	return
-}
-
-// GetSearchSQL search sql
-// default order by id desc
-func (gt *GT) GetSearchSQL() {
-	gt.parse()
-
-	var (
-		bufW  bytes.Buffer // where sql, sqlNt bytes sql
-		table = ParseTable(gt.Table)
-	)
-	// default
-	gt.order = fmt.Sprintf(cons.OrderDesc, table)
-
-	// select* replace
-	gt.sql = fmt.Sprintf(cons.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, table)
-	gt.sqlNt = fmt.Sprintf(cons.SelectCountFrom, table)
-
-	gt.whereParams()
-	for k, v := range gt.CMaps {
-		if k == cons.GtKey {
-			if gt.KeyModel == nil {
-				gt.KeyModel = gt.Model
-			}
-			sqlKey, argsKey := GetKeySQL(v[0], gt.KeyModel, table)
-			bufW.WriteString(sqlKey)
-			gt.Args = append(gt.Args, argsKey...)
-			continue
-		}
-		gt.whereKv(&bufW, k, v[0])
-	}
-
-	gt.whereSQL(&bufW)
+	gt.whereAllSQL(&bufW)
 	return
 }
 
@@ -150,12 +120,12 @@ func (gt *GT) GetSQL() {
 	gt.parse()
 
 	var (
-		bufW  bytes.Buffer // where sql, sqlNt bytes sql
-		table = ParseTable(gt.Table)
+		bufW bytes.Buffer // where sql, sqlNt bytes sql
 	)
+	gt.Table = ParseTable(gt.Table)
 
 	// select* replace
-	gt.sql = fmt.Sprintf(cons.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, table)
+	gt.sql = fmt.Sprintf(cons.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, gt.Table)
 
 	gt.whereParams()
 	for k, v := range gt.CMaps {
@@ -163,7 +133,7 @@ func (gt *GT) GetSQL() {
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
 			}
-			sqlKey, argsKey := GetKeySQL(v[0], gt.KeyModel, table)
+			sqlKey, argsKey := GetKeySQL(v[0], gt.KeyModel, gt.Table)
 			bufW.WriteString(sqlKey)
 			gt.Args = append(gt.Args, argsKey...)
 			continue
@@ -175,8 +145,8 @@ func (gt *GT) GetSQL() {
 	return
 }
 
-// GetSelectSearchSQL select sql
-func (gt *GT) GetSelectSearchSQL() {
+// GetSelectSQL select sql
+func (gt *GT) GetSelectSQL() {
 
 	gt.whereParams()
 	gt.sql = gt.Select
@@ -355,36 +325,39 @@ func (gt *GT) whereParams() {
 }
 
 // sql and sqlNt where sql
-func (gt *GT) whereSQL(bufW *bytes.Buffer) {
+func (gt *GT) whereAllSQL(bufW *bytes.Buffer) {
 
 	gt.whereSQLNt(bufW)
-	if bufW.Len() != 0 {
-		gt.sqlNt += fmt.Sprintf(cons.WhereS, bufW.Bytes()[:bufW.Len()-5])
-		if gt.WhereSQL != "" {
-			gt.sqlNt += fmt.Sprintf(cons.AndS, gt.WhereSQL)
-		}
-	} else if gt.WhereSQL != "" {
-		gt.sqlNt += fmt.Sprintf(cons.WhereS, gt.WhereSQL)
-	}
+	gt.whereCount()
+	return
+}
+
+func (gt *GT) whereCount() {
+	gt.sqlNt += gt.sqlW
 	return
 }
 
 // sql where sql
 func (gt *GT) whereSQLNt(bufW *bytes.Buffer) {
-	if bufW.Len() != 0 {
-		gt.sql += fmt.Sprintf(cons.WhereS, bufW.Bytes()[:bufW.Len()-5])
-		if gt.WhereSQL != "" {
-			gt.Args = append(gt.Args, gt.wArgs...)
-			gt.sql += fmt.Sprintf(cons.AndS, gt.WhereSQL)
-		}
-	} else if gt.WhereSQL != "" {
-		gt.Args = append(gt.Args, gt.wArgs...)
-		gt.sql += fmt.Sprintf(cons.WhereS, gt.WhereSQL)
-	}
+	gt.whereSQL(bufW)
+	gt.sql += gt.sqlW
 	if gt.order != "" {
 		gt.sql += fmt.Sprintf(cons.OrderS, gt.order)
 	}
 	return
+}
+
+func (gt *GT) whereSQL(bufW *bytes.Buffer) {
+	if bufW.Len() != 0 {
+		gt.sqlW += fmt.Sprintf(cons.WhereS, bufW.Bytes()[:bufW.Len()-5])
+		if gt.WhereSQL != "" {
+			gt.Args = append(gt.Args, gt.wArgs...)
+			gt.sqlW += fmt.Sprintf(cons.AndS, gt.WhereSQL)
+		}
+	} else if gt.WhereSQL != "" {
+		gt.Args = append(gt.Args, gt.wArgs...)
+		gt.sqlW += fmt.Sprintf(cons.WhereS, gt.WhereSQL)
+	}
 }
 
 // where k =/in v

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/src/type/json"
-	time3 "github.com/dreamlu/gt/src/type/time"
+	"github.com/dreamlu/gt/src/type/time"
 	"github.com/dreamlu/gt/third/log"
 	"net/http"
 	"runtime"
@@ -21,11 +21,11 @@ import (
 
 // user model
 type User struct {
-	ID         uint64      `json:"id"`
-	Name       string      `json:"name" gt:"valid:len=3-5;trans:名称" gorm:"<-:update"`
-	BirthDate  time3.CDate `gorm:"type:date"` // data
-	CreateTime time3.CTime `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
-	Account    float64     `json:"-" gorm:"type:decimal(10,2)"`
+	ID         uint64     `json:"id"`
+	Name       string     `json:"name" gt:"valid:len=3-5;trans:名称" gorm:"<-:update"`
+	BirthDate  time.CDate `gorm:"type:date"` // data
+	CreateTime time.CTime `gorm:"type:datetime;autoCreateTime" json:"create_time"`
+	Account    float64    `json:"-" gorm:"type:decimal(10,2)"`
 }
 
 type UserInfo struct {
@@ -48,23 +48,23 @@ type Service struct {
 
 // order model
 type Order struct {
-	ID         uint64       `json:"id"`
-	UserID     int64        `json:"user_id"` // user id
-	UserInfoID uint64       `json:"user_info_id"`
-	ServiceID  int64        `json:"service_id"` // service table id
-	CreateTime time3.CTime  `gorm:"type:datetime;DEFAULT:CURRENT_TIMESTAMP" json:"create_time"`
-	StartTime  time3.CSTime `json:"start_time"`
-	EndTime    time3.CSTime `json:"end_time"`
+	ID         uint64      `json:"id"`
+	UserID     int64       `json:"user_id"` // user id
+	UserInfoID uint64      `json:"user_info_id"`
+	ServiceID  int64       `json:"service_id"` // service table id
+	CreateTime time.CTime  `gorm:"type:datetime;autoCreateTime" json:"create_time"`
+	StartTime  time.CSTime `json:"start_time"`
+	EndTime    time.CSTime `json:"end_time"`
 }
 
 // order detail
 type OrderD struct {
 	Order
-	UserName     string      `json:"user_name" gt:"field:user.name;like"`      // user table column name
-	ServiceName  string      `json:"service_name"`                             // service table column `name`
-	Info         json.CJSON  `json:"info" gt:"sub_sql" faker:"cjson"`          // json
-	BirthDate    time3.CDate `gorm:"type:date"`                                // data
-	UserInfoSome string      `json:"user_info_some" gt:"field:user_info.some"` // user_info.some
+	UserName     string     `json:"user_name" gt:"field:user.name;like"`      // user table column name
+	ServiceName  string     `json:"service_name"`                             // service table column `name`
+	Info         json.CJSON `json:"info" gt:"sub_sql" faker:"cjson"`          // json
+	BirthDate    time.CDate `gorm:"type:date"`                                // data
+	UserInfoSome string     `json:"user_info_some" gt:"field:user_info.some"` // user_info.some
 }
 
 var crud Crud
@@ -80,16 +80,13 @@ func TestDB(t *testing.T) {
 	var user = User{
 		ID:        1,
 		Name:      "测试xx",
-		BirthDate: time3.CDate(time2.Now()),
+		BirthDate: time.CDate(time2.Now()),
 		//Createtime:JsonDate(time.Now()),
 	}
 
 	db := db()
 	db.Create("", &user)
 	t.Log(db.Error, "user: ", user)
-	var user2 User
-	crud.Params(Model(User{}), Data(&user2)).GetByID(1)
-	t.Log(user2)
 }
 
 func TestCrud(t *testing.T) {
@@ -112,7 +109,7 @@ func TestCrud(t *testing.T) {
 
 	// get by id
 	var user2 User
-	crud.Params(Data(&user2)).GetByID(2)
+	crud.Params(Data(&user2)).Find(cmap.Set("id", "2"))
 	t.Log(user2, "\n[GetByID]:", crud.Error())
 
 	// get by search
@@ -125,7 +122,7 @@ func TestCrud(t *testing.T) {
 		Data(&users),
 		WhereSQL("1=1"),
 	)
-	crud = crud.Params(Table("gt.user")).GetBySearch(cmap.NewCMap().Set("id", "1000"))
+	crud = crud.Params(Table("gt.user")).Find(cmap.Set("id", "1000"))
 	t.Log("\n[User Info]:", users)
 	t.Log(crud.Error())
 
@@ -155,38 +152,11 @@ func TestCrudSQL(t *testing.T) {
 	t.Log("[Info]:", cd.Params(Data(&user)).Select(sql, "梦sql", 1).Exec())
 }
 
-func TestGetSearchSql(t *testing.T) {
-
-	type UserDe struct {
-		User
-		Num int64 `json:"num" gt:"sub_sql"`
-	}
-
-	var args = make(cmap.CMap)
-	args.Add("clientPage", "1")
-	args.Add("everyPage", "2")
-	//args["key"] = append(args["key"], "梦 嘿,伙计")
-	//sub_sql := ",(select aa.name from shop aa where aa.user_id = a.id) as shop_name"
-	gt := &GT{
-		Params: &Params{
-			Table: "user",
-			Model: User{},
-		},
-		CMaps:  args,
-		Select: "",
-		From:   "",
-		Group:  "",
-		Args:   nil,
-	}
-	gt.GetSearchSQL()
-	t.Log("SQLNOLIMIT:", gt.sqlNt, "\nSQL:", gt.sql)
-}
-
 func TestGetDataBySql(t *testing.T) {
 	var sql = "select id,name,create_time from `user` where id = ?"
 
 	var user User
-	err := crud.Params(Data(&user)).Select(sql, "1000").Single().Error()
+	err := crud.Params(Data(&user)).Select(sql, "1000").Scan().Error()
 	t.Log(err)
 	t.Log(user)
 }
@@ -198,7 +168,7 @@ func TestGetDataBySearch(t *testing.T) {
 	args["everyPage"] = append(args["everyPage"], "2")
 	//args["id"] = append(args["id"], "1,2")
 	var user []*User
-	db().GetBySearch(&GT{
+	db().Find(&GT{
 		CMaps: args,
 		Params: &Params{
 			Table: "user",
@@ -220,10 +190,10 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		UserAccount string `json:"user_account"`
 	}
 	// get more search
-	var params = cmap.NewCMap().
+	var params = cmap.
 		//Set("key", "梦 test 1"). // key work，& relation
 		Set("clientPage", "1").
-		Set("user_name", "like test").
+		//Set("user_name", "like test").
 		Set("everyPage", "2")
 	//params.Add("mock", "1") // mock data
 	var or []OrderD
@@ -237,13 +207,13 @@ func TestGetMoreDataBySearch(t *testing.T) {
 		WhereSQL("1 = ?", 1).WhereSQL("2 = ?", 2),
 		//Distinct("order.id"),
 	)
-	err := crud.GetMoreBySearch(params).Error()
+	err := crud.FindM(params).Error()
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	t.Log(or)
-	err = crud.GetMoreBySearch(params).Error()
+	err = crud.FindM(params).Error()
 	if err != nil {
 		t.Error(err)
 		return
@@ -310,12 +280,12 @@ func TestDBCrud_Select(t *testing.T) {
 		Data(&user),
 	).
 		Select("select *from user").
-		Select("where id > 0")
+		Select("where id < 10")
 	if true {
 		cd.Select("and 1=1")
 	}
 	// search
-	cd = cd.Search(params)
+	cd = cd.FindS(params)
 	t.Log(cd.Error())
 	t.Log(user)
 	// single
@@ -323,7 +293,7 @@ func TestDBCrud_Select(t *testing.T) {
 		Data(&user),
 	).
 		Select("select *from user limit 2")
-	t.Log(cd2.Single().Error())
+	t.Log(cd2.Scan().Error())
 	_, file, line, ok := runtime.Caller(1)
 	if ok {
 		t.Log(file, "[]", line)
@@ -331,12 +301,12 @@ func TestDBCrud_Select(t *testing.T) {
 
 	// use gorm 2.0 support basic type scan replace
 	var name sql2.NullString
-	cd3 := NewCrud(Data(&name)).Select("select ifnull(name,'') from user where id = 10").Single()
+	cd3 := NewCrud(Data(&name)).Select("select ifnull(name,'') from user where id = 10").Scan()
 	t.Log(cd3.Error())
 	t.Log(name)
 
 	var names []string
-	cd4 := NewCrud(Data(&names)).Select("select ifnull(name,'') from user where id > 0 limit 2").Single()
+	cd4 := NewCrud(Data(&names)).Select("select ifnull(name,'') from user where id > 0 limit 2").Scan()
 	t.Log(cd4.Error())
 	t.Log(names)
 }
@@ -399,7 +369,7 @@ func httpServerDemo(w http.ResponseWriter, r *http.Request) {
 		Data(&or),
 		WhereSQL("1 = 1").WhereSQL("2 = 2"),
 	)
-	err := crud.GetMoreBySearch(params).Error()
+	err := crud.FindM(params).Error()
 	if err != nil {
 		log.Error(err)
 	}
@@ -437,7 +407,7 @@ func TestField(t *testing.T) {
 		Left("sv.svg", "shop.goods"),
 	)
 	var params = cmap.NewCMap()
-	_ = crud.GetMoreBySearch(params)
+	_ = crud.FindM(params)
 }
 
 // test transaction
@@ -457,7 +427,7 @@ func TestTransaction(t *testing.T) {
 		}
 		users []*User
 	)
-	_ = cd.Params(Data(&user)).Select("select *from user where id = 1").Single()
+	_ = cd.Params(Data(&user)).Select("select *from user where id = 1").Scan()
 	t.Log("step1: ", user)
 
 	user.Name = "testUpdate"
@@ -470,28 +440,28 @@ func TestTransaction(t *testing.T) {
 	cd.SavePoint("point1")
 
 	params.Set("id", "1").Set("name", "sql")
-	cd.Params(Data(&user)).Get(params)
+	cd.Params(Data(&user)).Find(params)
 	t.Log("step2: ", user)
 
-	cd.Params(Data(&users)).GetBySearch(params)
+	cd.Params(Data(&users)).Find(params)
 	for _, v := range users {
 		t.Log("step3: ", v)
 		break
 	}
 
 	cd.Select("update user set name = 'testExec' where id = 1").Exec()
-	cd.Params(Data(&user)).GetByID(1)
+	cd.Params(Data(&user)).Find(cmap.Set("id", "1"))
 	t.Log("step4: ", user)
 
 	cd.RollbackTo("point1")
 	params.Set("id", "1")
-	cd.Params(Data(&user)).Get(params)
+	cd.Params(Data(&user)).Find(params)
 	t.Log("point1: ", user)
 
 	err := cd.Params(Data(user)).Create().Error()
 	t.Log("error", err)
 
-	cd.Params(Data(&user)).GetByID(2)
+	cd.Params(Data(&user)).Find(cmap.Set("id", "2"))
 	t.Log("step5: ", user)
 
 	cd.Params(Data(user)).Update()
@@ -513,7 +483,7 @@ func TestDBDouble10to2(t *testing.T) {
 		Data(&user),
 		Model(User{}),
 	).
-		Get(cmap.NewCMap().Set("order", "id desc"))
+		Find(cmap.Set("order", "id desc"))
 	t.Log(user)
 	t.Log(cd.Error())
 
@@ -521,7 +491,7 @@ func TestDBDouble10to2(t *testing.T) {
 	NewCrud(
 		Data(&user2),
 		Model(User{}),
-	).Select("select *from `user` where id = ?", 1).Single()
+	).Select("select *from `user` where id = ?", 1).Scan()
 	t.Log(user2)
 }
 
@@ -536,7 +506,7 @@ func TestMysql_GetMoreByData(t *testing.T) {
 		KeyModel(OrderD{}),
 		//SubWhereSQL("1 = 1", "2 = 2", ""),
 	)
-	err := cd.GetMore(cmap.NewCMap()).Error()
+	err := cd.FindM(cmap.NewCMap()).Error()
 	if err != nil {
 		t.Error(err)
 	}
@@ -551,20 +521,20 @@ func TestMysql_Time(t *testing.T) {
 		Model(Order{}),
 		Data(&or),
 	)
-	err := cd.Get(cmap.NewCMap()).Error()
+	err := cd.Find(cmap.NewCMap()).Error()
 	if err != nil {
 		t.Error(err)
 	}
 	for _, v := range or {
 		t.Log(v.EndTime.String())
-		s := time3.CTime(v.StartTime)
+		s := time.CTime(v.StartTime)
 		t.Log(s.String())
 		t.Log(v)
 	}
 
 	cd.Params(Data(&Order{
-		StartTime: time3.ParseCSTime("12:00:00"),
-		EndTime:   time3.ParseCSTime("12:00:00"),
+		StartTime: time.ParseCSTime("12:00:00"),
+		EndTime:   time.ParseCSTime("12:00:00"),
 	})).Create()
 }
 
@@ -577,7 +547,7 @@ func TestGetMoreSearchResolve(t *testing.T) {
 		UserBirthDate string `json:"user_birth_date"` // user table column name
 		Name          string `json:"name"`            // user table column name
 	}
-	var params = cmap.NewCMap().
+	var params = cmap.
 		Set("key", "test 1"). // key work
 		Set("clientPage", "1").
 		Set("everyPage", "2")
@@ -588,13 +558,13 @@ func TestGetMoreSearchResolve(t *testing.T) {
 		Data(&or),
 		//KeyModel(Key{}),
 	)
-	err := crud.GetMoreBySearch(params).Error()
+	err := crud.FindM(params).Error()
 	if err != nil {
 		t.Log(err)
 	}
 }
 
-func TestMysql_GetMoreBySearchInnerLeftCondition(t *testing.T) {
+func TestMysql_GetMoreInnerLeftCondition(t *testing.T) {
 	type UserAndUserInfo struct {
 		UserName     string // will user.name
 		UserInfoSome string `gt:"field:user_info.some"`
@@ -607,10 +577,10 @@ func TestMysql_GetMoreBySearchInnerLeftCondition(t *testing.T) {
 		Left("order:user_id", "user_info:id,id=1"),
 	)
 	var params = make(cmap.CMap)
-	crud.GetMoreBySearch(params)
+	crud.FindM(params)
 }
 
-func TestMysql_GetMoreBySearchNotUnique(t *testing.T) {
+func TestMysql_GetMoreNotUnique(t *testing.T) {
 	type Info struct {
 		UserID uint64 `json:"user_id"`
 	}
@@ -620,7 +590,7 @@ func TestMysql_GetMoreBySearchNotUnique(t *testing.T) {
 		Model(Info{}),
 		Inner("order", "user", "user:id", "service:user_id"), // "order", "user_info"), // inner/left join on a.column = b.column and ...
 	)
-	crud.GetMoreBySearch(cmap.NewCMap().Set("user_id", "1"))
+	crud.FindM(cmap.Set("user_id", "1"))
 }
 
 func TestGet(t *testing.T) {
@@ -628,7 +598,7 @@ func TestGet(t *testing.T) {
 	crud.Params(
 		Model(User{}),
 		Data(&data),
-	).Get(cmap.NewCMap().Set("id", "1,2"))
+	).Find(cmap.Set("id", "1,2"))
 	t.Log(data)
 }
 
@@ -638,5 +608,16 @@ func TestNewCusCrud(t *testing.T) {
 	// init db
 	db.NewDB()
 	cd := NewCusCrud(db.DB, true).Select("update user set name = 'test' where id = 1").Exec()
+	t.Log(cd.Error())
+}
+
+func TestGetV2(t *testing.T) {
+	var data []*User
+	cd := crud.Params(
+		Model(User{}),
+		Data(&data),
+	).Count().Find(cmap.Set("id", "1,3"))
+	t.Log(data)
+	t.Log(cd.Pager())
 	t.Log(cd.Error())
 }

@@ -22,21 +22,17 @@ func init() {
 // Crud interface
 type Crud interface {
 	// Init init crud
-	Init(param *Params)
+	Init(*Params)
 	// DB db
 	DB() *DB
 	// Params new/replace param
 	// return param
-	Params(param ...Param) Crud
+	Params(...Param) Crud
 	// crud method
 
-	// GetBySearch get url params
-	// like form data
-	GetBySearch(params cmap.CMap) Crud     // search single table
-	Get(params cmap.CMap) Crud             // get data no search
-	GetMore(params cmap.CMap) Crud         // get data more table no search
-	GetByID(id any) Crud                   // by id
-	GetMoreBySearch(params cmap.CMap) Crud // more search, more tables inner/left join
+	Count() Crud          // count
+	Find(cmap.CMap) Crud  // find data
+	FindM(cmap.CMap) Crud // find data more table no search
 
 	// Delete delete by id/ids/slice
 	Delete(id any) Crud // delete
@@ -46,20 +42,20 @@ type Crud interface {
 	Update() Crud // update
 	Create() Crud // create (more), include res insert id
 
-	Select(q any, args ...any) Crud // select sql
-	From(query string) Crud         // from sql, if use search, From must only once
-	Group(query string) Crud        // the last group by
-	Search(params cmap.CMap) Crud   // Select Search pager, params only support Pager and Mock
-	Single() Crud                   // no search
-	Exec() Crud                     // exec insert/update/delete sql
-	Error() error                   // crud error
-	RowsAffected() int64            // inflect rows
-	Pager() result.Pager            // search pager
-	Begin() Crud                    // start a transaction
-	Commit() Crud                   // commit a transaction
-	Rollback() Crud                 // rollback a transaction
-	SavePoint(name string) Crud     // save a point
-	RollbackTo(name string) Crud    // rollback to point
+	Select(any, ...any) Crud // select sql
+	From(string) Crud        // from sql, if use search, From must only once
+	Group(string) Crud       // the last group by
+	FindS(cmap.CMap) Crud    // Select origin sql find, params only support Pager and Mock
+	Scan() Crud              // no search
+	Exec() Crud              // exec insert/update/delete sql
+	Error() error            // crud error
+	RowsAffected() int64     // inflect rows
+	Pager() result.Pager     // search pager
+	Begin() Crud             // start a transaction
+	Commit() Crud            // commit a transaction
+	Rollback() Crud          // rollback a transaction
+	SavePoint(string) Crud   // save a point
+	RollbackTo(string) Crud  // rollback to point
 }
 
 // Params crud params

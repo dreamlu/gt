@@ -176,97 +176,100 @@ func (db *DB) getBySQL(data any, sql string, args ...any) {
 	db.res = db.DB.Raw(sql, args...).Scan(data)
 }
 
-func (db *DB) GetByID(gt *GT, id any) {
+func (db *DB) CountSQL(gt *GT) *DB {
 
-	db.getBySQL(gt.Data, fmt.Sprintf(cons.SelectFrom+"where id = ?", GetColSQL(gt.Model), ParseTable(gt.Table)), id)
+	// default
+	gt.order = fmt.Sprintf(cons.OrderDesc, gt.Table)
+
+	gt.sqlNt = fmt.Sprintf(cons.SelectCountFrom, gt.Table)
+	gt.whereCount()
+
+	return db
 }
 
-// GetMoreBySearch more table
+// Find no search
+func (db *DB) Find(gt *GT) (pager result.Pager) {
+
+	// isMock
+	if gt.isMock {
+		return
+	}
+	gt.GetSQL()
+	if gt.isCount {
+		db.CountSQL(gt)
+		pager = db.count(gt)
+		if pager.TotalNum == 0 {
+			return
+		}
+	}
+	db.get(gt)
+	return
+}
+
+func (db *DB) count(gt *GT) (pager result.Pager) {
+
+	// if clientPage or everyPage < 0
+	// return all data
+	if gt.clientPage == 0 {
+		gt.clientPage = cons.ClientPage
+	}
+	if gt.everyPage == 0 {
+		gt.everyPage = cons.EveryPage
+	}
+	db.res = db.DB.Raw(gt.sqlNt, gt.Args...).Scan(&pager)
+	if db.res.Error != nil || pager.TotalNum == 0 {
+		return
+	}
+	pager.ClientPage = gt.clientPage
+	pager.EveryPage = gt.everyPage
+	// sqlNt += limit
+	if gt.clientPage > 0 && gt.everyPage > 0 {
+		gt.sql += fmt.Sprintf("limit %d, %d", (gt.clientPage-1)*gt.everyPage, gt.everyPage)
+	}
+	return
+}
+
+// get single data
+func (db *DB) get(gt *GT) {
+
+	db.res = db.DB.Raw(gt.sql, gt.Args...).Scan(gt.Data)
+}
+
+// FindM no search
 // params: innerTables is inner join tables
 // params: leftTables is left join tables
 // return search info
 // table1 as main table, include other tables_id(foreign key)
-func (db *DB) GetMoreBySearch(gt *GT) (pager result.Pager) {
-	// more table search
+func (db *DB) FindM(gt *GT) (pager result.Pager) {
+	// isMock
+	if gt.isMock {
+		return
+	}
 	gt.GetMoreSQL()
+	if gt.isCount {
+		pager = db.count(gt)
+		if pager.TotalNum == 0 {
+			return
+		}
+	}
+	db.get(gt)
+	return
+}
+
+// FindS select sql search
+func (db *DB) FindS(gt *GT) (pager result.Pager) {
 	// isMock
 	if gt.isMock {
 		return
 	}
-	return db.GetBySQLSearch(gt.Data, gt.sql, gt.sqlNt, gt.clientPage, gt.everyPage, gt.Args)
-}
-
-// GetBySearch single table
-// return search info
-func (db *DB) GetBySearch(gt *GT) (pager result.Pager) {
-
-	gt.GetSearchSQL()
-	// isMock
-	if gt.isMock {
-		return
+	gt.GetSelectSQL()
+	if gt.isCount {
+		pager = db.count(gt)
+		if pager.TotalNum == 0 {
+			return
+		}
 	}
-	return db.GetBySQLSearch(gt.Data, gt.sql, gt.sqlNt, gt.clientPage, gt.everyPage, gt.Args)
-}
-
-// Get no search
-func (db *DB) Get(gt *GT) {
-
-	gt.GetSQL()
-	// isMock
-	if gt.isMock {
-		return
-	}
-	db.getBySQL(gt.Data, gt.sql, gt.Args...)
-}
-
-// GetMoreData no search
-func (db *DB) GetMoreData(gt *GT) {
-
-	gt.GetMoreSQL()
-	// isMock
-	if gt.isMock {
-		return
-	}
-	db.getBySQL(gt.Data, gt.sql, gt.Args...)
-}
-
-// GetDataBySelectSQLSearch select sql search
-func (db *DB) GetDataBySelectSQLSearch(gt *GT) (pager result.Pager) {
-
-	gt.GetSelectSearchSQL()
-	// isMock
-	if gt.isMock {
-		return
-	}
-	return db.GetBySQLSearch(gt.Data, gt.sql, gt.sqlNt, gt.clientPage, gt.everyPage, gt.Args)
-}
-
-// GetBySQLSearch get sql search data
-// clientPage: default 1
-// everyPage: default 10
-// if clientPage or everyPage < 0, return all
-func (db *DB) GetBySQLSearch(data any, sql, sqlNt string, clientPage, everyPage int64, args []any) (pager result.Pager) {
-
-	// if clientPage or everyPage < 0
-	// return all data
-	if clientPage == 0 {
-		clientPage = cons.ClientPage
-	}
-	if everyPage == 0 {
-		everyPage = cons.EveryPage
-	}
-	if clientPage > 0 && everyPage > 0 {
-		sql += fmt.Sprintf("limit %d, %d", (clientPage-1)*everyPage, everyPage)
-	}
-	// sqlNt += limit
-	db.res = db.DB.Raw(sqlNt, args...).Scan(&pager)
-	if db.res.Error == nil && pager.TotalNum > 0 {
-		db.res = db.DB.Raw(sql, args...).Scan(data)
-		// pager data
-		pager.ClientPage = clientPage
-		pager.EveryPage = everyPage
-		return
-	}
+	db.get(gt)
 	return
 }
 

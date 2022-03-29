@@ -34,6 +34,9 @@ type Mysql struct {
 
 	// transaction
 	isTrans bool
+
+	// count
+	isCount bool
 }
 
 func (c *Mysql) Init(param *Params) {
@@ -58,58 +61,31 @@ func (c *Mysql) Params(params ...Param) Crud {
 	return c
 }
 
-// GetBySearch
-// pager info
-func (c *Mysql) GetBySearch(params cmap.CMap) Crud {
+func (c *Mysql) Count() Crud {
 	c.common()
 	clone := c.clone()
-	clone.pager = clone.dbTool.GetBySearch(&GT{
-		Params: clone.param,
-		CMaps:  params,
-	})
-
+	clone.isCount = true
 	return clone
 }
 
-func (c *Mysql) Get(params cmap.CMap) Crud {
+func (c *Mysql) Find(p cmap.CMap) Crud {
 	c.common()
 	clone := c.clone()
-	clone.dbTool.Get(&GT{
-		Params: clone.param,
-		CMaps:  params,
+	clone.pager = clone.dbTool.Find(&GT{
+		Params:  clone.param,
+		CMaps:   p,
+		isCount: c.isCount,
 	})
 	return clone
 }
 
-func (c *Mysql) GetMore(params cmap.CMap) Crud {
+func (c *Mysql) FindM(params cmap.CMap) Crud {
 	c.common()
 	clone := c.clone()
-	clone.dbTool.GetMoreData(&GT{
-		Params: clone.param,
-		CMaps:  params,
-	})
-	return clone
-}
-
-func (c *Mysql) GetByID(id any) Crud {
-	c.common()
-
-	clone := c.clone()
-	clone.dbTool.GetByID(&GT{
-		Params: clone.param,
-	}, id)
-	return clone
-}
-
-// GetMoreBySearch the same as search
-// more tables
-func (c *Mysql) GetMoreBySearch(params cmap.CMap) Crud {
-	c.common()
-
-	clone := c.clone()
-	clone.pager = clone.dbTool.GetMoreBySearch(&GT{
-		CMaps:  params,
-		Params: clone.param,
+	clone.pager = clone.dbTool.FindM(&GT{
+		Params:  clone.param,
+		CMaps:   params,
+		isCount: c.isCount,
 	})
 	return clone
 }
@@ -188,27 +164,32 @@ func (c *Mysql) Group(query string) Crud {
 	return c
 }
 
-func (c *Mysql) Search(params cmap.CMap) Crud {
+func (c *Mysql) FindS(params cmap.CMap) Crud {
 	c.common()
 
 	if c.argsNt == nil {
 		c.argsNt = c.args
 	}
-	c.pager = c.dbTool.GetDataBySelectSQLSearch(&GT{
-		Params: c.param,
-		Select: c.selectSQL,
-		Args:   c.args,
-		From:   c.from,
-		Group:  c.group,
-		CMaps:  params,
+	c.pager = c.dbTool.FindS(&GT{
+		Params:  c.param,
+		Select:  c.selectSQL,
+		Args:    c.args,
+		From:    c.from,
+		Group:   c.group,
+		isCount: c.isCount,
+		CMaps:   params,
 	})
 	return c
 }
 
-func (c *Mysql) Single() Crud {
+func (c *Mysql) Scan() Crud {
 	c.common()
 	c.Select(c.group)
-	c.dbTool.getBySQL(c.param.Data, c.selectSQL, c.args...)
+	c.dbTool.get(&GT{
+		sql:    c.selectSQL,
+		Params: c.param,
+		Args:   c.args,
+	})
 	return c
 }
 
@@ -295,6 +276,7 @@ func (c *Mysql) clone() (dbCrud *Mysql) {
 		argsNt:    c.argsNt,
 		group:     c.group,
 		err:       c.err,
+		isCount:   c.isCount,
 	}
 
 	// isTrans
