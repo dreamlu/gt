@@ -1,11 +1,11 @@
-package msg
+package mq
 
 import "github.com/nsqio/go-nsq"
 
-// Msg message platform
-type Msg interface {
-	NewProducer() Msg                         // new producer
-	NewConsumer(topic, channel string) Msg    // new consumer
+// MQ message platform
+type MQ interface {
+	NewProducer() MQ                          // new producer
+	NewConsumer(topic, channel string) MQ     // new consumer
 	Stop()                                    // consumer Stop
 	Pub(topic string, msg any) error          // pub any message
 	MultiPub(topic string, msgs ...any) error // MultiPub ...any message
@@ -24,29 +24,29 @@ func (h HandlerFunc) HandlerMessage(message *Message) error {
 }
 
 // NewProducer new producer
-func NewProducer(params ...any) (msg Msg) {
+func NewProducer(params ...any) (mq MQ) {
 	// default
 	if len(params) == 0 {
-		msg = new(Nsg)
-		msg.NewProducer()
+		mq = new(Nsg)
+		mq.NewProducer()
 		return
 	}
 	// init
-	msg = params[0].(Msg)
-	msg.NewProducer()
+	mq = params[0].(MQ)
+	mq.NewProducer()
 	return
 }
 
 // NewConsumer new consumer
-func NewConsumer(topic, channel string, params ...any) (msg Msg) {
+func NewConsumer(topic, channel string, params ...any) (mq MQ) {
 	// default
 	if len(params) == 0 {
-		msg = new(Nsg)
-		msg.NewConsumer(topic, channel)
+		mq = new(Nsg)
+		mq.NewConsumer(topic, channel)
 		return
 	}
 	// init
-	msg = params[0].(Msg)
-	msg.NewConsumer(topic, channel)
+	mq = params[0].(MQ)
+	mq.NewConsumer(topic, channel)
 	return
 }

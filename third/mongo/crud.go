@@ -10,22 +10,22 @@ import (
 // Crud mongo
 type Crud interface {
 	// Init crud
-	Init(param *Params)
+	Init(*Params)
 	// DB db
 	DB() *mongo.Database
 	// Params new/replace param
 	// return param
-	Params(param ...Param) Crud
+	Params(...Param) Crud
 	// crud method
 
-	// GetBySearch get url params
+	// FindSearch get url params
 	// like form data
-	GetBySearch(params bmap.BMap) Crud // search single table
-	Get(params cmap.CMap) Crud         // get data no search
-	GetByID(id any) Crud               // by id
+	FindSearch(bmap.BMap) Crud // search single table
+	Find(cmap.CMap) Crud       // get data no search
+	FindID(any) Crud           // by id
 
 	// Delete delete by id/ids
-	Delete(id any) Crud // delete
+	Delete(any) Crud // delete
 
 	// Update crud and search id
 	// json data
@@ -47,11 +47,6 @@ type Params struct {
 	Model      any      // table model, like User{}
 	KeyModel   any      // key like model
 	Data       any      // table model data, like var user User{}, it is 'user', it store real data
-
-	// count
-	SubSQL string // SubQuery SQL
-	// where
-	WhereSQL string // SubWhere SQL
 }
 
 type Param func(*Params)

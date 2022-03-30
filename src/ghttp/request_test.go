@@ -25,3 +25,11 @@ func TestPostJSON(t *testing.T) {
 	res := r.Exec()
 	t.Log(res.String())
 }
+
+func TestUpload(t *testing.T) {
+	r := NewRequest(POST, "http://192.168.10.11/upload")
+	//r.SetContentType(ContentTypeForm)
+	_ = r.AddFile("file", "test.txt", "test1.txt")
+	res := r.Exec()
+	t.Log(res.String())
+}

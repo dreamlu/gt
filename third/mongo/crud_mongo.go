@@ -51,7 +51,7 @@ func (m *Mongo) Params(params ...Param) Crud {
 
 // GetBySearch
 // pager info
-func (m *Mongo) GetBySearch(params bmap.BMap) Crud {
+func (m *Mongo) FindSearch(params bmap.BMap) Crud {
 	clone := m.clone()
 
 	cur, err := m.GetByDataSearch(params)
@@ -64,7 +64,7 @@ func (m *Mongo) GetBySearch(params bmap.BMap) Crud {
 	return clone
 }
 
-func (m *Mongo) Get(params cmap.CMap) Crud {
+func (m *Mongo) Find(params cmap.CMap) Crud {
 	clone := m.clone()
 
 	filter := bson.M{}
@@ -81,7 +81,7 @@ func (m *Mongo) Get(params cmap.CMap) Crud {
 
 // GetByID must be mongodb primitive.ObjectID
 // by id
-func (m *Mongo) GetByID(id any) Crud {
+func (m *Mongo) FindID(id any) Crud {
 	clone := m.clone()
 
 	res := clone.m.Collection(clone.param.Table).FindOne(context.TODO(), bson.M{"_id": id.(primitive.ObjectID)})

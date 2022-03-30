@@ -73,10 +73,7 @@ func (f *File) Upload() (err error) {
 	fileExt := filepath.Ext(f.File.Filename)
 	switch f.Name {
 	case "":
-		snowflakeID, err := snowflake.NewID(1)
-		if err != nil {
-			return err
-		}
+		snowflakeID := snowflake.NewID(1)
 		f.Name = snowflakeID.String() + fileExt
 	default:
 		f.Name += fileExt

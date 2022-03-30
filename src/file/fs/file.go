@@ -9,8 +9,7 @@ import (
 	"time"
 )
 
-// File 自己实现一个文件流系统
-// 主要是未找到相关压多个文件流压缩到压缩包输入流
+// File implement file system
 type File struct {
 	name    string
 	content *bytes.Buffer

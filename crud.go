@@ -35,7 +35,7 @@ type Crud interface {
 	FindM(cmap.CMap) Crud // find data more table no search
 
 	// Delete delete by id/ids/slice
-	Delete(id any) Crud // delete
+	Delete(any) Crud // delete
 
 	// Update crud and search id
 	// json data

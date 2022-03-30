@@ -64,7 +64,7 @@ func TestMongo_Get(t *testing.T) {
 		Table("client"),
 		Data(&client),
 	)
-	cd.Get(cmap.NewCMap().Set("name", "update"))
+	cd.Find(cmap.NewCMap().Set("name", "update"))
 	t.Log(client)
 
 	var client2 Client
@@ -73,7 +73,7 @@ func TestMongo_Get(t *testing.T) {
 		Table("client"),
 		Data(&client2),
 	)
-	cd.Get(cmap.NewCMap().Set("name", "update"))
+	cd.Find(cmap.NewCMap().Set("name", "update"))
 	t.Log(client2)
 }
 
@@ -86,7 +86,7 @@ func TestMongo_GetByID(t *testing.T) {
 	)
 	objID, _ := primitive.ObjectIDFromHex("609b451acb2ae879ea3fe8e9")
 	t.Log(objID.String())
-	cd.GetByID(objID)
+	cd.FindID(objID)
 	t.Log(client)
 }
 
@@ -98,7 +98,7 @@ func TestMongo_GetBySearch(t *testing.T) {
 		//Table("client"),
 		Data(&client),
 	)
-	cd.GetBySearch(bmap.NewBMap().
+	cd.FindSearch(bmap.NewBMap().
 		//Set("clientPage", "1").
 		//Set("everyPage", "3").
 		Set("order", "id desc").
@@ -140,7 +140,7 @@ func TestMongo_GoRoutine(t *testing.T) {
 			defer g.Done()
 			var client []*Client
 			cd.Params(Data(&client))
-			cd.GetBySearch(bmap.NewBMap().
+			cd.FindSearch(bmap.NewBMap().
 				Set("order", "id desc"),
 			)
 			t.Log(len(client))

@@ -1,7 +1,6 @@
 package mock
 
 import (
-	"github.com/bxcodec/faker/v3"
 	"github.com/dreamlu/gt/src/type/json"
 	"github.com/dreamlu/gt/src/type/time"
 	"testing"
@@ -17,7 +16,8 @@ type User struct {
 }
 
 func TestMock(t *testing.T) {
-	faker.SetRandomMapAndSliceSize(11)
+	//_ = faker.SetRandomMapAndSliceSize(11)
+	//faker.SetStringLang(faker.LangENG)
 	var user User
 	Mock(&user)
 	t.Log(user)

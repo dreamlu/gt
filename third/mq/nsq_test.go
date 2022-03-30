@@ -1,4 +1,4 @@
-package msg
+package mq
 
 import (
 	"github.com/dreamlu/gt/third/log"

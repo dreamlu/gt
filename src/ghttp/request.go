@@ -2,12 +2,12 @@ package ghttp
 
 import (
 	"bytes"
+	"github.com/dreamlu/gt/src/file/fs"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -21,7 +21,8 @@ const (
 	HEAD            = http.MethodHead
 	OPTIONS         = http.MethodOptions
 	ContentTypeJSON = "application/json"
-	ContentTypeForm = "application/x-www-form-urlencoded"
+	ContentTypeUrl  = "application/x-www-form-urlencoded"
+	ContentTypeForm = "multipart/form-data"
 )
 
 //Request Http Request
@@ -33,16 +34,15 @@ type Request struct {
 	body    io.Reader
 	Client  *http.Client
 	cookies []*http.Cookie
-	file    *file
+	f       file
 }
 
 type file struct {
-	name     string
-	filename string
-	path     string
+	*fs.File
+	field string
 }
 
-//NewRequest 新的Request指针
+// NewRequest new request
 func NewRequest(method, urlString string) *Request {
 	var r = &Request{}
 	r.method = strings.ToUpper(method)
@@ -52,49 +52,42 @@ func NewRequest(method, urlString string) *Request {
 	r.Client = &http.Client{
 		Timeout: time.Second * 10,
 	}
-	r.SetContentType(ContentTypeForm)
+	r.SetContentType(ContentTypeJSON)
 	return r
 }
 
-//SetContentType 设定Content-Type
 func (m *Request) SetContentType(contentType string) *Request {
 	m.SetHeader("Content-Type", contentType)
 	return m
 }
 
-//AddHeader 增加Header头
 func (m *Request) AddHeader(key, value string) *Request {
 	m.header.Add(key, value)
 	return m
 }
 
-//SetHeader 设定Header头
 func (m *Request) SetHeader(key, value string) *Request {
 	m.header.Set(key, value)
 	return m
 }
 
-//SetHeaders 设定Header头
 func (m *Request) SetHeaders(header http.Header) *Request {
 	m.header = header
 	return m
 }
 
-//SetBody 设定POST内容
 func (m *Request) SetBody(body io.Reader) *Request {
 	m.body = body
 	m.params = nil
 	return m
 }
 
-//AddParam 增加Get请求参数
 func (m *Request) AddParam(key, value string) *Request {
 	m.params.Add(key, value)
 	m.body = nil
 	return m
 }
 
-//SetParam 设定Get请求参数
 func (m *Request) SetParam(key, value string) *Request {
 	m.params.Set(key, value)
 	m.body = nil
@@ -108,31 +101,32 @@ func (m *Request) SetStructParams(v any) *Request {
 	return m
 }
 
-//SetParams 设定Get请求参数
+// SetParams Get params
 func (m *Request) SetParams(params cmap.CMap) *Request {
 	m.params = params
 	return m
 }
 
-//AddFile 增加文件
-func (m *Request) AddFile(name, filename, path string) *Request {
-	m.file = &file{name, filename, path}
-	return m
+func (m *Request) AddFile(field, fileName, path string) (err error) {
+	m.f.File, err = fs.OpenFile(path)
+	if err != nil {
+		return
+	}
+	m.f.field = field
+	m.f.SetName(fileName)
+	return
 }
 
-//RemoveFile 移除文件
 func (m *Request) RemoveFile() *Request {
-	m.file = nil
+	m.f.File = nil
 	return m
 }
 
-//AddCookie 添加COOKIE
 func (m *Request) AddCookie(cookie *http.Cookie) *Request {
 	m.cookies = append(m.cookies, cookie)
 	return m
 }
 
-//Exec 发送HTTP请求
 func (m *Request) Exec() *Response {
 	var req *http.Request
 	var err error
@@ -145,27 +139,16 @@ func (m *Request) Exec() *Response {
 
 	if m.body != nil {
 		body = m.body
-	} else if m.file != nil {
-		uploadFile, err := os.Open(m.file.path)
-		if err != nil {
-			return &Response{nil, nil, err}
-		}
-		defer uploadFile.Close()
-
+	} else if m.f.File != nil {
 		bodyByte := &bytes.Buffer{}
 		writer := multipart.NewWriter(bodyByte)
-		part, err := writer.CreateFormFile(m.file.name, m.file.filename)
-		if err != nil {
-			return &Response{nil, nil, err}
-		}
-		_, err = io.Copy(part, uploadFile)
-		if err != nil {
-			return &Response{nil, nil, err}
-		}
+
+		f, _ := writer.CreateFormFile(m.f.field, m.f.Name())
+		_, _ = io.Copy(f, m.f)
 
 		for key, values := range m.params {
 			for _, value := range values {
-				writer.WriteField(key, value)
+				_ = writer.WriteField(key, value)
 			}
 		}
 

@@ -110,7 +110,7 @@ func TestCrud(t *testing.T) {
 	// get by id
 	var user2 User
 	crud.Params(Data(&user2)).Find(cmap.Set("id", "2"))
-	t.Log(user2, "\n[GetByID]:", crud.Error())
+	t.Log(user2, "\n[FindID]:", crud.Error())
 
 	// get by search
 	//var args = url.Values{}

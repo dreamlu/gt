@@ -21,7 +21,7 @@ var (
 
 func init() {
 	// init redis
-	_ = r.NewCache()
+	_ = r.Init()
 }
 
 func TestCacheExpireKey(t *testing.T) {

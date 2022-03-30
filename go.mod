@@ -4,12 +4,12 @@ go 1.18
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0
-	github.com/bxcodec/faker/v3 v3.6.0
+	github.com/bxcodec/faker/v3 v3.8.0
 	github.com/dreamlu/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/go-redis/redis/v8 v8.11.0
 	github.com/imdario/mergo v0.3.12
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
-	github.com/nsqio/go-nsq v1.0.8
+	github.com/nsqio/go-nsq v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/sirupsen/logrus v1.8.1

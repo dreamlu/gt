@@ -3,6 +3,7 @@ package mock
 import (
 	"github.com/bxcodec/faker/v3"
 	"log"
+	"reflect"
 )
 
 var (
@@ -13,11 +14,16 @@ var (
 // Mock mock data
 func Mock(data any) {
 	_ = faker.SetRandomMapAndSliceSize(randomSize)
+	faker.SetStringLang(faker.LangCHI)
 	//CustomGenerator()
 	err := faker.FakeData(data)
 	if err != nil {
 		log.Println("[mock data Error]:", err)
 	}
+}
+
+func AddProvider(key string, f func(v reflect.Value) (interface{}, error)) {
+	_ = faker.AddProvider(key, f)
 }
 
 func SetRandomSize(size int) {

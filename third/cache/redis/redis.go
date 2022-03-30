@@ -5,7 +5,6 @@ package redis
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
-	"log"
 )
 
 // ConnPool is RDS struct
@@ -15,8 +14,8 @@ type ConnPool struct {
 
 type Options func(*redis.Options)
 
-// InitRedisPool func init RDS fd
-func InitRedisPool(options ...Options) *ConnPool {
+// InitRedis func init RDS fd
+func InitRedis(options ...Options) *ConnPool {
 	r := &ConnPool{}
 	option := &redis.Options{}
 	for _, o := range options {
@@ -28,14 +27,11 @@ func InitRedisPool(options ...Options) *ConnPool {
 }
 
 // Close pool
-func (p *ConnPool) Close() {
-	err := p.redisDB.Close()
-	if err != nil {
-		log.Println("[Redis Error]: ", err)
-	}
+func (p *ConnPool) Close() error {
+	return p.redisDB.Close()
 }
 
-// Do commands
+// Do command
 func (p *ConnPool) Do(args ...any) *redis.Cmd {
 	// close problem
 	//defer p.Close()

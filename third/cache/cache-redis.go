@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/dreamlu/gt/lib/cons"
-	redis2 "github.com/dreamlu/gt/third/cache/redis"
+	rs "github.com/dreamlu/gt/third/cache/redis"
 	"github.com/dreamlu/gt/third/conf"
 	"github.com/dreamlu/gt/third/log"
 	"github.com/go-redis/redis/v8"
@@ -17,7 +17,7 @@ import (
 // interface key, interface value
 type RedisManager struct {
 	// do nothing else
-	Rc *redis2.ConnPool
+	Rc *rs.ConnPool
 }
 
 type redisOptions struct {
@@ -37,10 +37,10 @@ type redisOptions struct {
 	MinIdleConns int `yaml:"minIdleConns"`
 }
 
-func (r *RedisManager) NewCache() error {
+func (r *RedisManager) Init() error {
 
 	// read config
-	r.Rc = redis2.InitRedisPool(
+	r.Rc = rs.InitRedis(
 		func(options *redis.Options) {
 			var opt redisOptions
 			conf.UnmarshalField(cons.ConfRedis, &opt)

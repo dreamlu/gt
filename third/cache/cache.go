@@ -27,8 +27,8 @@ func (c CacheModel) Unmarshal(v any) error {
 
 // Cache manager
 type Cache interface {
-	// NewCache init cache
-	NewCache() error
+	// Init init cache
+	Init() error
 	// operate method
 
 	// Set value
@@ -66,7 +66,7 @@ func NewCache(params ...any) (cache Cache) {
 	// default set
 	if len(params) == 0 {
 		cache = new(RedisManager)
-		err := cache.NewCache()
+		err := cache.Init()
 		if err != nil {
 			log.Error(err.Error())
 		}
@@ -74,7 +74,18 @@ func NewCache(params ...any) (cache Cache) {
 	}
 	// init
 	cache = params[0].(Cache)
-	err := cache.NewCache()
+	err := cache.Init()
+	if err != nil {
+		log.Error(err.Error())
+	}
+	return
+}
+
+// NewRedis new your custom db crud
+func NewRedis(redis *RedisManager) (cache Cache) {
+
+	cache = redis
+	err := cache.Init()
 	if err != nil {
 		log.Error(err.Error())
 	}

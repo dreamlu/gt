@@ -1,4 +1,4 @@
-package msg
+package mq
 
 import (
 	"encoding/json"
@@ -17,7 +17,7 @@ type Nsg struct {
 	bs       []byte
 }
 
-func (n *Nsg) NewProducer() Msg {
+func (n *Nsg) NewProducer() MQ {
 
 	config := nsq.NewConfig()
 	producer, err := nsq.NewProducer(conf.Get[string](cons.ConfNsqProducerAddr), config)
@@ -29,7 +29,7 @@ func (n *Nsg) NewProducer() Msg {
 	return n
 }
 
-func (n *Nsg) NewConsumer(topic, channel string) Msg {
+func (n *Nsg) NewConsumer(topic, channel string) MQ {
 
 	config := nsq.NewConfig()
 	consumer, err := nsq.NewConsumer(topic, channel, config)
