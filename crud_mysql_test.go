@@ -55,6 +55,7 @@ type Order struct {
 	CreateTime time.CTime  `gorm:"type:datetime;autoCreateTime" json:"create_time"`
 	StartTime  time.CSTime `json:"start_time"`
 	EndTime    time.CSTime `json:"end_time"`
+	DeleteTime time.CTime  `json:"delete_time" gt:"soft_del"`
 }
 
 // order detail
@@ -183,7 +184,7 @@ func TestGetDataBySearch(t *testing.T) {
 }
 
 // TestGetMoreDataBySearch
-func TestGetMoreDataBySearch(t *testing.T) {
+func TestFindMore(t *testing.T) {
 
 	type Key struct {
 		UserName    string `json:"user_name"`
@@ -620,4 +621,18 @@ func TestGetV2(t *testing.T) {
 	t.Log(data)
 	t.Log(cd.Pager())
 	t.Log(cd.Error())
+}
+
+func TestSofeDel(t *testing.T) {
+	var data []*Order
+	cd := crud.Params(
+		Model(Order{}),
+		Data(&data),
+	)
+	cd.Count().Find(cmap.Set("id", "1,3"))
+	t.Log(data)
+	t.Log(cd.Pager())
+	t.Log(cd.Error())
+
+	cd.Delete(1)
 }

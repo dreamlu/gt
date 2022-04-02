@@ -5,9 +5,8 @@ package gt
 import (
 	"errors"
 	"fmt"
-	"github.com/dreamlu/gt/lib/hump"
 	"github.com/dreamlu/gt/lib/result"
-	"github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/lib/tag"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/src/valid"
 	"runtime"
@@ -90,11 +89,13 @@ func (c *Mysql) FindM(params cmap.CMap) Crud {
 	return clone
 }
 
-func (c *Mysql) Delete(id any) Crud {
+func (c *Mysql) Delete(conds ...any) Crud {
 	c.common()
 
 	clone := c.clone()
-	clone.dbTool.Delete(clone.param.Table, id)
+	clone.dbTool.Delete(&GT{
+		Params: clone.param,
+	}, conds)
 	return clone
 }
 
@@ -195,7 +196,7 @@ func (c *Mysql) Scan() Crud {
 
 func (c *Mysql) Exec() Crud {
 	c.common()
-	c.dbTool.ExecSQL(c.selectSQL, c.args...)
+	c.dbTool.exec(c.selectSQL, c.args...)
 	return c
 }
 
@@ -264,7 +265,7 @@ func (c *Mysql) clone() (dbCrud *Mysql) {
 	// default table
 	if c.param.Table == "" &&
 		c.param.Model != nil {
-		c.param.Table = hump.HumpToLine(reflect.Name(c.param.Model))
+		c.param.Table = tag.ModelTable(c.param.Model)
 	}
 
 	dbCrud = &Mysql{

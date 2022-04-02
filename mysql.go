@@ -14,7 +14,6 @@ import (
 	"gorm.io/gorm"
 	logger2 "gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"strings"
 	"sync"
 	"time"
 )
@@ -167,27 +166,6 @@ func (db *DB) clone() *DB {
 // ==========================common crud==============================================
 // ===================================================================================
 
-// get
-////////////////
-
-// get single data
-func (db *DB) getBySQL(data any, sql string, args ...any) {
-
-	db.res = db.DB.Raw(sql, args...).Scan(data)
-}
-
-func (db *DB) CountSQL(gt *GT) *DB {
-
-	// default
-	gt.order = fmt.Sprintf(cons.OrderDesc, gt.Table)
-
-	gt.sqlNt = fmt.Sprintf(cons.SelectCountFrom, gt.Table)
-	gt.whereCount()
-
-	return db
-}
-
-// Find no search
 func (db *DB) Find(gt *GT) (pager result.Pager) {
 
 	// isMock
@@ -196,7 +174,7 @@ func (db *DB) Find(gt *GT) (pager result.Pager) {
 	}
 	gt.GetSQL()
 	if gt.isCount {
-		db.CountSQL(gt)
+		db.countSQL(gt)
 		pager = db.count(gt)
 		if pager.TotalNum == 0 {
 			return
@@ -204,35 +182,6 @@ func (db *DB) Find(gt *GT) (pager result.Pager) {
 	}
 	db.get(gt)
 	return
-}
-
-func (db *DB) count(gt *GT) (pager result.Pager) {
-
-	// if clientPage or everyPage < 0
-	// return all data
-	if gt.clientPage == 0 {
-		gt.clientPage = cons.ClientPage
-	}
-	if gt.everyPage == 0 {
-		gt.everyPage = cons.EveryPage
-	}
-	db.res = db.DB.Raw(gt.sqlNt, gt.Args...).Scan(&pager)
-	if db.res.Error != nil || pager.TotalNum == 0 {
-		return
-	}
-	pager.ClientPage = gt.clientPage
-	pager.EveryPage = gt.everyPage
-	// sqlNt += limit
-	if gt.clientPage > 0 && gt.everyPage > 0 {
-		gt.sql += fmt.Sprintf("limit %d, %d", (gt.clientPage-1)*gt.everyPage, gt.everyPage)
-	}
-	return
-}
-
-// get single data
-func (db *DB) get(gt *GT) {
-
-	db.res = db.DB.Raw(gt.sql, gt.Args...).Scan(gt.Data)
 }
 
 // FindM no search
@@ -273,28 +222,58 @@ func (db *DB) FindS(gt *GT) (pager result.Pager) {
 	return
 }
 
-// exec common
-////////////////////
+func (db *DB) countSQL(gt *GT) *DB {
 
-func (db *DB) ExecSQL(sql string, args ...any) {
+	// default
+	gt.order = fmt.Sprintf(cons.OrderDesc, gt.tableT)
+
+	gt.sqlNt = fmt.Sprintf(cons.SelectCountFrom, gt.tableT)
+	gt.whereCount()
+
+	return db
+}
+
+func (db *DB) count(gt *GT) (pager result.Pager) {
+
+	// if clientPage or everyPage < 0
+	// return all data
+	if gt.clientPage == 0 {
+		gt.clientPage = cons.ClientPage
+	}
+	if gt.everyPage == 0 {
+		gt.everyPage = cons.EveryPage
+	}
+	db.res = db.DB.Raw(gt.sqlNt, gt.Args...).Scan(&pager)
+	if db.res.Error != nil || pager.TotalNum == 0 {
+		return
+	}
+	pager.ClientPage = gt.clientPage
+	pager.EveryPage = gt.everyPage
+	// sqlNt += limit
+	if gt.clientPage > 0 && gt.everyPage > 0 {
+		gt.sql += fmt.Sprintf("limit %d, %d", (gt.clientPage-1)*gt.everyPage, gt.everyPage)
+	}
+	return
+}
+
+// get data
+func (db *DB) get(gt *GT) {
+
+	db.res = db.DB.Raw(gt.sql, gt.Args...).Scan(gt.Data)
+}
+
+func (db *DB) exec(sql string, args ...any) {
 	db.res = db.Exec(sql, args...)
 }
 
-// delete
-///////////////////
-
-func (db *DB) Delete(table string, id any) {
-	switch id.(type) {
-	case string:
-		if strings.Contains(id.(string), ",") {
-			id = strings.Split(id.(string), ",")
-		}
+func (db *DB) Delete(gt *GT, conds ...any) {
+	gt.parse().common()
+	if gt.sqlS != "" {
+		db.exec(fmt.Sprintf("update %s set %s = now() where id in (?)", gt.tableT, gt.parses.GetS(gt.Table)), conds...)
+		return
 	}
-	db.ExecSQL(fmt.Sprintf("delete from %s where id in (?)", ParseTable(table)), id)
+	db.res = db.DB.Delete(gt.Data, conds)
 }
-
-// update
-///////////////////
 
 func (db *DB) Update(gt *GT) {
 	if gt.Select != "" {
@@ -303,9 +282,6 @@ func (db *DB) Update(gt *GT) {
 		db.res = db.Table(gt.Table).Model(gt.Data).Updates(gt.Data)
 	}
 }
-
-// create
-////////////////////
 
 // Create single/array
 func (db *DB) Create(table string, data any) {
@@ -360,8 +336,13 @@ func (db *DB) InitColumns(param *Params) {
 			continue
 		}
 		var columns []string
+		param.Data = &columns
 		tb := TableOnly(v)
-		db.getBySQL(&columns, "SELECT COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE TABLE_NAME = ? and TABLE_SCHEMA = ?", tb, name)
+		db.get(&GT{
+			Params: &Params{Data: &columns},
+			sql:    "SELECT COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE TABLE_NAME = ? and TABLE_SCHEMA = ?",
+			Args:   []any{tb, name},
+		})
 		TableCols[tb] = columns
 	}
 }

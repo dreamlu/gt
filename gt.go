@@ -23,6 +23,7 @@ type GT struct {
 	CMaps cmap.CMap // params
 
 	// select sql
+	tableT     string // `table`
 	Select     string // select sql
 	From       string // only once
 	Group      string // the last group
@@ -33,6 +34,7 @@ type GT struct {
 	everyPage  int64
 	order      string // order by
 	sqlW       string // where sql
+	sqlS       string // soft_del sql
 
 	// mock data
 	isMock bool
@@ -44,7 +46,7 @@ type GT struct {
 	isCount bool
 }
 
-func (gt *GT) parse() {
+func (gt *GT) parse() *GT {
 	var (
 		typ = mr.TrueTypeof(gt.Model)
 		key = mr.Path(typ, cons.GT)
@@ -53,12 +55,27 @@ func (gt *GT) parse() {
 	if v != "" {
 		gt.parses = tag.Parse{}
 		gt.parses.Marshal(v)
-		return
+		return gt
 	}
 	gt.parses = tag.ParseGt(gt.Model)
 	v = gt.parses.String()
 	buffer.Set(key, v)
-	return
+	return gt
+}
+
+func (gt *GT) common() {
+	var (
+		tables = []string{gt.Table}
+	)
+
+	tables = append(tables, gt.InnerTable...)
+	tables = append(tables, gt.LeftTable...)
+	for _, v := range tables {
+		gt.sqlS += fmt.Sprintf(cons.SoftDel, v, gt.parses.GetS(v))
+	}
+	gt.sqlS = gt.sqlS[:len(gt.sqlS)-5]
+
+	gt.tableT = ParseTable(gt.Table)
 }
 
 //=======================================sql script==========================================
@@ -70,7 +87,7 @@ func (gt *GT) parse() {
 // return: select sql
 // table1 as main table, include other tables_id(foreign key)
 func (gt *GT) GetMoreSQL() {
-	gt.parse()
+	gt.parse().common()
 
 	var (
 		tables = gt.moreSql()
@@ -117,15 +134,13 @@ func (gt *GT) GetMoreSQL() {
 
 // GetSQL get single sql
 func (gt *GT) GetSQL() {
-	gt.parse()
+	gt.parse().common()
 
 	var (
 		bufW bytes.Buffer // where sql, sqlNt bytes sql
 	)
-	gt.Table = ParseTable(gt.Table)
-
 	// select* replace
-	gt.sql = fmt.Sprintf(cons.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, gt.Table)
+	gt.sql = fmt.Sprintf(cons.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, gt.tableT)
 
 	gt.whereParams()
 	for k, v := range gt.CMaps {
@@ -133,7 +148,7 @@ func (gt *GT) GetSQL() {
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
 			}
-			sqlKey, argsKey := GetKeySQL(v[0], gt.KeyModel, gt.Table)
+			sqlKey, argsKey := GetKeySQL(v[0], gt.KeyModel, gt.tableT)
 			bufW.WriteString(sqlKey)
 			gt.Args = append(gt.Args, argsKey...)
 			continue
@@ -354,9 +369,13 @@ func (gt *GT) whereSQL(bufW *bytes.Buffer) {
 			gt.Args = append(gt.Args, gt.wArgs...)
 			gt.sqlW += fmt.Sprintf(cons.AndS, gt.WhereSQL)
 		}
+		gt.sqlW += fmt.Sprintf(cons.AndS, gt.sqlS)
 	} else if gt.WhereSQL != "" {
 		gt.Args = append(gt.Args, gt.wArgs...)
 		gt.sqlW += fmt.Sprintf(cons.WhereS, gt.WhereSQL)
+		gt.sqlW += fmt.Sprintf(cons.AndS, gt.sqlS)
+	} else {
+		gt.sqlW += fmt.Sprintf(cons.WhereS, gt.sqlS)
 	}
 }
 
@@ -383,7 +402,7 @@ func (gt *GT) where(bufW *bytes.Buffer, k, v string) {
 		bufW.WriteString(cons.ParamInAnd)
 		gt.Args = append(gt.Args, strings.Split(v, cons.GtComma)) // args
 	} else {
-		if p := gt.parses[k]; p != nil && p.Get(cons.GtLike) == cons.GtExist {
+		if p := gt.parses.Get(k); p != nil && p.Get(cons.GtLike) == cons.GtExist {
 			bufW.WriteString(cons.ParamLike)
 			v = "%" + v + "%"
 		} else {

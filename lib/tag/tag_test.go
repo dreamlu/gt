@@ -6,14 +6,20 @@ import (
 	"testing"
 )
 
+type User struct {
+	Name string `json:"name" gt:"field:user.name;like;soft_del"`
+}
+
+type UserD struct {
+	User
+	Other string `json:"other" gt:"ignore;soft_del"`
+}
+
+func (User) TableName() string {
+	return "users"
+}
+
 func TestParseGt(t *testing.T) {
-	type User struct {
-		Name string `json:"name" gt:"field:user.name;like"`
-	}
-	type UserD struct {
-		User
-		Other string `json:"other" gt:"ignore"`
-	}
 	// test tag
 	t.Log(ParseGt(UserD{}))
 }

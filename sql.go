@@ -160,7 +160,7 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 
 	for k := 0; k < len(ils); k++ {
 		writeField(bufNt, leftTable, ils[k], " = ")
-		writeField(bufNt, rightTable, irs[k], " and ")
+		writeField(bufNt, rightTable, irs[k], cons.And)
 	}
 
 	for _, v := range ilts {
@@ -168,7 +168,7 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 		if len(is) > 1 {
 			writeField(bufNt, leftTable, is[0], " = ")
 			bufNt.WriteString(is[1])
-			bufNt.WriteString(" and ")
+			bufNt.WriteString(cons.And)
 		}
 	}
 	for _, v := range irts {
@@ -176,7 +176,7 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 		if len(is) > 1 {
 			writeField(bufNt, rightTable, is[0], " = ")
 			bufNt.WriteString(is[1])
-			bufNt.WriteString(" and ")
+			bufNt.WriteString(cons.And)
 		}
 	}
 	nBuf := bytes.NewBuffer(bufNt.Bytes()[:bufNt.Len()-4])

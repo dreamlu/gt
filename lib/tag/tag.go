@@ -3,6 +3,8 @@ package tag
 import (
 	"github.com/dreamlu/gt/lib/cons"
 	"github.com/dreamlu/gt/lib/hump"
+	mr "github.com/dreamlu/gt/src/reflect"
+	"gorm.io/gorm/schema"
 	"reflect"
 	"strings"
 )
@@ -102,4 +104,11 @@ func GetPartTags(model any) (arr []string) {
 		}
 	}
 	return
+}
+
+func ModelTable(model any) string {
+	if t, ok := model.(schema.Tabler); ok {
+		return t.TableName()
+	}
+	return hump.HumpToLine(mr.Name(model))
 }

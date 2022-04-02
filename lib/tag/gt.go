@@ -10,7 +10,10 @@ import (
 	"strings"
 )
 
-type Parse map[string]amap.AMap
+type Parse struct {
+	Am map[string]amap.AMap // field ==> gt tag
+	Sd amap.AMap            // soft delete: table ==> field
+}
 
 func (p *Parse) Marshal(v string) {
 	err := json.Unmarshal([]byte(v), p)
@@ -26,13 +29,24 @@ func (p *Parse) String() string {
 	return string(b)
 }
 
+func (p *Parse) Get(key string) amap.AMap {
+	return p.Am[key]
+}
+
+func (p *Parse) GetS(key string) string {
+	return p.Sd.Get(key)
+}
+
 func ParseGt(model any) (gt Parse) {
-	gt = Parse{}
-	parseGt(mr.TrueTypeof(model), gt)
+	gt = Parse{
+		Am: make(map[string]amap.AMap),
+		Sd: amap.NewAMap(),
+	}
+	parseGt(mr.TrueTypeof(model), mr.TrueValueOf(model), gt)
 	return
 }
 
-func parseGt(typ reflect.Type, gt Parse) {
+func parseGt(typ reflect.Type, model reflect.Value, gt Parse) {
 
 	if !mr.IsStruct(typ) {
 		return
@@ -40,11 +54,14 @@ func parseGt(typ reflect.Type, gt Parse) {
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
 		if field.Anonymous {
-			parseGt(typ.Field(i).Type, gt)
+			parseGt(typ.Field(i).Type, mr.TrueValue(model.Field(i)), gt)
 			continue
 		}
 		name, _, _, _ := ParseTag(field)
-		gt[name] = ParseGtField(typ.Field(i))
+		gt.Am[name] = ParseGtField(typ.Field(i))
+		if gt.Am[name].Get(cons.GtSoftDel) == cons.GtExist {
+			gt.Sd.Set(ModelTable(model.Interface()), name)
+		}
 	}
 
 	return

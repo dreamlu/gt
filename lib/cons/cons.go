@@ -30,6 +30,7 @@ const (
 	GtGorm       = "gorm"
 	GtGormColumn = "column"
 	GtExist      = "exist"
+	GtSoftDel    = "soft_del"
 )
 
 // default page
@@ -45,7 +46,8 @@ const (
 	AndS                = "and %s "
 	OrderDesc           = "%s.id desc"
 	OrderS              = "order by %s "
-	ParamAnd            = " = ? and "
+	And                 = " and "
+	ParamAnd            = " = ?" + And
 	ParamLike           = " like binary ? and "
 	ParamInAnd          = " in (?) and "
 	SelectFrom          = "select %s from %s "
@@ -55,4 +57,5 @@ const (
 	SelectCount         = "select " + Count + " "
 	SelectCountDistinct = "select " + CountDistinct + " "
 	SelectCountFrom     = SelectCount + "from %s "
+	SoftDel             = "%s.%s is not null and "
 )

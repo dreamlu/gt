@@ -8,6 +8,7 @@ package gt
 
 import (
 	"github.com/dreamlu/gt/lib"
+	"github.com/dreamlu/gt/lib/cons"
 	"github.com/dreamlu/gt/lib/result"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/third/log"
@@ -35,7 +36,7 @@ type Crud interface {
 	FindM(cmap.CMap) Crud // find data more table no search
 
 	// Delete delete by id/ids/slice
-	Delete(any) Crud // delete
+	Delete(...any) Crud // delete
 
 	// Update crud and search id
 	// json data
@@ -182,7 +183,7 @@ func (p Param) WhereSQL(WhereSQL string, args ...any) Param {
 			return
 		}
 		if params.WhereSQL != "" {
-			params.WhereSQL += " and "
+			params.WhereSQL += cons.And
 		}
 		params.wArgs = append(params.wArgs, args...)
 		params.WhereSQL += WhereSQL
