@@ -7,8 +7,6 @@ package cons
 const (
 	Dev  = "dev"
 	Prod = "prod"
-	// ConfPath default config path
-	ConfPath = "conf/app.yaml"
 
 	GtSubSQL              = "sub_sql"
 	GtClientPage          = "clientPage"
