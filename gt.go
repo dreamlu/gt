@@ -34,7 +34,7 @@ type GT struct {
 	everyPage  int64
 	order      string // order by
 	sqlW       string // where sql
-	sqlS       string // soft_del sql
+	sqlSoft    string // soft_del sql
 
 	// mock data
 	isMock bool
@@ -64,16 +64,12 @@ func (gt *GT) parse() *GT {
 }
 
 func (gt *GT) common() {
-	var (
-		tables = []string{gt.Table}
-	)
-
-	tables = append(tables, gt.InnerTable...)
-	tables = append(tables, gt.LeftTable...)
-	for _, v := range tables {
-		gt.sqlS += fmt.Sprintf(cons.SoftDel, v, gt.parses.GetS(v))
+	for table, soffDelField := range gt.parses.Sd {
+		gt.sqlSoft += fmt.Sprintf(cons.SoftDel, table, soffDelField)
 	}
-	gt.sqlS = gt.sqlS[:len(gt.sqlS)-5]
+	if gt.sqlSoft != "" {
+		gt.sqlSoft = gt.sqlSoft[:len(gt.sqlSoft)-5]
+	}
 
 	gt.tableT = ParseTable(gt.Table)
 }
@@ -363,19 +359,22 @@ func (gt *GT) whereSQLNt(bufW *bytes.Buffer) {
 }
 
 func (gt *GT) whereSQL(bufW *bytes.Buffer) {
+	var softConnect = cons.WhereS
 	if bufW.Len() != 0 {
 		gt.sqlW += fmt.Sprintf(cons.WhereS, bufW.Bytes()[:bufW.Len()-5])
 		if gt.WhereSQL != "" {
 			gt.Args = append(gt.Args, gt.wArgs...)
 			gt.sqlW += fmt.Sprintf(cons.AndS, gt.WhereSQL)
 		}
-		gt.sqlW += fmt.Sprintf(cons.AndS, gt.sqlS)
+		softConnect = cons.AndS
 	} else if gt.WhereSQL != "" {
 		gt.Args = append(gt.Args, gt.wArgs...)
 		gt.sqlW += fmt.Sprintf(cons.WhereS, gt.WhereSQL)
-		gt.sqlW += fmt.Sprintf(cons.AndS, gt.sqlS)
-	} else {
-		gt.sqlW += fmt.Sprintf(cons.WhereS, gt.sqlS)
+		softConnect = cons.AndS
+	}
+
+	if gt.sqlSoft != "" {
+		gt.sqlW += fmt.Sprintf(softConnect, gt.sqlSoft)
 	}
 }
 

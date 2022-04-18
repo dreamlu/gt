@@ -37,3 +37,9 @@ func TestPath(t *testing.T) {
 	typ := TrueTypeof(Order{})
 	t.Log(Path(typ, "A", "B"))
 }
+
+func TestTrueValueOf(t *testing.T) {
+	t.Log(TrueValueOf(&Order{}))
+	t.Log(TrueValueOf(Order{}))
+	t.Log(TrueValueOf([]Order{}))
+}

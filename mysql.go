@@ -268,7 +268,7 @@ func (db *DB) exec(sql string, args ...any) {
 
 func (db *DB) Delete(gt *GT, conds ...any) {
 	gt.parse().common()
-	if gt.sqlS != "" {
+	if gt.sqlSoft != "" {
 		db.exec(fmt.Sprintf("update %s set %s = now() where id in (?)", gt.tableT, gt.parses.GetS(gt.Table)), conds...)
 		return
 	}

@@ -25,7 +25,7 @@ func FieldName(data any, filedName string) (any, error) {
 // ToSlice arr must array data
 // array struct data to []interface
 func ToSlice(arr any) []any {
-	v := reflect.ValueOf(arr)
+	v := TrueValueOf(arr)
 	if v.Kind() != reflect.Slice {
 		return nil
 	}
