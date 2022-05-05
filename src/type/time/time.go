@@ -78,6 +78,10 @@ func (t CTime) IsZero() bool {
 	return time.Time(t).IsZero()
 }
 
+func (t CTime) Time() time.Time {
+	return time.Time(t)
+}
+
 // CNTime 时间格式化2006-01-02 15:04:05.000
 type CNTime time.Time
 
@@ -135,6 +139,10 @@ func (t CNTime) String() string {
 
 func (t CNTime) IsZero() bool {
 	return time.Time(t).IsZero()
+}
+
+func (t CNTime) Time() time.Time {
+	return time.Time(t)
 }
 
 // CDate 时间格式化2006-01-02
@@ -196,6 +204,10 @@ func (t CDate) IsZero() bool {
 	return time.Time(t).IsZero()
 }
 
+func (t CDate) Time() time.Time {
+	return time.Time(t)
+}
+
 // CSTime 时间格式化15:04:05
 type CSTime time.Time
 
@@ -249,4 +261,8 @@ func (t CSTime) String() string {
 
 func (t CSTime) IsZero() bool {
 	return time.Time(t).IsZero()
+}
+
+func (t CSTime) Time() time.Time {
+	return time.Time(t)
 }

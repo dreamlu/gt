@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// string to CTime
+// ParseCTime string to CTime
 func ParseCTime(value string) CTime {
 	ti, err := time.ParseInLocation(Layout, value, time.Local)
 	if err != nil {
