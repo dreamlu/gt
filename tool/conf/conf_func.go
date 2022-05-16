@@ -52,11 +52,15 @@ func NewConfig(params ...string) *Config {
 	return c
 }
 
-// dir: default is conf/
-// change dir to abs /xxx/conf/
-// new abs conf dir
-func newConf(dir string) string {
-	return ProjectPath() + dir
+// rPath: relative path
+// aPath: absolute path
+// return config path
+func newConf(rPath string) string {
+	aPath := ProjectPath() + rPath
+	if gos.Exists(aPath) {
+		return aPath
+	}
+	return rPath
 }
 
 // find yaml dev mode
