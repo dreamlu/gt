@@ -1,0 +1,16 @@
+app:
+  # dev mode
+  devMode: dev
+  port: 9000
+  # database
+  # mysql
+  db:
+    maxIdleConn: 20
+    maxOpenConn: 100
+    # database name
+    name: gt
+  # mongodb
+  mongo:
+    name: gt
+  # upload filepath
+  filepath: static/file/

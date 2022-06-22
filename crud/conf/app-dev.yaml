@@ -1,0 +1,35 @@
+app:
+  # database
+  # mysql
+  db:
+    log: true
+    host: tcp(127.0.0.1:3306)
+    user: root
+    password:
+  # mongodb
+  mongo:
+    host: 127.0.0.1:27017
+    #user: root
+    #password: lucheng
+  # redis
+  # If not, leave it blank
+  redis:
+    db: 0
+    addr: 127.0.0.1:6379
+    poolSize: 0
+    minIdleConns: 0
+    #password:
+  log:
+#    const (
+#    Debug = "debug" // default, print all >= 'debug' level to file
+#    Info  = "info"
+#    Warn  = "warn"
+#    Error = "error"
+#    )
+    level: info
+  nsq:
+    producer_addr: 127.0.0.1:4150
+    consumer_addr: 127.0.0.1:4150
+  daemon:
+    task_num: 10 # task exec num
+  # file:

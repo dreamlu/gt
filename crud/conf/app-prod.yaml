@@ -1,0 +1,10 @@
+app:
+  # prod config
+  # see app-dev.yaml
+  # database
+  db:
+    # default false
+    #log: false
+    host: tcp(mysql:3306)
+    password: docker
+    user: root

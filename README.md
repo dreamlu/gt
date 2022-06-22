@@ -1,7 +1,6 @@
 ### [gt](https://github.com/dreamlu/gt)
 
-API rapid development frame, model generation, general addition, deletion, modification and query, support for
-multi-table connection crud
+everything is a tool 一切皆工具
 
 ### Are you developing crud code slowly?
 

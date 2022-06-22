@@ -1,6 +1,6 @@
 // package gt
 
-package gt
+package crud
 
 import (
 	sql2 "database/sql"

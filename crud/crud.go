@@ -4,7 +4,7 @@
 	gt is a fast go tool, help you dev project
 */
 
-package gt
+package crud
 
 import (
 	"github.com/dreamlu/gt/lib"
@@ -17,7 +17,7 @@ import (
 )
 
 func init() {
-	log.Info("[welcome to gt (´∀｀)]")
+	log.Info("[welcome to crud (´∀｀)]")
 }
 
 // Crud interface
