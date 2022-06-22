@@ -1,7 +1,7 @@
 package tag
 
 import (
-	"github.com/dreamlu/gt/lib/cons"
+	"github.com/dreamlu/gt/crud/dep/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"reflect"
 	"strings"

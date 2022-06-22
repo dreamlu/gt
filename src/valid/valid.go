@@ -2,8 +2,8 @@ package valid
 
 import (
 	"encoding/json"
-	"github.com/dreamlu/gt/lib/cons"
-	"github.com/dreamlu/gt/lib/tag"
+	"github.com/dreamlu/gt/crud/dep/cons"
+	tag2 "github.com/dreamlu/gt/crud/dep/tag"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/amap"
 	"github.com/dreamlu/gt/src/type/cmap"
@@ -64,12 +64,12 @@ func (v *ValidRule) parse(value any) {
 		// new rule
 		rule := Rule{}
 		// key
-		rule.Key = tag.ParseJsonFieldTag(typ.Field(i))
+		rule.Key = tag2.ParseJsonFieldTag(typ.Field(i))
 		// rule
 
 		field := typ.Field(i)
-		rule.Valid = tag.ParseGtValidV(field)
-		rule.Trans = tag.ParseGtTransV(field)
+		rule.Valid = tag2.ParseGtValidV(field)
+		rule.Trans = tag2.ParseGtTransV(field)
 		if rule.Valid == "" {
 			continue
 		}
@@ -170,7 +170,7 @@ func (v *Validator) Check() (errs ValidError) {
 			)
 
 			for i := 0; i < typ.NumField(); i++ {
-				if tag.ParseJsonFieldTag(typ.Field(i)) == k {
+				if tag2.ParseJsonFieldTag(typ.Field(i)) == k {
 					val, _ = mr.FieldName(d, typ.Field(i).Name)
 					break
 				}

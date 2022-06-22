@@ -5,8 +5,8 @@ package crud
 import (
 	"bytes"
 	"fmt"
-	"github.com/dreamlu/gt/lib/cons"
-	"github.com/dreamlu/gt/lib/result"
+	cons2 "github.com/dreamlu/gt/crud/dep/cons"
+	"github.com/dreamlu/gt/crud/dep/result"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/third/conf"
 	"github.com/dreamlu/gt/third/log"
@@ -43,7 +43,7 @@ type dba struct {
 func (db *DB) NewDB() {
 
 	dbS := &dba{}
-	conf.UnmarshalField(cons.ConfDB, dbS)
+	conf.UnmarshalField(cons2.ConfDB, dbS)
 	db.log = dbS.Log
 	var (
 		sql = fmt.Sprintf("%s:%s@%s/?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host)
@@ -225,9 +225,9 @@ func (db *DB) FindS(gt *GT) (pager result.Pager) {
 func (db *DB) countSQL(gt *GT) *DB {
 
 	// default
-	gt.order = fmt.Sprintf(cons.OrderDesc, gt.tableT)
+	gt.order = fmt.Sprintf(cons2.OrderDesc, gt.tableT)
 
-	gt.sqlNt = fmt.Sprintf(cons.SelectCountFrom, gt.tableT)
+	gt.sqlNt = fmt.Sprintf(cons2.SelectCountFrom, gt.tableT)
 	gt.whereCount()
 
 	return db
@@ -238,10 +238,10 @@ func (db *DB) count(gt *GT) (pager result.Pager) {
 	// if clientPage or everyPage < 0
 	// return all data
 	if gt.clientPage == 0 {
-		gt.clientPage = cons.ClientPage
+		gt.clientPage = cons2.ClientPage
 	}
 	if gt.everyPage == 0 {
-		gt.everyPage = cons.EveryPage
+		gt.everyPage = cons2.EveryPage
 	}
 	db.res = db.DB.Raw(gt.sqlNt, gt.Args...).Scan(&pager)
 	if db.res.Error != nil || pager.TotalNum == 0 {
@@ -321,7 +321,7 @@ func (db *DB) CreateMore(table string, model any, data any) {
 func (db *DB) InitColumns(param *Params) {
 
 	var (
-		name   = conf.Get[string](cons.ConfDBName)
+		name   = conf.Get[string](cons2.ConfDBName)
 		tables = []string{param.Table}
 	)
 

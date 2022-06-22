@@ -2,7 +2,7 @@ package tag
 
 import (
 	"encoding/json"
-	"github.com/dreamlu/gt/lib/cons"
+	"github.com/dreamlu/gt/crud/dep/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/amap"
 	"github.com/dreamlu/gt/third/log"

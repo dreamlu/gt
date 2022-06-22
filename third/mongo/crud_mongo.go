@@ -2,11 +2,11 @@ package mongo
 
 import (
 	"context"
-	"github.com/dreamlu/gt/lib/hump"
-	"github.com/dreamlu/gt/lib/result"
+	"github.com/dreamlu/gt/crud/dep/result"
 	"github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
+	"github.com/dreamlu/gt/src/util"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -162,7 +162,7 @@ func (m *Mongo) clone() (mongo *Mongo) {
 	// default table
 	if m.param.Table == "" &&
 		m.param.Model != nil {
-		m.param.Table = hump.HumpToLine(reflect.Name(m.param.Model))
+		m.param.Table = util.HumpToLine(reflect.Name(m.param.Model))
 	}
 
 	mongo = &Mongo{

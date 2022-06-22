@@ -1,4 +1,4 @@
-package hump
+package util
 
 import (
 	"bytes"

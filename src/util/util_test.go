@@ -1,4 +1,4 @@
-package lib
+package util
 
 import (
 	"testing"
@@ -17,4 +17,11 @@ func TestRemoveDuplicate(t *testing.T) {
 	ss := []string{"a", "b", "c", "a", "b"}
 	t.Log(RemoveDuplicate(ss))
 	t.Log(Remove(ss, "b"))
+}
+
+func TestHumpToLine(t *testing.T) {
+	t.Log(HumpToLine("ABTest"))
+	t.Log(LineToHump("a_b_test"))
+	t.Log(HumpToLine("ID"))
+	t.Log(HumpToLine("AbC"))
 }

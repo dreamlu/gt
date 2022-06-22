@@ -1,4 +1,4 @@
-package lib
+package util
 
 func RemoveDuplicate[T comparable](s []T) []T {
 	var result []T

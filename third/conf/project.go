@@ -2,7 +2,7 @@ package conf
 
 import (
 	"bytes"
-	"github.com/dreamlu/gt/lib/gos"
+	"github.com/dreamlu/gt/src/gos"
 	"os"
 	"os/exec"
 	"runtime"

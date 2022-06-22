@@ -3,8 +3,8 @@ package file
 import (
 	"bytes"
 	"errors"
-	"github.com/dreamlu/gt/lib/cons"
-	"github.com/dreamlu/gt/lib/gos"
+	"github.com/dreamlu/gt/crud/dep/cons"
+	"github.com/dreamlu/gt/src/gos"
 	"github.com/dreamlu/gt/third/conf"
 	"github.com/dreamlu/gt/third/snowflake"
 	"github.com/dreamlu/resize"

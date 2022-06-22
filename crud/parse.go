@@ -3,9 +3,9 @@ package crud
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dreamlu/gt/lib/hump"
-	. "github.com/dreamlu/gt/lib/tag"
+	. "github.com/dreamlu/gt/crud/dep/tag"
 	mr "github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/src/util"
 	"github.com/dreamlu/gt/third/log"
 	"reflect"
 	"strings"
@@ -49,7 +49,7 @@ func parse(model any, tables ...string) (r *Parses) {
 		r.Marshal(v)
 		return
 	}
-	r.Table = hump.HumpToLine(typ.Name())
+	r.Table = util.HumpToLine(typ.Name())
 	if tables != nil {
 		r.Table = tables[0]
 	}

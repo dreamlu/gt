@@ -7,10 +7,10 @@
 package crud
 
 import (
-	"github.com/dreamlu/gt/lib"
-	"github.com/dreamlu/gt/lib/cons"
-	"github.com/dreamlu/gt/lib/result"
+	"github.com/dreamlu/gt/crud/dep/cons"
+	"github.com/dreamlu/gt/crud/dep/result"
 	"github.com/dreamlu/gt/src/type/cmap"
+	"github.com/dreamlu/gt/src/util"
 	"github.com/dreamlu/gt/third/log"
 	"gorm.io/gorm"
 	"strings"
@@ -155,7 +155,7 @@ func Data(Data any) Param {
 func SubSQL(SubSQL ...string) Param {
 
 	return func(params *Params) {
-		SubSQL = lib.Remove(SubSQL, "")
+		SubSQL = util.Remove(SubSQL, "")
 		if len(SubSQL) == 0 {
 			return
 		}

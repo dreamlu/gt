@@ -5,7 +5,7 @@ package cache
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/dreamlu/gt/lib/cons"
+	"github.com/dreamlu/gt/crud/dep/cons"
 	rs "github.com/dreamlu/gt/third/cache/redis"
 	"github.com/dreamlu/gt/third/conf"
 	"github.com/dreamlu/gt/third/log"

@@ -5,8 +5,8 @@ package crud
 import (
 	"errors"
 	"fmt"
-	"github.com/dreamlu/gt/lib/result"
-	"github.com/dreamlu/gt/lib/tag"
+	"github.com/dreamlu/gt/crud/dep/result"
+	"github.com/dreamlu/gt/crud/dep/tag"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/src/valid"
 	"runtime"

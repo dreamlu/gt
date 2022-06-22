@@ -3,7 +3,7 @@ package crud
 import (
 	"bytes"
 	"fmt"
-	"github.com/dreamlu/gt/lib/cons"
+	cons2 "github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/src/type/amap"
 	"strings"
 )
@@ -20,7 +20,7 @@ var buffer = amap.NewAMap()
 func GetMoreColSQL(model any, tables ...string) (sql string) {
 	var (
 		p   = parse(model, tables...)
-		key = fmt.Sprintf("%s%s_more", cons.SQL_, p.Key)
+		key = fmt.Sprintf("%s%s_more", cons2.SQL_, p.Key)
 	)
 	sql = buffer.Get(key)
 	if sql != "" {
@@ -41,13 +41,13 @@ func getTagMoreSQL(p *Parses, buf *bytes.Buffer) {
 		if tb == "" {
 			tb = p.Table
 		}
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		buf.WriteString(tb)
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		buf.WriteByte('.')
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		buf.WriteString(p.TagTag[tag])
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		if p.OTags[tag] != "" {
 			buf.WriteString(" as ")
 			buf.WriteString(p.OTags[tag])
@@ -60,7 +60,7 @@ func getTagMoreSQL(p *Parses, buf *bytes.Buffer) {
 func GetColSQL(model any) (sql string) {
 	var (
 		r   = parse(model)
-		key = fmt.Sprintf("%s%s", cons.SQL_, r.Key)
+		key = fmt.Sprintf("%s%s", cons2.SQL_, r.Key)
 	)
 	sql = buffer.Get(key)
 	if sql != "" {
@@ -78,7 +78,7 @@ func GetColSQL(model any) (sql string) {
 func GetColSQLAlias(model any, alias string) (sql string) {
 	var (
 		r   = parse(model)
-		key = fmt.Sprintf("%s%s_%s", cons.SQL_, r.Key, alias)
+		key = fmt.Sprintf("%s%s_%s", cons2.SQL_, r.Key, alias)
 	)
 	sql = buffer.Get(key)
 	if sql != "" {
@@ -98,9 +98,9 @@ func getTagSQL(p *Parses, buf *bytes.Buffer, alias string) {
 			buf.WriteString(alias)
 			buf.WriteByte('.')
 		}
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		buf.WriteString(tag)
-		buf.WriteByte(cons.Backticks)
+		buf.WriteByte(cons2.Backticks)
 		buf.WriteByte(',')
 	}
 }
@@ -118,14 +118,14 @@ func GetColParamSQL(p *Parses) (sql string) {
 
 func innerLeftSQL(bufNt *bytes.Buffer, DBS map[string]string, tables, fields []string, i int) {
 	if tb := DBS[tables[i]]; tb != "" {
-		bufNt.WriteByte(cons.Backticks)
+		bufNt.WriteByte(cons2.Backticks)
 		bufNt.WriteString(tb)
-		bufNt.WriteByte(cons.Backticks)
+		bufNt.WriteByte(cons2.Backticks)
 		bufNt.WriteByte('.')
 	}
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteString(tables[i])
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteString(" on ")
 	fieldSQL(bufNt, tables[i-1], tables[i], fields[i-1], fields[i])
 }
@@ -160,7 +160,7 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 
 	for k := 0; k < len(ils); k++ {
 		writeField(bufNt, leftTable, ils[k], " = ")
-		writeField(bufNt, rightTable, irs[k], cons.And)
+		writeField(bufNt, rightTable, irs[k], cons2.And)
 	}
 
 	for _, v := range ilts {
@@ -168,7 +168,7 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 		if len(is) > 1 {
 			writeField(bufNt, leftTable, is[0], " = ")
 			bufNt.WriteString(is[1])
-			bufNt.WriteString(cons.And)
+			bufNt.WriteString(cons2.And)
 		}
 	}
 	for _, v := range irts {
@@ -176,7 +176,7 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 		if len(is) > 1 {
 			writeField(bufNt, rightTable, is[0], " = ")
 			bufNt.WriteString(is[1])
-			bufNt.WriteString(cons.And)
+			bufNt.WriteString(cons2.And)
 		}
 	}
 	nBuf := bytes.NewBuffer(bufNt.Bytes()[:bufNt.Len()-4])
@@ -186,12 +186,12 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 }
 
 func writeField(bufNt *bytes.Buffer, tb, v, c string) {
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteString(tb)
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteByte('.')
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteString(v)
-	bufNt.WriteByte(cons.Backticks)
+	bufNt.WriteByte(cons2.Backticks)
 	bufNt.WriteString(c)
 }

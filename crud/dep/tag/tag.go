@@ -1,9 +1,9 @@
 package tag
 
 import (
-	"github.com/dreamlu/gt/lib/cons"
-	"github.com/dreamlu/gt/lib/hump"
+	"github.com/dreamlu/gt/crud/dep/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/src/util"
 	"gorm.io/gorm/schema"
 	"reflect"
 	"strings"
@@ -79,7 +79,7 @@ func ParseJsonFieldTag(field reflect.StructField) string {
 
 	tag := field.Tag.Get("json")
 	if tag == "" || tag == "-" {
-		tag = hump.HumpToLine(field.Name)
+		tag = util.HumpToLine(field.Name)
 	}
 	// json tag opt `json:"name,opt1,opt2,opts..."`
 	tag = strings.Split(tag, ",")[0]
@@ -110,5 +110,5 @@ func ModelTable(model any) string {
 	if t, ok := model.(schema.Tabler); ok {
 		return t.TableName()
 	}
-	return hump.HumpToLine(mr.Name(model))
+	return util.HumpToLine(mr.Name(model))
 }

@@ -3,12 +3,12 @@ package crud
 import (
 	"bytes"
 	"fmt"
-	"github.com/dreamlu/gt/lib/cons"
-	"github.com/dreamlu/gt/lib/hump"
-	"github.com/dreamlu/gt/lib/tag"
+	"github.com/dreamlu/gt/crud/dep/cons"
+	"github.com/dreamlu/gt/crud/dep/tag"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
+	"github.com/dreamlu/gt/src/util"
 	"reflect"
 	"strings"
 )
@@ -214,7 +214,7 @@ func StructWhereSQL(st any) (sql string, args []any) {
 		if mr.IsZero(v) {
 			continue
 		}
-		buf.WriteString(hump.HumpToLine(k))
+		buf.WriteString(util.HumpToLine(k))
 		buf.WriteString(cons.ParamAnd)
 		args = append(args, v)
 	}

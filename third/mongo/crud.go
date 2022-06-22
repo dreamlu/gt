@@ -1,7 +1,7 @@
 package mongo
 
 import (
-	"github.com/dreamlu/gt/lib/result"
+	"github.com/dreamlu/gt/crud/dep/result"
 	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"go.mongodb.org/mongo-driver/mongo"
