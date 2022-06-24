@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/dreamlu/gt/crud/dep/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
-	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
+	"github.com/dreamlu/gt/src/type/tmap"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -27,7 +27,7 @@ func (m *Mongo) CursorScan(cur *mongo.Cursor, data any) {
 	}
 }
 
-func (m *Mongo) GetByDataSearch(params bmap.BMap) (cur *mongo.Cursor, err error) {
+func (m *Mongo) GetByDataSearch(params tmap.TMap[any]) (cur *mongo.Cursor, err error) {
 	var (
 		//clientPage, everyPage int64
 		filter = bson.M{}

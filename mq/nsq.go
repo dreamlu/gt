@@ -3,9 +3,9 @@ package mq
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dreamlu/gt/conf"
 	"github.com/dreamlu/gt/crud/dep/cons"
-	"github.com/dreamlu/gt/third/conf"
-	"github.com/dreamlu/gt/third/log"
+	"github.com/dreamlu/gt/log"
 	"github.com/nsqio/go-nsq"
 	"strings"
 )

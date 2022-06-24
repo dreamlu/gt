@@ -9,9 +9,9 @@ package crud
 import (
 	"github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/crud/dep/result"
+	"github.com/dreamlu/gt/log"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/src/util"
-	"github.com/dreamlu/gt/third/log"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -84,6 +84,7 @@ type Params struct {
 type Param func(*Params)
 
 // NewCrud new crud
+// 设计模式--建造者模式
 func NewCrud(params ...Param) (crud Crud) {
 
 	db()

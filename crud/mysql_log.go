@@ -3,7 +3,7 @@ package crud
 import (
 	"context"
 	"fmt"
-	"github.com/dreamlu/gt/third/log"
+	"github.com/dreamlu/gt/log"
 	logger2 "gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
 	"time"

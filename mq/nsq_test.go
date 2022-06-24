@@ -1,7 +1,7 @@
 package mq
 
 import (
-	"github.com/dreamlu/gt/third/log"
+	"github.com/dreamlu/gt/log"
 	"testing"
 	"time"
 )

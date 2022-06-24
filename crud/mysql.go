@@ -5,11 +5,11 @@ package crud
 import (
 	"bytes"
 	"fmt"
+	"github.com/dreamlu/gt/conf"
 	cons2 "github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/crud/dep/result"
+	"github.com/dreamlu/gt/log"
 	mr "github.com/dreamlu/gt/src/reflect"
-	"github.com/dreamlu/gt/third/conf"
-	"github.com/dreamlu/gt/third/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	logger2 "gorm.io/gorm/logger"
@@ -143,6 +143,7 @@ func cusdb(db *gorm.DB, log bool) *DB {
 }
 
 // db single db
+// 设计模式--单例模式[懒汉式]
 func db() *DB {
 
 	onceDB.Do(func() {

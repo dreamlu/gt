@@ -2,7 +2,7 @@ package snowflake
 
 import (
 	"github.com/bwmarrin/snowflake"
-	"github.com/dreamlu/gt/third/log"
+	"github.com/dreamlu/gt/log"
 )
 
 // NewID id generate

@@ -3,9 +3,9 @@ package tag
 import (
 	"encoding/json"
 	"github.com/dreamlu/gt/crud/dep/cons"
+	"github.com/dreamlu/gt/log"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/amap"
-	"github.com/dreamlu/gt/third/log"
 	"reflect"
 	"strings"
 )

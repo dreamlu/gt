@@ -5,19 +5,19 @@ package cache
 import (
 	"bytes"
 	"encoding/json"
+	rs "github.com/dreamlu/gt/cache/redis"
+	"github.com/dreamlu/gt/conf"
 	"github.com/dreamlu/gt/crud/dep/cons"
-	rs "github.com/dreamlu/gt/third/cache/redis"
-	"github.com/dreamlu/gt/third/conf"
-	"github.com/dreamlu/gt/third/log"
+	"github.com/dreamlu/gt/log"
 	"github.com/go-redis/redis/v8"
 )
 
-// RedisManager impl cache manager
+// Redis impl cache manager
 // redis cache
 // interface key, interface value
-type RedisManager struct {
+type Redis struct {
 	// do nothing else
-	Rc *rs.ConnPool
+	r *rs.ConnPool
 }
 
 type redisOptions struct {
@@ -37,10 +37,10 @@ type redisOptions struct {
 	MinIdleConns int `yaml:"minIdleConns"`
 }
 
-func (r *RedisManager) Init() error {
+func (r *Redis) Init() error {
 
 	// read config
-	r.Rc = rs.InitRedis(
+	r.r = rs.InitRedis(
 		func(options *redis.Options) {
 			var opt redisOptions
 			conf.UnmarshalField(cons.ConfRedis, &opt)
@@ -54,7 +54,7 @@ func (r *RedisManager) Init() error {
 	return nil
 }
 
-func (r *RedisManager) Set(key any, value CacheModel) error {
+func (r *Redis) Set(key any, value CacheModel) error {
 
 	// change key to string
 	keyS, err := json.Marshal(key)
@@ -70,12 +70,12 @@ func (r *RedisManager) Set(key any, value CacheModel) error {
 	}
 
 	// set string data
-	err = r.Rc.Set(keyS, data).Err()
+	err = r.r.Set(keyS, data).Err()
 	if err != nil {
 		return err
 	}
 	if value.Time != 0 {
-		err = r.Rc.ExpireKey(keyS, value.Time).Err()
+		err = r.r.ExpireKey(keyS, value.Time).Err()
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ func (r *RedisManager) Set(key any, value CacheModel) error {
 	return nil
 }
 
-func (r *RedisManager) Get(key any) (CacheModel, error) {
+func (r *Redis) Get(key any) (CacheModel, error) {
 
 	var reply CacheModel
 
@@ -94,7 +94,7 @@ func (r *RedisManager) Get(key any) (CacheModel, error) {
 	}
 
 	// data
-	res := r.Rc.Get(keyS).Val()
+	res := r.r.Get(keyS).Val()
 	if res == nil {
 		return reply, nil
 	}
@@ -108,7 +108,7 @@ func (r *RedisManager) Get(key any) (CacheModel, error) {
 	return reply, nil
 }
 
-func (r *RedisManager) Delete(key any) error {
+func (r *Redis) Delete(key any) error {
 
 	// change key to string
 	keyS, err := json.Marshal(key)
@@ -116,10 +116,10 @@ func (r *RedisManager) Delete(key any) error {
 		return err
 	}
 
-	return r.Rc.Delete(keyS).Err()
+	return r.r.Delete(keyS).Err()
 }
 
-func (r *RedisManager) DeleteMore(key any) error {
+func (r *Redis) DeleteMore(key any) error {
 
 	// change key to string
 	keyS, err := json.Marshal(key)
@@ -135,10 +135,10 @@ func (r *RedisManager) DeleteMore(key any) error {
 	buf.WriteString("*")
 
 	// keys
-	res := r.Rc.Keys(buf.Bytes()).Val()
+	res := r.r.Keys(buf.Bytes()).Val()
 	if res != nil {
 		for _, v := range res.([]any) {
-			err := r.Rc.Delete(v).Err()
+			err := r.r.Delete(v).Err()
 			if err != nil {
 				return err
 			}
@@ -148,7 +148,7 @@ func (r *RedisManager) DeleteMore(key any) error {
 	return nil
 }
 
-func (r *RedisManager) Check(key any) error {
+func (r *Redis) Check(key any) error {
 
 	var reply CacheModel
 
@@ -159,7 +159,7 @@ func (r *RedisManager) Check(key any) error {
 	}
 
 	// data
-	res := r.Rc.Get(keyS).Val()
+	res := r.r.Get(keyS).Val()
 
 	// string to struct data
 	err = json.Unmarshal([]byte(res.(string)), &reply)
@@ -167,11 +167,11 @@ func (r *RedisManager) Check(key any) error {
 		return err
 	}
 
-	return r.Rc.ExpireKey(keyS, reply.Time).Err()
+	return r.r.ExpireKey(keyS, reply.Time).Err()
 }
 
-func (r *RedisManager) ExpireKey(key any, seconds int64) bool {
-	b, err := r.Rc.ExpireKey(key, seconds).Bool()
+func (r *Redis) ExpireKey(key any, seconds int64) bool {
+	b, err := r.r.ExpireKey(key, seconds).Bool()
 	if err != nil {
 		log.Error(err)
 	}

@@ -36,7 +36,6 @@ func PngToJpeg(img image.Image, jpegF io.Writer, quality int) error {
 
 // ContainsTransparent judge png contains transparent
 func ContainsTransparent(img image.Image) bool {
-
 	dx := img.Bounds().Dx()
 	dy := img.Bounds().Dy()
 	for i := 0; i < dx; i++ {
@@ -49,4 +48,19 @@ func ContainsTransparent(img image.Image) bool {
 		}
 	}
 	return false
+}
+
+// ImageType jpeg,png
+func ImageType(buffer []byte) string {
+	contentType := ContentType(buffer)
+	switch contentType {
+	case "image/jpeg":
+		return JPEG
+	case "image/png":
+		return PNG
+	case "image/gif":
+		return GIF
+	default:
+		return contentType
+	}
 }

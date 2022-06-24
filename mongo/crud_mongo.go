@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/dreamlu/gt/crud/dep/result"
 	"github.com/dreamlu/gt/src/reflect"
-	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
+	"github.com/dreamlu/gt/src/type/tmap"
 	"github.com/dreamlu/gt/src/util"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -49,9 +49,9 @@ func (m *Mongo) Params(params ...Param) Crud {
 	return m
 }
 
-// GetBySearch
+// FindSearch
 // pager info
-func (m *Mongo) FindSearch(params bmap.BMap) Crud {
+func (m *Mongo) FindSearch(params tmap.TMap[any]) Crud {
 	clone := m.clone()
 
 	cur, err := m.GetByDataSearch(params)

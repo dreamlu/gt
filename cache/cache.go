@@ -4,7 +4,7 @@ package cache
 
 import (
 	"encoding/json"
-	"github.com/dreamlu/gt/third/log"
+	"github.com/dreamlu/gt/log"
 )
 
 // CacheModel data model
@@ -65,7 +65,7 @@ func NewCache(params ...any) (cache Cache) {
 
 	// default set
 	if len(params) == 0 {
-		cache = new(RedisManager)
+		cache = new(Redis)
 		err := cache.Init()
 		if err != nil {
 			log.Error(err.Error())
@@ -81,8 +81,8 @@ func NewCache(params ...any) (cache Cache) {
 	return
 }
 
-// NewRedis new your custom db crud
-func NewRedis(redis *RedisManager) (cache Cache) {
+// NewRedis new your custom redis
+func NewRedis(redis *Redis) (cache Cache) {
 
 	cache = redis
 	err := cache.Init()

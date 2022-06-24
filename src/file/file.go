@@ -3,10 +3,10 @@ package file
 import (
 	"bytes"
 	"errors"
+	"github.com/dreamlu/gt/conf"
 	"github.com/dreamlu/gt/crud/dep/cons"
+	"github.com/dreamlu/gt/snowflake"
 	"github.com/dreamlu/gt/src/gos"
-	"github.com/dreamlu/gt/third/conf"
-	"github.com/dreamlu/gt/third/snowflake"
 	"github.com/dreamlu/resize"
 	"image"
 	"image/jpeg"
@@ -37,6 +37,7 @@ import (
 const (
 	JPEG = "jpeg" // jpeg/jpg
 	PNG  = "png"  // png
+	GIF  = "gif"  // gif
 )
 
 // File upload
@@ -141,7 +142,7 @@ func (f *File) Compress() {
 func (f *File) IsImg() bool {
 	if f.ContentType == "" {
 		data, _ := ioutil.ReadFile(f.Path)
-		f.ContentType = GetImageType(data)
+		f.ContentType = ImageType(data)
 	}
 	if strings.Contains(f.ContentType, PNG) || strings.Contains(f.ContentType, JPEG) {
 		return true
@@ -200,24 +201,10 @@ func (f *File) compressImage() error {
 	return nil
 }
 
-// GetImageType jpeg,png
-func GetImageType(buffer []byte) string {
-	contentType := GetFileContentType(buffer)
-
-	switch contentType {
-	case "image/jpeg":
-		return JPEG
-	case "image/png":
-		return PNG
-	default:
-		return ""
-	}
-}
-
-// GetFileContentType must a file
+// ContentType must a file
 // file byte data[:512]
 // image type: "image/jpeg","image/png"
-func GetFileContentType(buffer []byte) string {
+func ContentType(buffer []byte) string {
 	// Use the net/http package's handy DectectContentType function. Always returns a valid
 	// content-type by returning "application/octet-stream" if no others seemed to match.
 	contentType := http.DetectContentType(buffer[:512])

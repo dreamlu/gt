@@ -2,8 +2,8 @@ package mongo
 
 import (
 	"github.com/dreamlu/gt/crud/dep/result"
-	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
+	"github.com/dreamlu/gt/src/type/tmap"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -20,9 +20,9 @@ type Crud interface {
 
 	// FindSearch get url params
 	// like form data
-	FindSearch(bmap.BMap) Crud // search single table
-	Find(cmap.CMap) Crud       // get data no search
-	FindID(any) Crud           // by id
+	FindSearch(tmap.TMap[any]) Crud // search single table
+	Find(cmap.CMap) Crud            // get data no search
+	FindID(any) Crud                // by id
 
 	// Delete delete by id/ids
 	Delete(any) Crud // delete

@@ -64,17 +64,17 @@ func TestCustomizeValid(t *testing.T) {
 	var test = Test{
 		Name: "梦sss",
 	}
-	t.Log(Valid(test))
 
-	AddRule("large", func(rule string, data any) error {
-		num, _ := strconv.Atoi(rule)
-		if v, ok := data.(string); ok {
-			if length(v) > num {
-				return errors.New("最大" + rule)
-			}
+	AddRuler("large", largeRuler)
+	t.Log(Valid(test))
+}
+
+func largeRuler(rule string, data any) error {
+	num, _ := strconv.Atoi(rule)
+	if v, ok := data.(string); ok {
+		if length(v) > num {
+			return errors.New("最大" + rule)
 		}
-		return nil
-	})
-
-	t.Log(Valid(test))
+	}
+	return nil
 }

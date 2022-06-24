@@ -1,5 +1,6 @@
 app:
   # dev mode
+  # if not exist, only use app.yaml
   devMode: dev
   port: 9000
   # database

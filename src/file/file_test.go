@@ -38,9 +38,8 @@ func TestCompressImage(t *testing.T) {
 }
 
 func TestFileType(t *testing.T) {
-	data, _ := ioutil.ReadFile("../../test/file/呵呵.png")
-	contentType := GetFileContentType(data)
-	t.Log(contentType)
+	data, _ := ioutil.ReadFile("test.jpg")
+	t.Log(ContentType(data))
 }
 
 func TestContainsTransparent(t *testing.T) {

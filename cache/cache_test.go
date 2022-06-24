@@ -15,7 +15,7 @@ type User struct {
 }
 
 var (
-	r  = RedisManager{}
+	r  = Redis{}
 	ce = NewCache()
 )
 
@@ -30,9 +30,9 @@ func TestCacheExpireKey(t *testing.T) {
 
 // redis method set test
 func TestRedis(t *testing.T) {
-	err := r.Rc.Set("test", "testValue").Err()
+	err := r.r.Set("test", "testValue").Err()
 	log.Println("set err:", err)
-	value := r.Rc.Get("test")
+	value := r.r.Get("test")
 	reqRes, _ := value.Result()
 	log.Println("value", reqRes)
 }
