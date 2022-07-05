@@ -1,7 +1,5 @@
 package conf
 
-import "sync"
-
 type Config struct {
 	// different devMode yaml data
 	YamlS []*Yaml
@@ -10,35 +8,30 @@ type Config struct {
 }
 
 var (
-	onceConfig sync.Once
-	// global log
+	// global config
 	config *Config
 )
 
-// Configger single config
-func Configger(params ...string) *Config {
-
-	onceConfig.Do(func() {
-		config = NewConfig(params[:]...)
-	})
-	return config
+// 设计模式--单例模式[饿汉式]
+func init() {
+	config = NewConfig()
 }
 
 type value interface {
-	int | string | bool | float64
+	int64 | int | string | bool | float64
 }
 
 func Get[T value](name string) (t T) {
-	if v := Configger().Get(name); v != nil {
+	if v := config.Get(name); v != nil {
 		return v.(T)
 	}
 	return
 }
 
 func UnmarshalField(name string, v any) {
-	Configger().UnmarshalField(name, v)
+	config.UnmarshalField(name, v)
 }
 
 func Unmarshal(v any) {
-	Configger().Unmarshal(v)
+	config.Unmarshal(v)
 }
