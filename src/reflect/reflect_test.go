@@ -23,7 +23,7 @@ func TestReflect(t *testing.T) {
 func TestGetDataID(t *testing.T) {
 	or := Order{} //new(Order)
 	or.ID = 23
-	id, _ := FieldName(or, "ID")
+	id, _ := Field(or, "ID")
 	log.Println("id value is ", id)
 }
 
@@ -42,4 +42,10 @@ func TestTrueValueOf(t *testing.T) {
 	t.Log(TrueValueOf(&Order{}))
 	t.Log(TrueValueOf(Order{}))
 	t.Log(TrueValueOf([]Order{}))
+}
+
+func TestSet(t *testing.T) {
+	or := Order{} //new(Order)
+	Set(&or, "ID", int64(3))
+	t.Log(or)
 }

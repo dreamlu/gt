@@ -5,21 +5,27 @@ import (
 	"reflect"
 )
 
-// FieldName reflect value via field name
-func FieldName(data any, filedName string) (any, error) {
-	typ := reflect.TypeOf(data)
+// Set set data field value
+// type and field must same
+func Set(data any, field string, value any) {
+	TrueValueOf(data).FieldByName(field).Set(reflect.ValueOf(value))
+}
+
+// Field reflect value via field name
+func Field(data any, field string) (any, error) {
+	typ := TrueValueOf(data)
 
 	switch typ.Kind() {
 	case reflect.Ptr, reflect.Chan, reflect.Map, reflect.Array, reflect.Slice:
 		v := reflect.ValueOf(data).Elem()
-		f := v.FieldByName(filedName)
+		f := v.FieldByName(field)
 		return f.Interface(), nil
 	case reflect.Struct:
 		v := reflect.ValueOf(data)
-		f := v.FieldByName(filedName)
+		f := v.FieldByName(field)
 		return f.Interface(), nil
 	}
-	return nil, errors.New(filedName + "not exit")
+	return nil, errors.New(field + "not exit")
 }
 
 // ToSlice arr must array data
