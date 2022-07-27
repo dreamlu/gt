@@ -1,12 +1,5 @@
 package conf
 
-type Config struct {
-	// different devMode yaml data
-	YamlS []*Yaml
-	// yaml project path
-	path string
-}
-
 var (
 	// global config
 	config *Config

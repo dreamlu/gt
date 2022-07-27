@@ -11,6 +11,13 @@ import (
 	"strings"
 )
 
+type Config struct {
+	// different devMode yaml data
+	YamlS []*Yaml
+	// yaml project path
+	path string
+}
+
 func DevMode(field string) {
 	cons.DefaultDevMode = field
 }

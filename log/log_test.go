@@ -7,7 +7,12 @@ import (
 )
 
 func init() {
-	Logger().FileLog("../../test/log/", "gt.log", 3, time.Minute)
+	GetLog().InitLog(&Options{
+		LogPath:      "",
+		LogFileName:  "gt.log",
+		MaxNum:       3,
+		RotationTime: time.Minute,
+	})
 }
 
 func TestNewFileLog(t *testing.T) {
@@ -32,5 +37,5 @@ func TestErrorLine(t *testing.T) {
 	t.Log(err3)
 	//s := fmt.Sprintf("%+v\n", err3)
 	Error(err3)
-	Logger().Error(err3)
+	GetLog().Error(err3)
 }

@@ -6,13 +6,13 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/dreamlu/gt/conf"
-	cons2 "github.com/dreamlu/gt/crud/dep/cons"
+	"github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/crud/dep/result"
 	"github.com/dreamlu/gt/log"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	logger2 "gorm.io/gorm/logger"
+	gormLog "gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 	"sync"
 	"time"
@@ -43,7 +43,7 @@ type dba struct {
 func (db *DB) NewDB() {
 
 	dbS := &dba{}
-	conf.UnmarshalField(cons2.ConfDB, dbS)
+	conf.UnmarshalField(cons.ConfDB, dbS)
 	db.log = dbS.Log
 	var (
 		sql = fmt.Sprintf("%s:%s@%s/?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host)
@@ -66,7 +66,7 @@ func (db *DB) NewDB() {
 	//db.db.SingularTable(true)
 
 	//if l := dbS.Log; l {
-	//	db.db.Logger.LogMode(logger2.Error)
+	//	db.db.GetLog.LogMode(gormLog.Error)
 	//}
 	//db.db.SetLogger(defaultLog)
 	// connection pool
@@ -110,10 +110,10 @@ func (db *DB) open(sql string, dbS *dba) *gorm.DB {
 }
 
 // log info
-func logInfo(dbS *dba) logger2.Interface {
-	lv := logger2.Error
+func logInfo(dbS *dba) gormLog.Interface {
+	lv := gormLog.Error
 	if l := dbS.Log; l {
-		lv = logger2.Info
+		lv = gormLog.Info
 	}
 	return newMysqlLog(
 		Config{
@@ -226,9 +226,9 @@ func (db *DB) FindS(gt *GT) (pager result.Pager) {
 func (db *DB) countSQL(gt *GT) *DB {
 
 	// default
-	gt.order = fmt.Sprintf(cons2.OrderDesc, gt.tableT)
+	gt.order = fmt.Sprintf(cons.OrderDesc, gt.tableT)
 
-	gt.sqlNt = fmt.Sprintf(cons2.SelectCountFrom, gt.tableT)
+	gt.sqlNt = fmt.Sprintf(cons.SelectCountFrom, gt.tableT)
 	gt.whereCount()
 
 	return db
@@ -239,10 +239,10 @@ func (db *DB) count(gt *GT) (pager result.Pager) {
 	// if clientPage or everyPage < 0
 	// return all data
 	if gt.clientPage == 0 {
-		gt.clientPage = cons2.ClientPage
+		gt.clientPage = cons.ClientPage
 	}
 	if gt.everyPage == 0 {
-		gt.everyPage = cons2.EveryPage
+		gt.everyPage = cons.EveryPage
 	}
 	db.res = db.DB.Raw(gt.sqlNt, gt.Args...).Scan(&pager)
 	if db.res.Error != nil || pager.TotalNum == 0 {
@@ -322,7 +322,7 @@ func (db *DB) CreateMore(table string, model any, data any) {
 func (db *DB) InitColumns(param *Params) {
 
 	var (
-		name   = conf.Get[string](cons2.ConfDBName)
+		name   = conf.Get[string](cons.ConfDBName)
 		tables = []string{param.Table}
 	)
 

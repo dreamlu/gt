@@ -7,7 +7,6 @@ import (
 	"github.com/dreamlu/gt/conf"
 	"github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/src/gos"
-	time2 "github.com/dreamlu/gt/src/type/time"
 	"github.com/lestrrat-go/file-rotatelogs"
 	"github.com/pkg/errors"
 	"github.com/rifflock/lfshook"
@@ -15,7 +14,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -23,6 +21,13 @@ import (
 type Log struct {
 	*logrus.Logger
 	LogWriter
+}
+
+type Options struct {
+	LogPath      string
+	LogFileName  string
+	MaxNum       uint
+	RotationTime time.Duration
 }
 
 // LogWriter log writer interface
@@ -38,52 +43,29 @@ const (
 	ErrorLevel = "error"
 )
 
-var (
-	onceLog sync.Once
-	// global log
-	l *Log
-)
-
-// one single log
-func init() {
-	onceLog.Do(func() {
-		l = NewLog()
-	})
-}
-
-// Logger one single log
-func Logger() *Log {
-	//onceLog.Do(func() {
-	//	l = NewLog()
-	//})
-	return l
-}
-
 // NewLog new log
-func NewLog() *Log {
-
+func NewLog(option *Options) *Log {
 	lgr := logrus.New()
 	lgr.SetFormatter(&myFormatter{})
 	log := &Log{}
 	log.Logger = lgr
-
+	log.InitLog(option)
 	return log
 }
 
-// FileLog new output file log
-func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationTime time.Duration) {
-
-	if !gos.Exists(logPath) {
-		_ = os.Mkdir(logPath, os.ModePerm)
+// InitLog init log config
+func (l *Log) InitLog(options *Options) {
+	if !gos.Exists(options.LogPath) {
+		_ = os.Mkdir(options.LogPath, os.ModePerm)
 	}
 
-	baseLogPath := path.Join(logPath, logFileName)
+	baseLogPath := path.Join(options.LogPath, options.LogFileName)
 	writer, err := rotatelogs.New(
-		path.Join(logPath, "%Y-%m-%d-"+logFileName),
+		path.Join(options.LogPath, "%Y-%m-%d-"+options.LogFileName),
 		rotatelogs.WithLinkName(baseLogPath), // 生成软链，指向最新日志文件
 		//rotatelogs.WithMaxAge(maxAge),             // 文件最大保存时间
-		rotatelogs.WithRotationTime(rotationTime), // 日志切割时间间隔
-		rotatelogs.WithRotationCount(maxNum),      // 维持的最近日志文件数量
+		rotatelogs.WithRotationTime(options.RotationTime), // 日志切割时间间隔
+		rotatelogs.WithRotationCount(options.MaxNum),      // 维持的最近日志文件数量
 	)
 	if err != nil {
 		l.Errorf("日志文件系统配置错误. %+v", errors.WithStack(err))
@@ -110,17 +92,6 @@ func (l *Log) FileLog(logPath string, logFileName string, maxNum uint, rotationT
 	l.Hooks.Add(lfHook)
 }
 
-// DefaultFileLog Default file log
-// maintain 7 days data, every 24 hour split file
-func DefaultFileLog() {
-
-	var (
-		//projectPath, _ = os.Getwd()
-		projectName = conf.Get[string](cons.ConfDBName) // use db name replace
-	)
-	l.FileLog("log/", projectName+".log", 7, time2.Day)
-}
-
 // gt log formatter
 type myFormatter struct{}
 
@@ -138,17 +109,4 @@ func (s *myFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 // ErrorLine print error line
 func (l *Log) ErrorLine(args ...any) {
 	l.Error(fmt.Sprintf("%+v\n", args))
-}
-
-// Error sugar
-func Error(args ...any) {
-	l.ErrorLine(args...)
-}
-
-func Info(args ...any) {
-	l.Info(args...)
-}
-
-func Warn(args ...any) {
-	l.Warn(args...)
 }

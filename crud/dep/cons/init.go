@@ -13,4 +13,7 @@ var (
 	ConfFile                  = "app.filepath"
 	ConfTaskNum               = "app.daemon.task_num"
 	ConfLogLevel              = "app.log.level"
+	LogPath                   = "log/"
+	LogName                   = "app.log"
+	LogNum                    = uint(7)
 )

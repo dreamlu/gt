@@ -3,8 +3,10 @@ package crud
 import (
 	"context"
 	"fmt"
+	"github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/log"
-	logger2 "gorm.io/gorm/logger"
+	ctime "github.com/dreamlu/gt/src/type/time"
+	gormLog "gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
 	"time"
 )
@@ -28,10 +30,19 @@ const (
 type Config struct {
 	SlowThreshold time.Duration
 	Colorful      bool
-	LogLevel      logger2.LogLevel
+	LogLevel      gormLog.LogLevel
 }
 
-func newMysqlLog(config Config) logger2.Interface {
+func defaultLog() *log.Log {
+	return log.NewLog(&log.Options{
+		LogPath:      cons.LogPath,
+		LogFileName:  cons.LogName,
+		MaxNum:       cons.LogNum,
+		RotationTime: ctime.Day,
+	})
+}
+
+func newMysqlLog(config Config) gormLog.Interface {
 	var (
 		infoStr      = "%s\n[info] "
 		warnStr      = "%s\n[warn] "
@@ -51,7 +62,7 @@ func newMysqlLog(config Config) logger2.Interface {
 	}
 
 	return &logger{
-		Log:          log.Logger(),
+		Log:          defaultLog(),
 		Config:       config,
 		infoStr:      infoStr,
 		warnStr:      warnStr,
@@ -70,7 +81,7 @@ type logger struct {
 }
 
 // LogMode log mode
-func (l *logger) LogMode(level logger2.LogLevel) logger2.Interface {
+func (l *logger) LogMode(level gormLog.LogLevel) gormLog.Interface {
 	newlogger := *l
 	newlogger.LogLevel = level
 	return &newlogger
@@ -78,21 +89,21 @@ func (l *logger) LogMode(level logger2.LogLevel) logger2.Interface {
 
 // Info print info
 func (l logger) Info(ctx context.Context, msg string, data ...any) {
-	if l.LogLevel >= logger2.Info {
+	if l.LogLevel >= gormLog.Info {
 		l.Infof(l.infoStr+msg, append([]any{}, data...)...)
 	}
 }
 
 // Warn print warn messages
 func (l logger) Warn(ctx context.Context, msg string, data ...any) {
-	if l.LogLevel >= logger2.Warn {
+	if l.LogLevel >= gormLog.Warn {
 		l.Warnf(l.warnStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 	}
 }
 
 // Error print error messages
 func (l logger) Error(ctx context.Context, msg string, data ...any) {
-	if l.LogLevel >= logger2.Error {
+	if l.LogLevel >= gormLog.Error {
 		l.Errorf(l.errStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 	}
 }
@@ -102,14 +113,14 @@ func (l logger) Trace(ctx context.Context, begin time.Time, fc func() (string, i
 	if l.LogLevel > 0 {
 		elapsed := time.Since(begin)
 		switch {
-		case err != nil && l.LogLevel >= logger2.Error:
+		case err != nil && l.LogLevel >= gormLog.Error:
 			sql, rows := fc()
 			if rows == -1 {
 				l.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
 			} else {
 				l.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 			}
-		case elapsed > l.SlowThreshold && l.SlowThreshold != 0 && l.LogLevel >= logger2.Warn:
+		case elapsed > l.SlowThreshold && l.SlowThreshold != 0 && l.LogLevel >= gormLog.Warn:
 			sql, rows := fc()
 			slowLog := fmt.Sprintf("SLOW SQL >= %v", l.SlowThreshold)
 			if rows == -1 {
@@ -117,7 +128,7 @@ func (l logger) Trace(ctx context.Context, begin time.Time, fc func() (string, i
 			} else {
 				l.Warnf(l.traceWarnStr, slowLog, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 			}
-		case l.LogLevel >= logger2.Info:
+		case l.LogLevel >= gormLog.Info:
 			sql, rows := fc()
 			if rows == -1 {
 				l.Infof(l.traceStr, float64(elapsed.Nanoseconds())/1e6, "-", sql)
@@ -129,7 +140,7 @@ func (l logger) Trace(ctx context.Context, begin time.Time, fc func() (string, i
 }
 
 type traceRecorder struct {
-	logger2.Interface
+	gormLog.Interface
 	BeginAt      time.Time
 	SQL          string
 	RowsAffected int64

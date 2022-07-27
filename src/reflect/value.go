@@ -5,10 +5,10 @@ import (
 	"reflect"
 )
 
-// Set set data field value
+// Set data field value
 // type and field must same
 func Set(data any, field string, value any) {
-	TrueValueOf(data).FieldByName(field).Set(reflect.ValueOf(value))
+	TrueValueOf(data).FieldByName(field).Set(TrueValueOf(value))
 }
 
 // Field reflect value via field name
