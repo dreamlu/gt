@@ -9,7 +9,6 @@ package crud
 import (
 	"github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/crud/dep/result"
-	"github.com/dreamlu/gt/log"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/src/util"
 	"gorm.io/gorm"
@@ -17,7 +16,7 @@ import (
 )
 
 func init() {
-	log.Info("[welcome to crud (´∀｀)]")
+	println("[welcome to crud (´∀｀)]")
 }
 
 // Crud interface

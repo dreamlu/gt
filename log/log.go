@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/dreamlu/gt/conf"
 	"github.com/dreamlu/gt/crud/dep/cons"
+	"github.com/dreamlu/gt/src/cons/color"
 	"github.com/dreamlu/gt/src/gos"
 	"github.com/lestrrat-go/file-rotatelogs"
 	"github.com/pkg/errors"
@@ -13,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -35,6 +37,26 @@ type LogWriter interface {
 	Println(v ...any)
 }
 
+type logFormatter struct{}
+
+func (s *logFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	timestamp := time.Now().Local().Format("2006-01-02 15:04:05")
+	var (
+		msg  string
+		info = "[%s] [%s] %s\n"
+	)
+	switch runtime.GOOS {
+	case "linux":
+		if entry.Level == logrus.ErrorLevel {
+			info = color.RedBold + "[%s] [%s] %s\n" + color.Reset
+		} else {
+			info = color.Yellow + "[%s] " + color.Cyan + "[%s] " + color.Reset + "%s\n"
+		}
+	}
+	msg = fmt.Sprintf(info, timestamp, strings.ToUpper(entry.Level.String()), entry.Message)
+	return []byte(msg), nil
+}
+
 // log level
 const (
 	DebugLevel = "debug" // default level
@@ -44,17 +66,24 @@ const (
 )
 
 // NewLog new log
-func NewLog(option *Options) *Log {
+func NewLog() *Log {
 	lgr := logrus.New()
-	lgr.SetFormatter(&myFormatter{})
+	lgr.SetFormatter(&logFormatter{})
 	log := &Log{}
 	log.Logger = lgr
-	log.InitLog(option)
 	return log
 }
 
-// InitLog init log config
-func (l *Log) InitLog(options *Options) {
+// ConfigLog init log config
+// store log to file
+// options:
+// &log.Options{
+//		LogPath:      "log/",
+//		LogFileName:  "app.log",
+//		MaxNum:       uint(7),
+//		RotationTime: ctime.Day,
+//	}
+func (l *Log) ConfigLog(options *Options) {
 	if !gos.Exists(options.LogPath) {
 		_ = os.Mkdir(options.LogPath, os.ModePerm)
 	}
@@ -90,23 +119,4 @@ func (l *Log) InitLog(options *Options) {
 	}
 	lfHook := lfshook.NewHook(wm, l.Formatter)
 	l.Hooks.Add(lfHook)
-}
-
-// gt log formatter
-type myFormatter struct{}
-
-func (s *myFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	timestamp := time.Now().Local().Format("2006-01-02 15:04:05")
-	msg := ""
-	if entry.Level == logrus.ErrorLevel {
-		msg = fmt.Sprintf("\u001B[36;31m[%s] [%s] %s\u001B[0m\n", timestamp, strings.ToUpper(entry.Level.String()), entry.Message)
-	} else {
-		msg = fmt.Sprintf("\u001B[33m[%s]\u001B[0m \u001B[36;1m[%s]\u001B[0m %s\n", timestamp, strings.ToUpper(entry.Level.String()), entry.Message)
-	}
-	return []byte(msg), nil
-}
-
-// ErrorLine print error line
-func (l *Log) ErrorLine(args ...any) {
-	l.Error(fmt.Sprintf("%+v\n", args))
 }

@@ -6,8 +6,8 @@ import (
 	"github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/crud/dep/tag"
 	mr "github.com/dreamlu/gt/src/reflect"
-	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
+	"github.com/dreamlu/gt/src/type/tmap"
 	"github.com/dreamlu/gt/src/util"
 	"reflect"
 	"strings"
@@ -207,7 +207,7 @@ func writeTagString(buf *bytes.Buffer, tb, tag string) {
 func StructWhereSQL(st any) (sql string, args []any) {
 	var (
 		buf bytes.Buffer
-		m   = bmap.ToBMap(st)
+		m   = tmap.ToTMap[any](st)
 	)
 
 	for k, v := range m {

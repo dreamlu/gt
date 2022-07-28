@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	GetLog().InitLog(&Options{
+	GetLog().ConfigLog(&Options{
 		LogPath:      "",
 		LogFileName:  "gt.log",
 		MaxNum:       3,

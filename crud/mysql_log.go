@@ -3,28 +3,12 @@ package crud
 import (
 	"context"
 	"fmt"
-	"github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/log"
-	ctime "github.com/dreamlu/gt/src/type/time"
+	"github.com/dreamlu/gt/src/cons/color"
 	gormLog "gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
+	"runtime"
 	"time"
-)
-
-// Colors
-const (
-	Reset       = "\033[0m"
-	Red         = "\033[31m"
-	Green       = "\033[32m"
-	Yellow      = "\033[33m"
-	Blue        = "\033[34m"
-	Magenta     = "\033[35m"
-	Cyan        = "\033[36m"
-	White       = "\033[37m"
-	BlueBold    = "\033[34;1m"
-	MagentaBold = "\033[35;1m"
-	RedBold     = "\033[31;1m"
-	YellowBold  = "\033[33;1m"
 )
 
 type Config struct {
@@ -34,12 +18,7 @@ type Config struct {
 }
 
 func defaultLog() *log.Log {
-	return log.NewLog(&log.Options{
-		LogPath:      cons.LogPath,
-		LogFileName:  cons.LogName,
-		MaxNum:       cons.LogNum,
-		RotationTime: ctime.Day,
-	})
+	return log.GetLog()
 }
 
 func newMysqlLog(config Config) gormLog.Interface {
@@ -52,13 +31,13 @@ func newMysqlLog(config Config) gormLog.Interface {
 		traceErrStr  = "%s %s\n[%.3fms] [rows:%v] %s"
 	)
 
-	if config.Colorful {
-		infoStr = Reset
-		warnStr = BlueBold + "%s\n" + Reset
-		errStr = Magenta + "%s\n" + Reset
-		traceStr = Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
-		traceWarnStr = Yellow + "%s\n" + Reset + RedBold + "[%.3fms] " + Yellow + "[rows:%v]" + Magenta + " %s" + Reset
-		traceErrStr = RedBold + "%s\n" + Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
+	if config.Colorful && runtime.GOOS == "linux" {
+		infoStr = color.Reset
+		warnStr = color.BlueBold + "%s\n" + color.Reset
+		errStr = color.Magenta + "%s\n" + color.Reset
+		traceStr = color.Reset + color.Yellow + "[%.3fms] " + color.BlueBold + "[rows:%v]" + color.Reset + " %s"
+		traceWarnStr = color.Yellow + "%s\n" + color.Reset + color.RedBold + "[%.3fms] " + color.Yellow + "[rows:%v]" + color.Magenta + " %s" + color.Reset
+		traceErrStr = color.RedBold + "%s\n" + color.Reset + color.Yellow + "[%.3fms] " + color.BlueBold + "[rows:%v]" + color.Reset + " %s"
 	}
 
 	return &logger{

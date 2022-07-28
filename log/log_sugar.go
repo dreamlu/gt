@@ -1,30 +1,21 @@
 package log
 
-import (
-	"sync"
-)
+import "fmt"
 
-var (
-	onceLog sync.Once
-	// global log
-	l *Log
-)
+var l *Log
 
-// OpenLog open once log
-func OpenLog(option *Options) {
-	onceLog.Do(func() {
-		l = NewLog(option)
-	})
+// gt tool log, only use by gt
+func init() {
+	l = NewLog()
 }
 
-// GetLog one single log
+// GetLog get once log
 func GetLog() *Log {
 	return l
 }
 
-// Error sugar
 func Error(args ...any) {
-	l.ErrorLine(args...)
+	l.Error(fmt.Sprintf("%+v\n", args))
 }
 
 func Info(args ...any) {
