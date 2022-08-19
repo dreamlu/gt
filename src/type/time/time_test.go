@@ -19,6 +19,8 @@ func TestTime(t *testing.T) {
 	t.Log(tt.String())
 	_ = tt.UnmarshalJSON([]byte(te))
 	t.Log(tt)
+	err := tt.UnmarshalJSON([]byte(`"2022-07-28"`))
+	t.Log(err)
 }
 
 // test time Marshal

@@ -37,7 +37,11 @@ func NewConfig(params ...string) *Config {
 		path: path,
 	}
 
-	devModePath := fmt.Sprintf("-%s", c.getDevMode())
+	devMode := c.getDevMode()
+	if devMode == "" {
+		return c
+	}
+	devModePath := fmt.Sprintf("-%s", devMode)
 	ss := strings.Split(path, ".")
 	if len(ss) > 1 {
 		devModePath += "."
@@ -48,10 +52,7 @@ func NewConfig(params ...string) *Config {
 	}
 
 	// load data
-	yaml := c.loadYaml()
-
-	// add yamlS data
-	c.YamlS = append(c.YamlS, yaml)
+	c.loadYaml()
 	return c
 }
 
@@ -74,10 +75,10 @@ func (c *Config) getDevMode() (devMode string) {
 	if yaml.data == nil {
 		panic(errors.New("no yaml: " + c.path))
 	}
-
-	// add yamlS data
-	c.YamlS = append(c.YamlS, yaml)
-	return yaml.Get(cons.DefaultDevMode).(string)
+	if devModeI := yaml.Get(cons.DefaultDevMode); devModeI != nil {
+		return devModeI.(string)
+	}
+	return ""
 }
 
 // load dev mode data
@@ -87,6 +88,8 @@ func (c *Config) loadYaml() *Yaml {
 	if err != nil {
 		panic(errors.New("no yaml: " + c.path))
 	}
+	// add yamlS data
+	c.YamlS = append(c.YamlS, yaml)
 	return yaml
 }
 

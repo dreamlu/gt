@@ -34,6 +34,9 @@ func (t *CTime) UnmarshalJSON(b []byte) error {
 	if s == "" {
 		return nil
 	}
+	if len(s) <= 10 {
+		s = fmt.Sprintf("%s 00:00:00", s)
+	}
 	ti, err := time.ParseInLocation(Layout, s, time.Local)
 	if err != nil {
 		return err

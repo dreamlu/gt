@@ -48,4 +48,10 @@ func TestSet(t *testing.T) {
 	or := Order{} //new(Order)
 	Set(&or, "ID", int64(3))
 	t.Log(or)
+
+	var i any
+	ot := Order{} //new(Order)
+	i = &ot
+	Set(i, "ID", int64(4))
+	t.Log(ot)
 }
