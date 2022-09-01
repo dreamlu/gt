@@ -12,24 +12,20 @@ import (
 
 var (
 	p = NewPool(100)
-	g sync.WaitGroup
 )
 
 func TestPool(t *testing.T) {
 
 	read := func() {
-		defer g.Done()
 		fmt.Printf("go func time: %d\n", time.Now().Unix())
 		time.Sleep(time.Second)
 	}
 
-	for i := 0; i < 1000; i++ {
-		g.Add(1)
+	for i := 0; i < 5; i++ {
 		p.Submit(read)
 	}
 
-	g.Wait()
-	//time.Sleep(5*time.Second)
+	p.Wait()
 }
 
 func TestPool_SubmitWait(t *testing.T) {

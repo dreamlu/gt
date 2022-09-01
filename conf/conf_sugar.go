@@ -1,13 +1,20 @@
 package conf
 
+import "sync"
+
+// 设计模式--单例模式[懒汉式]
 var (
-	// global config
+	onceConfig sync.Once
+	// global log
 	config *Config
 )
 
-// 设计模式--单例模式[饿汉式]
-func init() {
-	config = NewConfig()
+// Configger single config
+func Configger(params ...string) *Config {
+	onceConfig.Do(func() {
+		config = NewConfig(params[:]...)
+	})
+	return config
 }
 
 type value interface {
@@ -15,16 +22,16 @@ type value interface {
 }
 
 func Get[T value](name string) (t T) {
-	if v := config.Get(name); v != nil {
+	if v := Configger().Get(name); v != nil {
 		return v.(T)
 	}
 	return
 }
 
 func UnmarshalField(name string, v any) {
-	config.UnmarshalField(name, v)
+	Configger().UnmarshalField(name, v)
 }
 
 func Unmarshal(v any) {
-	config.Unmarshal(v)
+	Configger().Unmarshal(v)
 }

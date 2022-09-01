@@ -34,8 +34,8 @@ func NewPool(size uint64) *Pool {
 
 func (p *Pool) Submit(f func()) {
 
+	p.add(1)
 	go func() {
-		p.add(1)
 		f()
 		defer p.done()
 	}()
@@ -44,8 +44,8 @@ func (p *Pool) Submit(f func()) {
 func (p *Pool) SubmitWait(f func() any) any {
 
 	res := make(chan any)
+	p.add(1)
 	go func() {
-		p.add(1)
 		r := f()
 		defer p.done()
 		res <- r
@@ -65,6 +65,6 @@ func (p *Pool) done() {
 	p.wg.Done()
 }
 
-func (p *Pool) wait() {
+func (p *Pool) Wait() {
 	p.wg.Wait()
 }

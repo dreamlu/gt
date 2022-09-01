@@ -1,3 +1,6 @@
-everything is a tool 一切皆工具
-optimize architecture
-move gt package to crud
+export pool Wait
+improve conf、time and test
+improve the log
+optimize redis and log use
+add reflect.Set();remove bmap to use tmap
+update readme
