@@ -2,6 +2,7 @@ package ghttp
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/dreamlu/gt/src/file/fs"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"io"
@@ -9,7 +10,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strings"
-	"time"
 )
 
 const (
@@ -49,9 +49,7 @@ func NewRequest(method, urlString string) *Request {
 	r.url = urlString
 	r.params = cmap.NewCMap()
 	r.header = http.Header{}
-	r.Client = &http.Client{
-		Timeout: time.Second * 10,
-	}
+	r.Client = &http.Client{}
 	r.SetContentType(ContentTypeJSON)
 	return r
 }
@@ -73,6 +71,13 @@ func (m *Request) SetHeader(key, value string) *Request {
 
 func (m *Request) SetHeaders(header http.Header) *Request {
 	m.header = header
+	return m
+}
+
+func (m *Request) SetJsonBody(v any) *Request {
+	bs, _ := json.Marshal(v)
+	m.body = bytes.NewReader(bs)
+	m.params = nil
 	return m
 }
 
@@ -159,7 +164,7 @@ func (m *Request) Exec() *Response {
 
 		m.SetContentType(writer.FormDataContentType())
 		body = bodyByte
-	} else if m.params != nil {
+	} else if len(m.params) > 0 {
 		body = strings.NewReader(m.params.Encode())
 	}
 

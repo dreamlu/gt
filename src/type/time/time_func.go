@@ -33,6 +33,14 @@ func ParseCSTime(value string) CSTime {
 	return CSTime(ti)
 }
 
+func CTimeNow() CTime {
+	return CTime(time.Now())
+}
+
+func CDateNow() CDate {
+	return CDate(time.Now())
+}
+
 // SubDate 日期差计算
 // 年月日计算
 func SubDate(date1, date2 time.Time) string {
