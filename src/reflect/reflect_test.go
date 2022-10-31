@@ -1,13 +1,12 @@
 package reflect
 
 import (
-	"log"
 	"testing"
 )
 
 // order
 type Order struct {
-	ID         int64 `json:"id"`
+	ID         *int  `json:"id"`
 	UserID     int64 `json:"user_id"`     // user id
 	ServiceID  int64 `json:"service_id"`  // service table id
 	CreateTime int64 `json:"create_time"` // createtime
@@ -22,9 +21,12 @@ func TestReflect(t *testing.T) {
 
 func TestGetDataID(t *testing.T) {
 	or := Order{} //new(Order)
-	or.ID = 23
-	id, _ := Field(or, "ID")
-	log.Println("id value is ", id)
+	var a = 23
+	or.ID = &a
+	id := Field(or, "ID")
+	t.Log(id)
+	id = TrueField(or, "ID")
+	t.Log(id)
 }
 
 func TestStructToString(t *testing.T) {

@@ -3,8 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
-      - '!v*-beta*'
+      - 'v*beta*'
 
 jobs:
   build:
@@ -12,9 +11,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Release
+      - name: PreRelease
         uses: softprops/action-gh-release@v1
         with:
           body_path: CHANGELOG.txt
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -13,28 +13,29 @@ import (
 )
 
 const (
-	GET             = http.MethodGet
-	POST            = http.MethodPost
-	DELETE          = http.MethodDelete
-	PUT             = http.MethodPut
-	PATCH           = http.MethodPatch
-	HEAD            = http.MethodHead
-	OPTIONS         = http.MethodOptions
-	ContentTypeJSON = "application/json"
-	ContentTypeUrl  = "application/x-www-form-urlencoded"
-	ContentTypeForm = "multipart/form-data"
+	GET                 = http.MethodGet
+	POST                = http.MethodPost
+	DELETE              = http.MethodDelete
+	PUT                 = http.MethodPut
+	PATCH               = http.MethodPatch
+	HEAD                = http.MethodHead
+	OPTIONS             = http.MethodOptions
+	ContentTypeJSON     = "application/json"
+	ContentTypeFormUrl  = "application/x-www-form-urlencoded"
+	ContentTypeFormData = "multipart/form-data"
 )
 
 //Request Http Request
 type Request struct {
-	url     string
-	method  string
-	header  http.Header
-	params  cmap.CMap // only get/head/delete
-	body    io.Reader
-	Client  *http.Client
-	cookies []*http.Cookie
-	f       file
+	url       string
+	method    string
+	header    http.Header
+	urlValues cmap.CMap // only get/head/delete
+	forms     cmap.CMap // post/put/patch form-data
+	body      io.Reader
+	Client    *http.Client
+	cookies   []*http.Cookie
+	f         file
 }
 
 type file struct {
@@ -47,7 +48,8 @@ func NewRequest(method, urlString string) *Request {
 	var r = &Request{}
 	r.method = strings.ToUpper(method)
 	r.url = urlString
-	r.params = cmap.NewCMap()
+	r.urlValues = cmap.NewCMap()
+	r.forms = cmap.NewCMap()
 	r.header = http.Header{}
 	r.Client = &http.Client{}
 	r.SetContentType(ContentTypeJSON)
@@ -74,45 +76,40 @@ func (m *Request) SetHeaders(header http.Header) *Request {
 	return m
 }
 
+func (m *Request) SetBody(body io.Reader) *Request {
+	m.body = body
+	return m
+}
+
 func (m *Request) SetJsonBody(v any) *Request {
 	bs, _ := json.Marshal(v)
 	m.body = bytes.NewReader(bs)
-	m.params = nil
 	return m
 }
 
-func (m *Request) SetBody(body io.Reader) *Request {
-	m.body = body
-	m.params = nil
+func (m *Request) SetUrlValue(key, value string) *Request {
+	m.urlValues.Set(key, value)
 	return m
 }
 
-func (m *Request) AddParam(key, value string) *Request {
-	m.params.Add(key, value)
-	m.body = nil
+// SetUrlValues struct to Params
+func (m *Request) SetUrlValues(v any) *Request {
+	m.urlValues = cmap.StructToCMap(v)
 	return m
 }
 
-func (m *Request) SetParam(key, value string) *Request {
-	m.params.Set(key, value)
-	m.body = nil
+func (m *Request) SetForm(key, value string) *Request {
+	m.forms.Set(key, value)
 	return m
 }
 
-// SetStructParams struct to Params
-func (m *Request) SetStructParams(v any) *Request {
-
-	m.params = cmap.StructToCMap(v)
+// SetForms struct to Params
+func (m *Request) SetForms(v any) *Request {
+	m.forms = cmap.StructToCMap(v)
 	return m
 }
 
-// SetParams Get params
-func (m *Request) SetParams(params cmap.CMap) *Request {
-	m.params = params
-	return m
-}
-
-func (m *Request) AddFile(field, fileName, path string) (err error) {
+func (m *Request) SetFile(field, fileName, path string) (err error) {
 	m.f.File, err = fs.OpenFile(path)
 	if err != nil {
 		return
@@ -138,34 +135,33 @@ func (m *Request) Exec() *Response {
 	var body io.Reader
 	var rawQuery string
 
-	if len(m.params) > 0 {
-		rawQuery = m.params.Encode()
+	// url params
+	if len(m.urlValues) > 0 {
+		rawQuery = m.urlValues.Encode()
 	}
-
+	// json/form
 	if m.body != nil {
 		body = m.body
-	} else if m.f.File != nil {
-		bodyByte := &bytes.Buffer{}
-		writer := multipart.NewWriter(bodyByte)
-
-		f, _ := writer.CreateFormFile(m.f.field, m.f.Name())
-		_, _ = io.Copy(f, m.f)
-
-		for key, values := range m.params {
+	}
+	// form-data
+	if m.f.File != nil || len(m.forms) > 0 {
+		bs := &bytes.Buffer{}
+		writer := multipart.NewWriter(bs)
+		for key, values := range m.forms {
 			for _, value := range values {
 				_ = writer.WriteField(key, value)
 			}
 		}
-
-		err = writer.Close()
-		if err != nil {
-			return &Response{nil, nil, err}
+		if m.f.File != nil {
+			f, _ := writer.CreateFormFile(m.f.field, m.f.Name())
+			_, _ = io.Copy(f, m.f)
+			err = writer.Close()
+			if err != nil {
+				return &Response{nil, nil, err}
+			}
+			m.SetContentType(writer.FormDataContentType())
 		}
-
-		m.SetContentType(writer.FormDataContentType())
-		body = bodyByte
-	} else if len(m.params) > 0 {
-		body = strings.NewReader(m.params.Encode())
+		body = bs
 	}
 
 	req, err = http.NewRequest(m.method, m.url, body)
@@ -176,7 +172,6 @@ func (m *Request) Exec() *Response {
 		req.URL.RawQuery = rawQuery
 	}
 	req.Header = m.header
-
 	for _, cookie := range m.cookies {
 		req.AddCookie(cookie)
 	}

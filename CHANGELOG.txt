@@ -1,5 +1,8 @@
+improve the reflect
+improve the ghttp
+improve the type/time
 export pool Wait
-improve conf、time and test
+improve conf
 improve the log
 optimize redis and log use
 add reflect.Set();remove bmap to use tmap
