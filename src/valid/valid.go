@@ -171,7 +171,7 @@ func (v *Validator) Check() (errs ValidError) {
 
 			for i := 0; i < typ.NumField(); i++ {
 				if tag2.ParseJsonFieldTag(typ.Field(i)) == k {
-					val, _ = mr.Field(d, typ.Field(i).Name)
+					val = mr.Field(d, typ.Field(i).Name)
 					break
 				}
 			}

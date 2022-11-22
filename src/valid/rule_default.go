@@ -269,7 +269,7 @@ func regex(v any, param string) error {
 	return nil
 }
 
-// asInt return the parameter as a int64
+// asInt return the parameter as int64
 // or panics if it can't convert
 func asInt(param string) (int64, error) {
 	i, err := strconv.ParseInt(param, 0, 64)
@@ -279,7 +279,7 @@ func asInt(param string) (int64, error) {
 	return i, nil
 }
 
-// asUint return the parameter as a uint64
+// asUint return the parameter as uint64
 // or panics if it can't convert
 func asUint(param string) (uint64, error) {
 	i, err := strconv.ParseUint(param, 0, 64)

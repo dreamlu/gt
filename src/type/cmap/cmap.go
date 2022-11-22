@@ -64,7 +64,7 @@ func (v CMap) Obtain(key string) []string {
 	return v[key]
 }
 
-// Append set the key to value if it doesn't exists. append if it exists.
+// Append set the key to value if it doesn't exist. append if it exists.
 func (v CMap) Append(key, value string) CMap {
 	vs := v.Get(key)
 	if vs == "" || len(strings.TrimSpace(vs)) == 0 {
@@ -74,7 +74,7 @@ func (v CMap) Append(key, value string) CMap {
 	return v.Set(key, vs+value)
 }
 
-// Insert set the key to value if it doesn't exists. insert if it exists.
+// Insert set the key to value if it doesn't exist. insert if it exists.
 func (v CMap) Insert(key, value string) CMap {
 	vs := v.Get(key)
 	if vs == "" || len(strings.TrimSpace(vs)) == 0 {

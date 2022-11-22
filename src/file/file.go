@@ -205,7 +205,7 @@ func (f *File) compressImage() error {
 // file byte data[:512]
 // image type: "image/jpeg","image/png"
 func ContentType(buffer []byte) string {
-	// Use the net/http package's handy DectectContentType function. Always returns a valid
+	// Use the net/http package's handy DetectContentType function. Always returns a valid
 	// content-type by returning "application/octet-stream" if no others seemed to match.
 	contentType := http.DetectContentType(buffer[:512])
 	return contentType

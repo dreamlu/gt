@@ -1,9 +1,9 @@
 package mongo
 
 import (
-	"github.com/dreamlu/gt/src/type/bmap"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/src/type/time"
+	"github.com/dreamlu/gt/src/type/tmap"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"sync"
 	"testing"
@@ -98,7 +98,7 @@ func TestMongo_GetBySearch(t *testing.T) {
 		//Table("client"),
 		Data(&client),
 	)
-	cd.FindSearch(bmap.NewBMap().
+	cd.FindSearch(tmap.NewTMap[any]().
 		//Set("clientPage", "1").
 		//Set("everyPage", "3").
 		Set("order", "id desc").
@@ -140,7 +140,7 @@ func TestMongo_GoRoutine(t *testing.T) {
 			defer g.Done()
 			var client []*Client
 			cd.Params(Data(&client))
-			cd.FindSearch(bmap.NewBMap().
+			cd.FindSearch(tmap.NewTMap[any]().
 				Set("order", "id desc"),
 			)
 			t.Log(len(client))

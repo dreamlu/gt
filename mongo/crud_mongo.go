@@ -79,7 +79,7 @@ func (m *Mongo) Find(params cmap.CMap) Crud {
 	return clone
 }
 
-// GetByID must be mongodb primitive.ObjectID
+// FindID must be mongodb primitive.ObjectID
 // by id
 func (m *Mongo) FindID(id any) Crud {
 	clone := m.clone()

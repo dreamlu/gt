@@ -147,10 +147,8 @@ func (m *Request) Exec() *Response {
 	if m.f.File != nil || len(m.forms) > 0 {
 		bs := &bytes.Buffer{}
 		writer := multipart.NewWriter(bs)
-		for key, values := range m.forms {
-			for _, value := range values {
-				_ = writer.WriteField(key, value)
-			}
+		for key := range m.forms {
+			_ = writer.WriteField(key, m.forms.Get(key))
 		}
 		if m.f.File != nil {
 			f, _ := writer.CreateFormFile(m.f.field, m.f.Name())
