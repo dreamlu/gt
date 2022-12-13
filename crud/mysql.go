@@ -9,6 +9,7 @@ import (
 	"github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/crud/dep/result"
 	"github.com/dreamlu/gt/log"
+	cons2 "github.com/dreamlu/gt/src/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -43,7 +44,7 @@ type dba struct {
 func (db *DB) NewDB() {
 
 	dbS := &dba{}
-	conf.UnmarshalField(cons.ConfDB, dbS)
+	conf.UnmarshalField(cons2.ConfDB, dbS)
 	db.log = dbS.Log
 	var (
 		sql = fmt.Sprintf("%s:%s@%s/?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host)
@@ -322,7 +323,7 @@ func (db *DB) CreateMore(table string, model any, data any) {
 func (db *DB) InitColumns(param *Params) {
 
 	var (
-		name   = conf.Get[string](cons.ConfDBName)
+		name   = conf.Get[string](cons2.ConfDBName)
 		tables = []string{param.Table}
 	)
 

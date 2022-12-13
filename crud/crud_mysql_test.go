@@ -623,7 +623,7 @@ func TestGetV2(t *testing.T) {
 	t.Log(cd.Error())
 }
 
-func TestSofeDel(t *testing.T) {
+func TestSoftDel(t *testing.T) {
 	var data []*Order
 	cd := crud.Params(
 		Model(Order{}),

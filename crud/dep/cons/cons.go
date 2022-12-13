@@ -2,12 +2,7 @@
 
 package cons
 
-// devMode const
-// key words
 const (
-	Dev  = "dev"
-	Prod = "prod"
-
 	GtSubSQL              = "sub_sql"
 	GtClientPage          = "clientPage"
 	GtClientPageUnderLine = "client_page"

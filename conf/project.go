@@ -9,6 +9,17 @@ import (
 	"strings"
 )
 
+// rPath: relative path
+// aPath: absolute path
+// return config path
+func newPath(rPath string) string {
+	aPath := ProjectPath() + rPath
+	if gos.Exists(aPath) {
+		return aPath
+	}
+	return rPath
+}
+
 // ProjectPath return project path
 func ProjectPath() (path string) {
 	// default linux/mac os

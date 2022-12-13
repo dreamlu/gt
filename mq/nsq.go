@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dreamlu/gt/conf"
-	"github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/log"
+	"github.com/dreamlu/gt/src/cons"
 	"github.com/nsqio/go-nsq"
 	"strings"
 )

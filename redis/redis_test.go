@@ -4,7 +4,7 @@ package redis
 
 import (
 	"github.com/dreamlu/gt/conf"
-	"github.com/dreamlu/gt/crud/dep/cons"
+	"github.com/dreamlu/gt/src/cons"
 	"github.com/dreamlu/gt/src/type/time"
 	"testing"
 )

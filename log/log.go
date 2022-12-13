@@ -5,7 +5,7 @@ package log
 import (
 	"fmt"
 	"github.com/dreamlu/gt/conf"
-	"github.com/dreamlu/gt/crud/dep/cons"
+	"github.com/dreamlu/gt/src/cons"
 	"github.com/dreamlu/gt/src/cons/color"
 	"github.com/dreamlu/gt/src/gos"
 	"github.com/lestrrat-go/file-rotatelogs"

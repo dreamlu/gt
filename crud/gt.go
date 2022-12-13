@@ -8,6 +8,7 @@ import (
 	cons2 "github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/crud/dep/tag"
 	"github.com/dreamlu/gt/mock"
+	"github.com/dreamlu/gt/src/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"github.com/dreamlu/gt/src/util"
@@ -215,14 +216,14 @@ func (gt *GT) moreSql() (tables []string) {
 	bufNt.WriteString(count)
 	bufNt.WriteString("from ")
 	if tb := DBS[tables[0]]; tb != "" {
-		bufNt.WriteByte(cons2.Backticks)
+		bufNt.WriteByte(cons.Backticks)
 		bufNt.WriteString(tb)
-		bufNt.WriteByte(cons2.Backticks)
+		bufNt.WriteByte(cons.Backticks)
 		bufNt.WriteByte('.')
 	}
-	bufNt.WriteByte(cons2.Backticks)
+	bufNt.WriteByte(cons.Backticks)
 	bufNt.WriteString(tables[0])
-	bufNt.WriteByte(cons2.Backticks)
+	bufNt.WriteByte(cons.Backticks)
 	bufNt.WriteByte(' ')
 	// inner join
 	for i := 1; i < len(innerTables); i += 2 {
@@ -386,13 +387,13 @@ func (gt *GT) whereKv(bufW *bytes.Buffer, k, v string) {
 
 // where k =/in v
 func (gt *GT) whereTbKv(bufW *bytes.Buffer, tb, k, v string) {
-	bufW.WriteByte(cons2.Backticks)
+	bufW.WriteByte(cons.Backticks)
 	bufW.WriteString(tb)
-	bufW.WriteByte(cons2.Backticks)
+	bufW.WriteByte(cons.Backticks)
 	bufW.WriteByte('.')
-	bufW.WriteByte(cons2.Backticks)
+	bufW.WriteByte(cons.Backticks)
 	bufW.WriteString(k)
-	bufW.WriteByte(cons2.Backticks)
+	bufW.WriteByte(cons.Backticks)
 	gt.where(bufW, k, v)
 }
 

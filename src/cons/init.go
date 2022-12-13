@@ -3,6 +3,7 @@ package cons
 var (
 	Backticks           uint8 = '`' // different sql mark
 	ConfPath                  = "conf/app.yaml"
+	ConfOverride              = true
 	DefaultDevMode            = "app.devMode"
 	ConfDB                    = "app.db"
 	ConfDBName                = "app.db.name"

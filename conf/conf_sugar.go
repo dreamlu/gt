@@ -12,7 +12,14 @@ var (
 // Configger single config
 func Configger(params ...string) *Config {
 	onceConfig.Do(func() {
-		config = NewConfig(params[:]...)
+		config = NewConfig(params...)
+	})
+	return config
+}
+
+func EmptyConfigger() *Config {
+	onceConfig.Do(func() {
+		config = NewConfig("")
 	})
 	return config
 }

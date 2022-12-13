@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	cons2 "github.com/dreamlu/gt/crud/dep/cons"
+	"github.com/dreamlu/gt/src/cons"
 	"github.com/dreamlu/gt/src/type/amap"
 	"strings"
 )
@@ -41,13 +42,13 @@ func getTagMoreSQL(p *Parses, buf *bytes.Buffer) {
 		if tb == "" {
 			tb = p.Table
 		}
-		buf.WriteByte(cons2.Backticks)
+		buf.WriteByte(cons.Backticks)
 		buf.WriteString(tb)
-		buf.WriteByte(cons2.Backticks)
+		buf.WriteByte(cons.Backticks)
 		buf.WriteByte('.')
-		buf.WriteByte(cons2.Backticks)
+		buf.WriteByte(cons.Backticks)
 		buf.WriteString(p.TagTag[tag])
-		buf.WriteByte(cons2.Backticks)
+		buf.WriteByte(cons.Backticks)
 		if p.OTags[tag] != "" {
 			buf.WriteString(" as ")
 			buf.WriteString(p.OTags[tag])
@@ -98,9 +99,9 @@ func getTagSQL(p *Parses, buf *bytes.Buffer, alias string) {
 			buf.WriteString(alias)
 			buf.WriteByte('.')
 		}
-		buf.WriteByte(cons2.Backticks)
+		buf.WriteByte(cons.Backticks)
 		buf.WriteString(tag)
-		buf.WriteByte(cons2.Backticks)
+		buf.WriteByte(cons.Backticks)
 		buf.WriteByte(',')
 	}
 }
@@ -118,14 +119,14 @@ func GetColParamSQL(p *Parses) (sql string) {
 
 func innerLeftSQL(bufNt *bytes.Buffer, DBS map[string]string, tables, fields []string, i int) {
 	if tb := DBS[tables[i]]; tb != "" {
-		bufNt.WriteByte(cons2.Backticks)
+		bufNt.WriteByte(cons.Backticks)
 		bufNt.WriteString(tb)
-		bufNt.WriteByte(cons2.Backticks)
+		bufNt.WriteByte(cons.Backticks)
 		bufNt.WriteByte('.')
 	}
-	bufNt.WriteByte(cons2.Backticks)
+	bufNt.WriteByte(cons.Backticks)
 	bufNt.WriteString(tables[i])
-	bufNt.WriteByte(cons2.Backticks)
+	bufNt.WriteByte(cons.Backticks)
 	bufNt.WriteString(" on ")
 	fieldSQL(bufNt, tables[i-1], tables[i], fields[i-1], fields[i])
 }
@@ -186,12 +187,12 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 }
 
 func writeField(bufNt *bytes.Buffer, tb, v, c string) {
-	bufNt.WriteByte(cons2.Backticks)
+	bufNt.WriteByte(cons.Backticks)
 	bufNt.WriteString(tb)
-	bufNt.WriteByte(cons2.Backticks)
+	bufNt.WriteByte(cons.Backticks)
 	bufNt.WriteByte('.')
-	bufNt.WriteByte(cons2.Backticks)
+	bufNt.WriteByte(cons.Backticks)
 	bufNt.WriteString(v)
-	bufNt.WriteByte(cons2.Backticks)
+	bufNt.WriteByte(cons.Backticks)
 	bufNt.WriteString(c)
 }
