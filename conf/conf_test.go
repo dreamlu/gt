@@ -58,8 +58,13 @@ func TestConfigger(t *testing.T) {
 
 func TestRemoteConfig(t *testing.T) {
 
+	remote := &Remote{
+		Provider: "consul",
+		Endpoint: "http://192.168.10.168:8500",
+		Path:     []string{"config/common.yaml"},
+	}
 	cfg := EmptyConfigger()
-	cfg.AddRemoteConfig("consul", "http://192.168.10.168:8500", "config/common.yaml")
+	cfg.AddRemoteConfig(remote)
 	t.Log(cfg.Get("port"))
 	t.Log(cfg.Get("test.remote-port"))
 
@@ -68,8 +73,8 @@ func TestRemoteConfig(t *testing.T) {
 	OverrideRemote(false)
 	//OverrideRemote(false)
 	cf := NewConfig("conf/main.yml")
-	remoteConfig := cf.AddRemoteConfig("consul", "http://192.168.10.168:8500", "config/common.yaml")
-	_ = remoteConfig.WatchRemoteConfigOnChannel()
+	cf.AddRemoteConfig(remote)
+	cf.WatchRemoteConfig()
 	cf.Unmarshal(cof)
 	t.Log(cof)
 	for {

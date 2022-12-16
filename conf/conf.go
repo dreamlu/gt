@@ -3,7 +3,6 @@
 package conf
 
 import (
-	"errors"
 	"fmt"
 	"github.com/dreamlu/gt/src/cons"
 	"github.com/dreamlu/gt/src/gos"
@@ -60,41 +59,6 @@ func NewConfig(params ...string) *Config {
 	// load data
 	c.loadYaml()
 	return c
-}
-
-// find yaml dev mode
-// default devMode is app.yaml
-// use 'app' as the map key
-func (c *Config) getDevMode() (devMode string) {
-	yaml := c.loadYaml()
-	if yaml.Viper == nil {
-		panic(errors.New("no yaml: " + c.path))
-	}
-	if devModeI := yaml.Get(cons.DefaultDevMode); devModeI != nil {
-		return devModeI.(string)
-	}
-	return ""
-}
-
-// load dev mode data
-func (c *Config) loadYaml() *Yaml {
-	yaml := &Yaml{}
-	yaml.loadYaml(c.path)
-	// add yamlS data
-	c.YamlS = append(c.YamlS, yaml)
-	return yaml
-}
-
-func (c *Config) AddRemoteConfig(provider, endpoint, path string) *Yaml {
-	yaml := &Yaml{}
-	yaml.loadRemoteYaml(provider, endpoint, path)
-	// add yamlS data
-	if cons.ConfOverride {
-		c.YamlS = append([]*Yaml{yaml}, c.YamlS...)
-	} else {
-		c.YamlS = append(c.YamlS, yaml)
-	}
-	return yaml
 }
 
 // Get name

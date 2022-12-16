@@ -15,7 +15,8 @@ import (
 
 type Yaml struct {
 	*viper.Viper
-	isRemote bool
+	isRemote                 bool
+	provider, endpoint, path string
 }
 
 // load the default app.yaml data
@@ -29,23 +30,26 @@ func (c *Yaml) loadYaml(path string) {
 		panic("can not read " + path + " config")
 	}
 	c.Viper = v
+	c.path = path
 }
 
 // load the default app.yaml data
 func (c *Yaml) loadRemoteYaml(provider, endpoint, path string) {
 
-	v := viper.New()
-	err := v.AddRemoteProvider(provider, endpoint, path)
+	c.Viper = viper.New()
+	c.Viper.SetConfigType(cons.Yaml)
+	err := c.AddRemoteProvider(provider, endpoint, path)
 	if err != nil {
 		panic(err)
 	}
-	v.SetConfigType(cons.Yaml)
-	err = v.ReadRemoteConfig()
+	err = c.Viper.ReadRemoteConfig()
 	if err != nil {
-		panic("can not read " + path + " config")
+		panic(err)
 	}
-	c.Viper = v
 	c.isRemote = true
+	c.provider = provider
+	c.endpoint = endpoint
+	c.path = path
 }
 
 func (c *Yaml) Get(name string) any {
