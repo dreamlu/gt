@@ -2,91 +2,87 @@ package mq
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/dreamlu/gt/conf"
-	"github.com/dreamlu/gt/log"
-	"github.com/dreamlu/gt/src/cons"
 	"github.com/nsqio/go-nsq"
 	"strings"
 )
 
-// Nsg nsq
-type Nsg struct {
-	producer *nsq.Producer
-	consumer *nsq.Consumer
-	bs       []byte
+// NSQ nsq
+type NSQ struct {
+	producer     *nsq.Producer
+	consumerAddr string
+	consumers    map[string]*nsq.Consumer
+	bs           []byte
+	err          error
 }
 
-func (n *Nsg) NewProducer() MQ {
+func NewNSQ(producerAddr, consumerAddr string) MQ {
 
 	config := nsq.NewConfig()
-	producer, err := nsq.NewProducer(conf.Get[string](cons.ConfNsqProducerAddr), config)
+	producer, err := nsq.NewProducer(producerAddr, config)
 	if err != nil {
-		fmt.Printf("[gt]:create producer failed, err:%v\n", err)
+		panic(err)
 		return nil
 	}
-	n.producer = producer
+	return &NSQ{
+		producer:     producer,
+		consumerAddr: consumerAddr,
+		consumers:    make(map[string]*nsq.Consumer),
+	}
+}
+
+func (n *NSQ) Stop(topic, channel string) MQ {
+	n.consumers[topic+channel].Stop()
 	return n
 }
 
-func (n *Nsg) NewConsumer(topic, channel string) MQ {
-
-	config := nsq.NewConfig()
-	consumer, err := nsq.NewConsumer(topic, channel, config)
-	if err != nil {
-		fmt.Printf("[gt]:create producer failed, err:%v\n", err)
-		return nil
-	}
-	n.consumer = consumer
-	return n
-}
-
-func (n *Nsg) Stop() {
-	n.consumer.Stop()
-}
-
-func (n *Nsg) Pub(topic string, msg any) error {
+func (n *NSQ) Pub(topic string, msg any) MQ {
 
 	b, err := json.Marshal(msg)
 	if err != nil {
-		fmt.Println("[gt]:MSG Pub err: ", err)
-		return err
+		n.err = err
+		return n
 	}
-	err = n.producer.Publish(topic, b)
-	return err
+	n.err = n.producer.Publish(topic, b)
+	return n
 }
 
-func (n *Nsg) MultiPub(topic string, msgs ...any) error {
+func (n *NSQ) MultiPub(topic string, msgs ...any) MQ {
 
 	var bs [][]byte
 	for _, v := range msgs {
 		b, err := json.Marshal(v)
 		if err != nil {
-			fmt.Println("[gt]:MSG MultiPub err: ", err)
-			return err
+			n.err = err
+			return n
 		}
 		bs = append(bs, b)
 	}
 
-	err := n.producer.MultiPublish(topic, bs)
-	return err
+	n.err = n.producer.MultiPublish(topic, bs)
+	return n
 }
 
-func (n *Nsg) Sub(handler HandlerFunc) error {
+func (n *NSQ) Sub(topic, channel string, handler HandlerFunc) MQ {
 
-	n.consumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
+	config := nsq.NewConfig()
+	consumer, err := nsq.NewConsumer(topic, channel, config)
+	if err != nil {
+		n.err = err
+		return n
+	}
+	n.consumers[topic+channel] = consumer
+
+	consumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
 		msg := &Message{}
-		msg.Message = message
+		msg.Body = message.Body
+		msg.MessageID = string(message.ID[:])
 		err := handler(msg)
 		return err
 	}))
-	// use ',' split address
-	// ConnectToNSQD/ConnectToNSQLookupd
-	err := n.consumer.ConnectToNSQDs(strings.Split(conf.Get[string](cons.ConfNsqConsumerAddr), ","))
-	if err != nil {
-		log.Error("MSG Consumer ConnectToNSQD err: ", err)
-		return err
-	}
+	n.err = consumer.ConnectToNSQDs(strings.Split(n.consumerAddr, ","))
+	return n
+}
 
-	return nil
+func (n *NSQ) Error() error {
+	return n.err
 }

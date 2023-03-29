@@ -1,7 +1,9 @@
 package mq
 
 import (
+	"github.com/dreamlu/gt/conf"
 	"github.com/dreamlu/gt/log"
+	"github.com/dreamlu/gt/src/cons"
 	"testing"
 	"time"
 )
@@ -13,7 +15,7 @@ type Notify struct {
 
 func TestNsg(t *testing.T) {
 
-	m := NewProducer() // or m := NewProducer(new(Nsg))
+	m := NewNSQ(conf.Get[string](cons.ConfNsqProducerAddr), conf.Get[string](cons.ConfNsqConsumerAddr)) // or m := NewProducer(new(NSQ))
 	//m.Pub("b", 123)
 	m.Pub("b", Notify{
 		Name:    "名称",
@@ -21,21 +23,17 @@ func TestNsg(t *testing.T) {
 	})
 	m.MultiPub("b2", "哈", "呵")
 
-	c := NewConsumer("b", "b-channel")
-	err := c.Sub(B)
+	err := m.Sub("b", "b-channel", B).Error()
 	if err != nil {
-		t.Log(err)
+		t.Error(err)
 		return
 	}
-
-	c = NewConsumer("b", "c-channel")
-	err = c.Sub(B)
+	err = m.Sub("b", "c-channel", B).Error()
 	if err != nil {
-		t.Log(err)
+		t.Error(err)
 		return
 	}
-	c.Stop()
-
+	//m.Stop()
 	time.Sleep(15 * time.Second)
 }
 
