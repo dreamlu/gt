@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-// time.Duration expend
 const (
 	Day        = 24 * time.Minute
 	Week       = 7 * Day
@@ -22,11 +21,7 @@ const (
 type CTime time.Time
 
 func (t CTime) MarshalJSON() ([]byte, error) {
-	if t.IsZero() {
-		return []byte(`""`), nil
-	}
-	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format(Layout))
-	return []byte(stamp), nil
+	return marshalJSON[CTime](t)
 }
 
 func (t *CTime) UnmarshalJSON(b []byte) error {
@@ -37,7 +32,7 @@ func (t *CTime) UnmarshalJSON(b []byte) error {
 	if len(s) <= 10 {
 		s = fmt.Sprintf("%s 00:00:00", s)
 	}
-	ti, err := time.ParseInLocation(Layout, s, time.Local)
+	ti, err := parse(Layout, s)
 	if err != nil {
 		return err
 	}
@@ -68,8 +63,6 @@ func (CTime) GormDataType() string {
 	return "datetime"
 }
 
-// must sure MarshalJSON is right
-// to string
 func (t CTime) String() string {
 	if t.IsZero() {
 		return ""
@@ -85,78 +78,11 @@ func (t CTime) Time() time.Time {
 	return time.Time(t)
 }
 
-// CNTime 时间格式化2006-01-02 15:04:05.000
-type CNTime time.Time
-
-func (t CNTime) MarshalJSON() ([]byte, error) {
-	if t.IsZero() {
-		return []byte(`""`), nil
-	}
-	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format(LayoutN))
-	return []byte(stamp), nil
-}
-
-func (t *CNTime) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), `"`)
-	if s == "" {
-		return nil
-	}
-	ti, err := time.ParseInLocation(LayoutN, s, time.Local)
-	if err != nil {
-		return err
-	}
-	*t = CNTime(ti)
-	return nil
-}
-
-func (t CNTime) Value() (driver.Value, error) {
-	var zeroTime time.Time
-	var ti = time.Time(t)
-	if ti.UnixNano() == zeroTime.UnixNano() {
-		return nil, nil
-	}
-	return ti, nil
-}
-
-func (t *CNTime) Scan(v any) error {
-	value, ok := v.(time.Time)
-	if ok {
-		*t = CNTime(value)
-		return nil
-	}
-	return fmt.Errorf("can not convert %v to CNTime", v)
-}
-
-func (CNTime) GormDataType() string {
-	return "datetime(3)"
-}
-
-// must sure MarshalJSON is right
-// to string
-func (t CNTime) String() string {
-	if t.IsZero() {
-		return ""
-	}
-	return time.Time(t).Format(LayoutN)
-}
-
-func (t CNTime) IsZero() bool {
-	return time.Time(t).IsZero()
-}
-
-func (t CNTime) Time() time.Time {
-	return time.Time(t)
-}
-
 // CDate 时间格式化2006-01-02
 type CDate time.Time
 
 func (t CDate) MarshalJSON() ([]byte, error) {
-	if t.IsZero() {
-		return []byte(`""`), nil
-	}
-	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format(LayoutDate))
-	return []byte(stamp), nil
+	return marshalJSON[CDate](t)
 }
 
 func (t *CDate) UnmarshalJSON(b []byte) error {
@@ -164,7 +90,7 @@ func (t *CDate) UnmarshalJSON(b []byte) error {
 	if s == "" {
 		return nil
 	}
-	ti, err := time.ParseInLocation(LayoutDate, s, time.Local)
+	ti, err := parse(LayoutDate, s)
 	if err != nil {
 		return err
 	}
@@ -194,8 +120,6 @@ func (CDate) GormDataType() string {
 	return "date"
 }
 
-// must sure MarshalJSON is right
-// to string
 func (t CDate) String() string {
 	if t.IsZero() {
 		return ""
@@ -211,15 +135,68 @@ func (t CDate) Time() time.Time {
 	return time.Time(t)
 }
 
+// CNTime 时间格式化2006-01-02 15:04:05.000
+type CNTime time.Time
+
+func (t CNTime) MarshalJSON() ([]byte, error) {
+	return marshalJSON[CNTime](t)
+}
+
+func (t *CNTime) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	if s == "" {
+		return nil
+	}
+	ti, err := parse(LayoutN, s)
+	if err != nil {
+		return err
+	}
+	*t = CNTime(ti)
+	return nil
+}
+
+func (t CNTime) Value() (driver.Value, error) {
+	var zeroTime time.Time
+	var ti = time.Time(t)
+	if ti.UnixNano() == zeroTime.UnixNano() {
+		return nil, nil
+	}
+	return ti, nil
+}
+
+func (t *CNTime) Scan(v any) error {
+	value, ok := v.(time.Time)
+	if ok {
+		*t = CNTime(value)
+		return nil
+	}
+	return fmt.Errorf("can not convert %v to CNTime", v)
+}
+
+func (CNTime) GormDataType() string {
+	return "datetime(3)"
+}
+
+func (t CNTime) String() string {
+	if t.IsZero() {
+		return ""
+	}
+	return time.Time(t).Format(LayoutN)
+}
+
+func (t CNTime) IsZero() bool {
+	return time.Time(t).IsZero()
+}
+
+func (t CNTime) Time() time.Time {
+	return time.Time(t)
+}
+
 // CSTime 时间格式化15:04:05
 type CSTime time.Time
 
 func (t CSTime) MarshalJSON() ([]byte, error) {
-	if t.IsZero() {
-		return []byte(`""`), nil
-	}
-	var stamp = fmt.Sprintf(`"%s"`, time.Time(t).Format(LayoutS))
-	return []byte(stamp), nil
+	return marshalJSON[CSTime](t)
 }
 
 func (t *CSTime) UnmarshalJSON(b []byte) error {
@@ -227,7 +204,7 @@ func (t *CSTime) UnmarshalJSON(b []byte) error {
 	if s == "" {
 		return nil
 	}
-	ti, err := time.ParseInLocation(LayoutS, s, time.Local)
+	ti, err := parse(LayoutS, s)
 	if err != nil {
 		return err
 	}
@@ -253,8 +230,6 @@ func (t CSTime) GormDataType() string {
 	return "time;"
 }
 
-// must sure MarshalJSON is right
-// to string
 func (t CSTime) String() string {
 	if t.IsZero() {
 		return ""

@@ -41,6 +41,24 @@ func CDateNow() CDate {
 	return CDate(time.Now())
 }
 
+func parse(layout, value string) (t time.Time, err error) {
+	t, err = time.ParseInLocation(layout, value, time.Local)
+	if err != nil {
+		value = fmt.Sprintf(`"%s"`, value)
+		err = t.UnmarshalJSON([]byte(value))
+		return
+	}
+	return
+}
+
+type ct interface {
+	CTime | CDate | CNTime | CSTime
+}
+
+func marshalJSON[T ct](t T) ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, t)), nil
+}
+
 // SubDate 日期差计算
 // 年月日计算
 func SubDate(date1, date2 time.Time) string {

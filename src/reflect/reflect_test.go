@@ -6,7 +6,7 @@ import (
 
 // order
 type Order struct {
-	ID         *int  `json:"id"`
+	ID         int   `json:"id"`
 	UserID     int64 `json:"user_id"`     // user id
 	ServiceID  int64 `json:"service_id"`  // service table id
 	CreateTime int64 `json:"create_time"` // createtime
@@ -21,8 +21,8 @@ func TestReflect(t *testing.T) {
 
 func TestGetDataID(t *testing.T) {
 	or := Order{} //new(Order)
-	var a = 23
-	or.ID = &a
+	//var a = 23
+	or.ID = 23
 	id := Field(or, "ID")
 	t.Log(id)
 	id = TrueField(or, "ID")
@@ -48,12 +48,12 @@ func TestTrueValueOf(t *testing.T) {
 
 func TestSet(t *testing.T) {
 	or := Order{} //new(Order)
-	Set(&or, "ID", int64(3))
+	Set(&or, "ID", int(3))
 	t.Log(or)
 
 	var i any
 	ot := Order{} //new(Order)
 	i = &ot
-	Set(i, "ID", int64(4))
+	Set(i, "ID", int(4))
 	t.Log(ot)
 }

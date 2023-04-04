@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 )
 
+// AMap Deprecated use tmap.TMap replace
 type AMap map[string]string
 
 // Get gets the first value associated with the given key.
