@@ -2,6 +2,8 @@ package util
 
 import (
 	"bytes"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"strings"
 	"unicode"
 )
@@ -25,6 +27,6 @@ func HumpToLine(str string) string {
 // LineToHump Underscore to hump
 func LineToHump(str string) string {
 	str = strings.Replace(str, "_", " ", -1)
-	str = strings.Title(str)
+	str = cases.Title(language.English, cases.NoLower).String(str)
 	return strings.Replace(str, " ", "", -1)
 }

@@ -3,7 +3,7 @@ package file
 import (
 	"bytes"
 	"image/png"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -38,12 +38,12 @@ func TestCompressImage(t *testing.T) {
 }
 
 func TestFileType(t *testing.T) {
-	data, _ := ioutil.ReadFile("test.jpg")
+	data, _ := os.ReadFile("test.jpg")
 	t.Log(ContentType(data))
 }
 
 func TestContainsTransparent(t *testing.T) {
-	data, _ := ioutil.ReadFile("../../test/file/不透明.png")
+	data, _ := os.ReadFile("../../test/file/不透明.png")
 	img, _ := png.Decode(bytes.NewReader(data))
 	ContainsTransparent(img)
 }

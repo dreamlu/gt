@@ -12,7 +12,6 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -141,7 +140,7 @@ func (f *File) Compress() {
 
 func (f *File) IsImg() bool {
 	if f.ContentType == "" {
-		data, _ := ioutil.ReadFile(f.Path)
+		data, _ := os.ReadFile(f.Path)
 		f.ContentType = ImageType(data)
 	}
 	if strings.Contains(f.ContentType, PNG) || strings.Contains(f.ContentType, JPEG) {
@@ -153,7 +152,7 @@ func (f *File) IsImg() bool {
 // compressImage image compress
 func (f *File) compressImage() error {
 	var img image.Image
-	imgFile, err := ioutil.ReadFile(f.Path)
+	imgFile, err := os.ReadFile(f.Path)
 	if err != nil {
 		return err
 	}

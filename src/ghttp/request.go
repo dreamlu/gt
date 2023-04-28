@@ -6,7 +6,6 @@ import (
 	"github.com/dreamlu/gt/src/file/fs"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"strings"
@@ -25,7 +24,7 @@ const (
 	ContentTypeFormData = "multipart/form-data"
 )
 
-//Request Http Request
+// Request Http Request
 type Request struct {
 	url       string
 	method    string
@@ -182,6 +181,6 @@ func (m *Request) Exec() *Response {
 		return &Response{resp, nil, err}
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	return &Response{resp, data, err}
 }

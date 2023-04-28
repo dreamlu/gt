@@ -1,6 +1,6 @@
 module github.com/dreamlu/gt
 
-go 1.18
+go 1.20
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0
@@ -14,6 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.15.0
 	go.mongodb.org/mongo-driver v1.6.0
+	golang.org/x/text v0.7.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.3.2
 	gorm.io/gorm v1.23.3
@@ -86,7 +87,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.107.0 // indirect

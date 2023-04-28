@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 	"io/fs"
-	"io/ioutil"
+	"os"
 	"time"
 )
 
@@ -25,7 +25,7 @@ func NewFile() *File {
 }
 
 func OpenFile(name string) (*File, error) {
-	f, err := ioutil.ReadFile(name)
+	f, err := os.ReadFile(name)
 	if err != nil {
 		return nil, err
 	}

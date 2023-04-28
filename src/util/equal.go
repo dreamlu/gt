@@ -21,7 +21,7 @@ func EqualJson(src, dst any) bool {
 }
 
 func Equal(src, dst any) bool {
-	if reflect.TrueValueOf(src).Interface() != reflect.TrueValueOf(dst).Interface() {
+	if reflect.TrueValueOf(src).Interface() == reflect.TrueValueOf(dst).Interface() {
 		return true
 	}
 	return false
