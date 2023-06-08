@@ -57,3 +57,8 @@ func TestSet(t *testing.T) {
 	Set(i, "ID", int(4))
 	t.Log(ot)
 }
+
+func TestCall(t *testing.T) {
+	or := Order{}
+	Call(or, "NoMethod")
+}

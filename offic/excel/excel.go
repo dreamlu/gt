@@ -21,6 +21,10 @@ type Excel[T comparable] struct {
 	index        int
 }
 
+type Handle[T comparable] interface {
+	ExcelHandle([]*T)
+}
+
 func NewExcel[T comparable]() *Excel[T] {
 	f := excelize.NewFile()
 	var model T
@@ -75,7 +79,7 @@ func (f *Excel[T]) Export(data any) (err error) {
 	return
 }
 
-func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (err error, datas []T) {
+func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (err error, datas []*T) {
 
 	f.File, err = excelize.OpenReader(r, opts...)
 	if err != nil {
@@ -106,8 +110,13 @@ func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (err error, dat
 			value := string2any(k.Type, row[title.Get(v)])
 			reflect.Set(&data, k.Field, value)
 		}
+		datas = append(datas, &data)
+	}
 
-		datas = append(datas, data)
+	// after import
+	var data T
+	if reflect.IsImplements(data, new(Handle[T])) {
+		reflect.Call(data, "ExcelHandle", datas)
 	}
 
 	return

@@ -28,12 +28,19 @@ func TestExport(t *testing.T) {
 	t.Log(e.SaveAs("test.xlsx"))
 }
 
-func TestImport(t *testing.T) {
-	type User struct {
-		ID     int64  `json:"id" gt:"excel:id"`
-		Name   string `json:"name" gt:"excel:名称"`
-		Gender int    `json:"gender"`
+type User struct {
+	ID     int64  `json:"id" gt:"excel:id"`
+	Name   string `json:"name" gt:"excel:名称"`
+	Gender int    `json:"gender"`
+}
+
+func (User) ExcelHandle(users []*User) {
+	for _, user := range users {
+		user.Gender = 1
 	}
+}
+
+func TestImport(t *testing.T) {
 	bs, _ := os.ReadFile("test.xlsx")
 	r := bytes.NewReader(bs)
 	datas, err := Import[User](r)
@@ -41,5 +48,7 @@ func TestImport(t *testing.T) {
 		t.Log(err)
 		return
 	}
-	t.Log(datas)
+	for _, user := range datas {
+		t.Log(user)
+	}
 }
