@@ -2,6 +2,7 @@ package util
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/dreamlu/gt/src/reflect"
 )
 
@@ -21,7 +22,7 @@ func EqualJson(src, dst any) bool {
 }
 
 func Equal(src, dst any) bool {
-	if reflect.TrueValueOf(src).Interface() == reflect.TrueValueOf(dst).Interface() {
+	if fmt.Sprint(reflect.TrueValueOf(src).Interface()) == fmt.Sprint(reflect.TrueValueOf(dst).Interface()) {
 		return true
 	}
 	return false

@@ -9,12 +9,17 @@ import (
 
 // gtTags All GT tags corresponding to a field
 type gtTags struct {
-	FieldName string
-	GtTags    []*gtTag
+	Field  GtField
+	GtTags []*GtTag
 }
 
-// gtTag A GT tag
-type gtTag struct {
+type GtField struct {
+	Field string
+	Type  string
+}
+
+// GtTag A GT tag
+type GtTag struct {
 	Name  string
 	Value string
 }
@@ -48,14 +53,14 @@ func GetGtTags(model any) map[string]gtTags {
 // ParseGtTags use to get all gt tags
 func ParseGtTags(ref reflect.Type, fs ...func(reflect.StructTag) bool) map[string]gtTags {
 	var (
-		tags map[string]string
+		tags map[GtField]string
 		res  = make(map[string]gtTags)
 	)
 	tags = ObtainTags(ref, cons.GT, fs...)
 	for k, v := range tags {
 		tag := parseGtTag(v)
-		tag.FieldName = k
-		res[k] = tag
+		tag.Field = k
+		res[k.Field] = tag
 	}
 	return res
 }
@@ -65,7 +70,7 @@ func parseGtTag(tagValue string) gtTags {
 	var tags gtTags
 	tagValues := strings.Split(tagValue, ";")
 	for _, value := range tagValues {
-		var tag gtTag
+		var tag GtTag
 		if strings.Contains(value, ":") {
 			kv := strings.Split(value, ":")
 			tag.Name = kv[0]
@@ -85,12 +90,12 @@ func GetJsonTags(model any) map[string]string {
 
 func ParseJsonTags(ref reflect.Type, fs ...func(reflect.StructTag) bool) map[string]string {
 	var (
-		tags map[string]string
+		tags map[GtField]string
 		res  = make(map[string]string)
 	)
 	tags = ObtainTags(ref, "json", fs...)
 	for k, v := range tags {
-		res[k] = parseJsonTag(v)
+		res[k.Field] = parseJsonTag(v)
 	}
 	return res
 }
@@ -104,23 +109,23 @@ func parseJsonTag(tagValue string) string {
 
 // ObtainTags use to get the specified tag in the structure
 // fs use to filter specified tags, true means filtering
-func ObtainTags(ref reflect.Type, tagName string, fs ...func(reflect.StructTag) bool) map[string]string {
+func ObtainTags(ref reflect.Type, tagName string, fs ...func(reflect.StructTag) bool) map[GtField]string {
 	return ObtainMoreTags(ref, []string{tagName}, fs...)[tagName]
 }
 
 // ObtainMoreTags use to get the specified tag in the structure
 // fs use to filter specified tags, true means filtering
-func ObtainMoreTags(typ reflect.Type, tagNames []string, fs ...func(reflect.StructTag) bool) map[string]map[string]string {
+func ObtainMoreTags(typ reflect.Type, tagNames []string, fs ...func(reflect.StructTag) bool) map[string]map[GtField]string {
 	if !mr.IsStruct(typ) {
 		return nil
 	}
 	var (
 		field reflect.StructField
 		tag   reflect.StructTag
-		res   = make(map[string]map[string]string)
+		res   = make(map[string]map[GtField]string)
 	)
 	for _, tagName := range tagNames {
-		var tags = make(map[string]string)
+		var tags = make(map[GtField]string)
 		for i := 0; i < typ.NumField(); i++ {
 			field = typ.Field(i)
 			if field.Anonymous {
@@ -136,7 +141,7 @@ func ObtainMoreTags(typ reflect.Type, tagNames []string, fs ...func(reflect.Stru
 				}
 			}
 			if b {
-				tags[field.Name] = tag.Get(tagName)
+				tags[GtField{Field: field.Name, Type: field.Type.Name()}] = tag.Get(tagName)
 			}
 		}
 		res[tagName] = tags
@@ -145,8 +150,8 @@ func ObtainMoreTags(typ reflect.Type, tagNames []string, fs ...func(reflect.Stru
 }
 
 // mergeMap use to merge more map slice
-func mergeMap(ma ...map[string]string) map[string]string {
-	m := make(map[string]string)
+func mergeMap(ma ...map[GtField]string) map[GtField]string {
+	m := make(map[GtField]string)
 	for _, map1 := range ma {
 		for k, v := range map1 {
 			m[k] = v
