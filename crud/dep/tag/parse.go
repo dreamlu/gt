@@ -5,6 +5,7 @@ import (
 	"github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/log"
 	mr "github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/src/tag"
 	"github.com/dreamlu/gt/src/type/amap"
 	"reflect"
 	"strings"
@@ -67,19 +68,8 @@ func parseGt(typ reflect.Type, model reflect.Value, gt Parse) {
 	return
 }
 
-func ParseGtField(field reflect.StructField) (gf amap.AMap) {
-	gf = amap.NewAMap()
-	tv := field.Tag.Get(cons.GT)
-	fs := strings.Split(tv, ";")
-	for _, f := range fs {
-		gtFields := strings.Split(f, ":")
-		if len(gtFields) > 1 {
-			gf[gtFields[0]] = gtFields[1]
-		} else {
-			gf[gtFields[0]] = cons.GtExist
-		}
-	}
-	return
+func ParseGtField(field reflect.StructField) amap.AMap {
+	return tag.ParseGtFieldTag(field).Top().ToAMap()
 }
 
 func ParseGtFieldV(field reflect.StructField) string {

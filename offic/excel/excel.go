@@ -1,9 +1,9 @@
 package excel
 
 import (
-	"github.com/dreamlu/gt/crud/dep/tag"
 	"github.com/dreamlu/gt/src/cons/excel"
 	"github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/src/tag"
 	"github.com/dreamlu/gt/src/type/amap"
 	"github.com/dreamlu/gt/src/type/tmap"
 	"github.com/xuri/excelize/v2"

@@ -1,29 +1,24 @@
 package tag
 
 import (
-	"github.com/dreamlu/gt/crud/dep/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/src/tag"
 	"github.com/dreamlu/gt/src/util"
 	"gorm.io/gorm/schema"
 	"reflect"
 	"strings"
 )
 
-// IsGtTagIgnore can determine gt-tags whether you do not need to parse
-func IsGtTagIgnore(tag reflect.StructTag) bool {
-	return IsTagIgnore(tag, cons.GT, false, cons.GtIgnore, cons.GtSubSQL)
-}
-
 // ParseTag parse tag
 // GtTagIgnore and ParseTagOnly
-func ParseTag(field reflect.StructField) (tag, tagTable, jsonTag string, b bool) {
+func ParseTag(field reflect.StructField) (_tag, tagTable, jsonTag string, b bool) {
 
 	// ignore
-	if IsGtTagIgnore(field.Tag) {
+	if tag.IsGtTagIgnore(field.Tag) {
 		b = true
 		return
 	}
-	tag, tagTable, jsonTag = ParseTagOnly(field)
+	_tag, tagTable, jsonTag = ParseTagOnly(field)
 	return
 }
 
@@ -38,13 +33,16 @@ func ParseTagOnly(field reflect.StructField) (tag, tagTable, jsonTag string) {
 	tag, tagTable = ParseGtFieldTag(field)
 	// gorm
 	if tag == "" {
-		tag, tagTable = ParseGormFieldTag(field)
+		tag = ParseGormFieldTag(field)
 	}
 	// json
 	jsonTag = ParseJsonFieldTag(field)
-	// tag still empty
+
 	if tag == "" {
 		tag = jsonTag
+	}
+	if tag == "" {
+		tag = ParseDefaultFieldTag(field)
 	}
 	return
 }
@@ -59,31 +57,17 @@ func ParseGtFieldTag(field reflect.StructField) (tag, tagTable string) {
 }
 
 // ParseGormFieldTag gorm:"column:field"
-func ParseGormFieldTag(sTag reflect.StructField) (tag, tagTable string) {
-	tagValue := sTag.Tag.Get(cons.GtGorm)
-	if tagValue == "" {
-		return
-	}
-	gtFields := strings.Split(tagValue, ";")
-	for _, v := range gtFields {
-		if strings.Contains(v, cons.GtGormColumn) {
-			tagTable, tag = parseFieldTag(v)
-		}
-	}
-	return
+func ParseGormFieldTag(field reflect.StructField) string {
+	return tag.ParseGormFieldTag(field).Top()
 }
 
 // ParseJsonFieldTag get json field tag
-// if no, use HumpToLine
 func ParseJsonFieldTag(field reflect.StructField) string {
+	return tag.ParseJsonFieldTag(field).Top()
+}
 
-	tag := field.Tag.Get("json")
-	if tag == "" || tag == "-" {
-		tag = util.HumpToLine(field.Name)
-	}
-	// json tag opt `json:"name,opt1,opt2,opts..."`
-	tag = strings.Split(tag, ",")[0]
-	return tag
+func ParseDefaultFieldTag(field reflect.StructField) string {
+	return util.HumpToLine(field.Name)
 }
 
 // GetTags get struct model fields tag []string
@@ -92,8 +76,8 @@ func GetTags(model any) (arr []string) {
 	return getTags(reflect.TypeOf(model))
 }
 
-// GetPartTags remove some like id,_id
-func GetPartTags(model any) (arr []string) {
+// GetKeyTags get sql key tags
+func GetKeyTags(model any) (arr []string) {
 	arr = GetTags(model)
 	for i := 0; i < len(arr); i++ {
 		v := arr[i]
@@ -111,4 +95,31 @@ func ModelTable(model any) string {
 		return t.TableName()
 	}
 	return util.HumpToLine(mr.Name(model))
+}
+
+// ============ split ============
+
+// get struct fields tags via recursion
+// include gt tag rule
+func getTags(typ reflect.Type) (tags []string) {
+	typ = mr.TrueType(typ)
+	if !mr.IsStruct(typ) {
+		return
+	}
+	var (
+		tag string
+		b   bool
+	)
+	for i := 0; i < typ.NumField(); i++ {
+		if typ.Field(i).Anonymous {
+			tags = append(tags, getTags(typ.Field(i).Type)...)
+			continue
+		}
+		tag, _, _, b = ParseTag(typ.Field(i))
+		if b {
+			continue
+		}
+		tags = append(tags, tag)
+	}
+	return tags
 }

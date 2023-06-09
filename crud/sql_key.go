@@ -58,7 +58,7 @@ func GetKeySQL(key string, model any, alias string) (sqlKey string, argsKey []an
 	}
 
 	var (
-		tags = tag.GetPartTags(model)
+		tags = tag.GetKeyTags(model)
 		buf  = bytes.NewBuffer(nil)
 		v    = "%" + keys[0] + "%"
 	)

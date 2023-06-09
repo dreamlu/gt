@@ -5,7 +5,7 @@ package crud
 import (
 	"bytes"
 	"fmt"
-	cons2 "github.com/dreamlu/gt/crud/dep/cons"
+	depCons "github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/crud/dep/tag"
 	"github.com/dreamlu/gt/mock"
 	"github.com/dreamlu/gt/src/cons"
@@ -50,7 +50,7 @@ type GT struct {
 func (gt *GT) parse() *GT {
 	var (
 		typ = mr.TrueTypeof(gt.Model)
-		key = mr.Path(typ, cons2.GT)
+		key = mr.Path(typ, cons.GT)
 		v   = buffer.Get(key)
 	)
 	if v != "" {
@@ -66,7 +66,7 @@ func (gt *GT) parse() *GT {
 
 func (gt *GT) common() {
 	for table, softDelField := range gt.parses.Sd {
-		gt.sqlSoft += fmt.Sprintf(cons2.SoftDel, table, softDelField)
+		gt.sqlSoft += fmt.Sprintf(depCons.SoftDel, table, softDelField)
 	}
 	if gt.sqlSoft != "" {
 		gt.sqlSoft = gt.sqlSoft[:len(gt.sqlSoft)-5]
@@ -90,19 +90,19 @@ func (gt *GT) GetMoreSQL() {
 		tables = gt.moreSql()
 		sql    = GetMoreColSQL(gt.Model, tables...)
 		bufW   bytes.Buffer // gt.sql bytes connect
-		count  = cons2.Count
+		count  = depCons.Count
 	)
 	if gt.distinct != "" {
-		count = fmt.Sprintf(cons2.CountDistinct, gt.distinct)
-		sql = cons2.Distinct + sql
+		count = fmt.Sprintf(depCons.CountDistinct, gt.distinct)
+		sql = depCons.Distinct + sql
 	}
 	gt.sql = strings.Replace(gt.sqlNt, count, sql+gt.SubSQL, 1)
 	// default
-	gt.order = fmt.Sprintf(cons2.OrderDesc, ParseTable(tables[0]))
+	gt.order = fmt.Sprintf(depCons.OrderDesc, ParseTable(tables[0]))
 
 	gt.whereParams()
 	for k, v := range gt.CMaps {
-		if k == cons2.GtKey {
+		if k == depCons.GtKey {
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
 			}
@@ -137,11 +137,11 @@ func (gt *GT) GetSQL() {
 		bufW bytes.Buffer // where sql, sqlNt bytes sql
 	)
 	// select* replace
-	gt.sql = fmt.Sprintf(cons2.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, gt.tableT)
+	gt.sql = fmt.Sprintf(depCons.SelectFrom, GetColSQL(gt.Model)+gt.SubSQL, gt.tableT)
 
 	gt.whereParams()
 	for k, v := range gt.CMaps {
-		if k == cons2.GtKey {
+		if k == depCons.GtKey {
 			if gt.KeyModel == nil {
 				gt.KeyModel = gt.Model
 			}
@@ -165,7 +165,7 @@ func (gt *GT) GetSelectSQL() {
 	if gt.From == "" {
 		gt.From = "from"
 	}
-	gt.sqlNt = cons2.SelectCount + gt.From + strings.Join(strings.Split(gt.sql, gt.From)[1:], "")
+	gt.sqlNt = depCons.SelectCount + gt.From + strings.Join(strings.Split(gt.sql, gt.From)[1:], "")
 	if gt.Group != "" {
 		gt.sql += gt.Group
 	}
@@ -207,10 +207,10 @@ func (gt *GT) moreSql() (tables []string) {
 
 	var (
 		bufNt bytes.Buffer // sql bytes connect
-		count = cons2.SelectCount
+		count = depCons.SelectCount
 	)
 	if gt.distinct != "" {
-		count = fmt.Sprintf(cons2.SelectCountDistinct, gt.distinct)
+		count = fmt.Sprintf(depCons.SelectCountDistinct, gt.distinct)
 	}
 	// sql and sqlCount
 	bufNt.WriteString(count)
@@ -312,19 +312,19 @@ func (gt *GT) whereParams() {
 			continue
 		}
 		switch k {
-		case cons2.GtClientPage, cons2.GtClientPageUnderLine:
+		case depCons.GtClientPage, depCons.GtClientPageUnderLine:
 			gt.clientPage, _ = strconv.ParseInt(v[0], 10, 64)
 			gt.CMaps.Del(k)
 			continue
-		case cons2.GtEveryPage, cons2.GtEveryPageUnderLine:
+		case depCons.GtEveryPage, depCons.GtEveryPageUnderLine:
 			gt.everyPage, _ = strconv.ParseInt(v[0], 10, 64)
 			gt.CMaps.Del(k)
 			continue
-		case cons2.GtOrder:
+		case depCons.GtOrder:
 			gt.order = v[0]
 			gt.CMaps.Del(k)
 			continue
-		case cons2.GtMock:
+		case depCons.GtMock:
 			mock.Mock(gt.Data)
 			gt.isMock = true
 			gt.CMaps.Del(k)
@@ -354,24 +354,24 @@ func (gt *GT) whereSQLNt(bufW *bytes.Buffer) {
 	gt.whereSQL(bufW)
 	gt.sql += gt.sqlW
 	if gt.order != "" {
-		gt.sql += fmt.Sprintf(cons2.OrderS, gt.order)
+		gt.sql += fmt.Sprintf(depCons.OrderS, gt.order)
 	}
 	return
 }
 
 func (gt *GT) whereSQL(bufW *bytes.Buffer) {
-	var softConnect = cons2.WhereS
+	var softConnect = depCons.WhereS
 	if bufW.Len() != 0 {
-		gt.sqlW += fmt.Sprintf(cons2.WhereS, bufW.Bytes()[:bufW.Len()-5])
+		gt.sqlW += fmt.Sprintf(depCons.WhereS, bufW.Bytes()[:bufW.Len()-5])
 		if gt.WhereSQL != "" {
 			gt.Args = append(gt.Args, gt.wArgs...)
-			gt.sqlW += fmt.Sprintf(cons2.AndS, gt.WhereSQL)
+			gt.sqlW += fmt.Sprintf(depCons.AndS, gt.WhereSQL)
 		}
-		softConnect = cons2.AndS
+		softConnect = depCons.AndS
 	} else if gt.WhereSQL != "" {
 		gt.Args = append(gt.Args, gt.wArgs...)
-		gt.sqlW += fmt.Sprintf(cons2.WhereS, gt.WhereSQL)
-		softConnect = cons2.AndS
+		gt.sqlW += fmt.Sprintf(depCons.WhereS, gt.WhereSQL)
+		softConnect = depCons.AndS
 	}
 
 	if gt.sqlSoft != "" {
@@ -398,15 +398,15 @@ func (gt *GT) whereTbKv(bufW *bytes.Buffer, tb, k, v string) {
 }
 
 func (gt *GT) where(bufW *bytes.Buffer, k, v string) {
-	if strings.Contains(v, cons2.GtComma) {
-		bufW.WriteString(cons2.ParamInAnd)
-		gt.Args = append(gt.Args, strings.Split(v, cons2.GtComma)) // args
+	if strings.Contains(v, depCons.GtComma) {
+		bufW.WriteString(depCons.ParamInAnd)
+		gt.Args = append(gt.Args, strings.Split(v, depCons.GtComma)) // args
 	} else {
-		if p := gt.parses.Get(k); p != nil && p.Get(cons2.GtLike) == cons2.GtExist {
-			bufW.WriteString(cons2.ParamLike)
+		if p := gt.parses.Get(k); p != nil && p.Get(depCons.GtLike) == depCons.GtExist {
+			bufW.WriteString(depCons.ParamLike)
 			v = "%" + v + "%"
 		} else {
-			bufW.WriteString(cons2.ParamAnd)
+			bufW.WriteString(depCons.ParamAnd)
 		}
 		gt.Args = append(gt.Args, v) // args
 	}

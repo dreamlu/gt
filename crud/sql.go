@@ -3,7 +3,7 @@ package crud
 import (
 	"bytes"
 	"fmt"
-	cons2 "github.com/dreamlu/gt/crud/dep/cons"
+	depCons "github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/src/cons"
 	"github.com/dreamlu/gt/src/type/amap"
 	"strings"
@@ -21,7 +21,7 @@ var buffer = amap.NewAMap()
 func GetMoreColSQL(model any, tables ...string) (sql string) {
 	var (
 		p   = parse(model, tables...)
-		key = fmt.Sprintf("%s%s_more", cons2.SQL_, p.Key)
+		key = fmt.Sprintf("%s%s_more", depCons.SQL_, p.Key)
 	)
 	sql = buffer.Get(key)
 	if sql != "" {
@@ -61,7 +61,7 @@ func getTagMoreSQL(p *Parses, buf *bytes.Buffer) {
 func GetColSQL(model any) (sql string) {
 	var (
 		r   = parse(model)
-		key = fmt.Sprintf("%s%s", cons2.SQL_, r.Key)
+		key = fmt.Sprintf("%s%s", depCons.SQL_, r.Key)
 	)
 	sql = buffer.Get(key)
 	if sql != "" {
@@ -79,7 +79,7 @@ func GetColSQL(model any) (sql string) {
 func GetColSQLAlias(model any, alias string) (sql string) {
 	var (
 		r   = parse(model)
-		key = fmt.Sprintf("%s%s_%s", cons2.SQL_, r.Key, alias)
+		key = fmt.Sprintf("%s%s_%s", depCons.SQL_, r.Key, alias)
 	)
 	sql = buffer.Get(key)
 	if sql != "" {
@@ -161,7 +161,7 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 
 	for k := 0; k < len(ils); k++ {
 		writeField(bufNt, leftTable, ils[k], " = ")
-		writeField(bufNt, rightTable, irs[k], cons2.And)
+		writeField(bufNt, rightTable, irs[k], depCons.And)
 	}
 
 	for _, v := range ilts {
@@ -169,7 +169,7 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 		if len(is) > 1 {
 			writeField(bufNt, leftTable, is[0], " = ")
 			bufNt.WriteString(is[1])
-			bufNt.WriteString(cons2.And)
+			bufNt.WriteString(depCons.And)
 		}
 	}
 	for _, v := range irts {
@@ -177,7 +177,7 @@ func fieldSQL(bufNt *bytes.Buffer, leftTable, rightTable, left, right string) {
 		if len(is) > 1 {
 			writeField(bufNt, rightTable, is[0], " = ")
 			bufNt.WriteString(is[1])
-			bufNt.WriteString(cons2.And)
+			bufNt.WriteString(depCons.And)
 		}
 	}
 	nBuf := bytes.NewBuffer(bufNt.Bytes()[:bufNt.Len()-4])

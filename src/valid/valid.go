@@ -5,6 +5,7 @@ import (
 	"github.com/dreamlu/gt/crud/dep/cons"
 	tag2 "github.com/dreamlu/gt/crud/dep/tag"
 	mr "github.com/dreamlu/gt/src/reflect"
+	"github.com/dreamlu/gt/src/tag"
 	"github.com/dreamlu/gt/src/type/amap"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"log"
@@ -64,7 +65,7 @@ func (v *ValidRule) parse(value any) {
 		// new rule
 		rule := Rule{}
 		// key
-		rule.Key = tag2.ParseJsonFieldTag(typ.Field(i))
+		rule.Key = tag.ParseJsonFieldTag(typ.Field(i)).Top()
 		// rule
 
 		field := typ.Field(i)

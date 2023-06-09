@@ -6,10 +6,10 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/dreamlu/gt/conf"
-	"github.com/dreamlu/gt/crud/dep/cons"
+	depCons "github.com/dreamlu/gt/crud/dep/cons"
 	"github.com/dreamlu/gt/crud/dep/result"
 	"github.com/dreamlu/gt/log"
-	cons2 "github.com/dreamlu/gt/src/cons"
+	"github.com/dreamlu/gt/src/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -44,7 +44,7 @@ type dba struct {
 func (db *DB) NewDB() {
 
 	dbS := &dba{}
-	conf.UnmarshalField(cons2.ConfDB, dbS)
+	conf.UnmarshalField(cons.ConfDB, dbS)
 	db.log = dbS.Log
 	var (
 		sql = fmt.Sprintf("%s:%s@%s/?charset=utf8mb4&parseTime=True&loc=Local", dbS.User, dbS.Password, dbS.Host)
@@ -227,9 +227,9 @@ func (db *DB) FindS(gt *GT) (pager result.Pager) {
 func (db *DB) countSQL(gt *GT) *DB {
 
 	// default
-	gt.order = fmt.Sprintf(cons.OrderDesc, gt.tableT)
+	gt.order = fmt.Sprintf(depCons.OrderDesc, gt.tableT)
 
-	gt.sqlNt = fmt.Sprintf(cons.SelectCountFrom, gt.tableT)
+	gt.sqlNt = fmt.Sprintf(depCons.SelectCountFrom, gt.tableT)
 	gt.whereCount()
 
 	return db
@@ -240,10 +240,10 @@ func (db *DB) count(gt *GT) (pager result.Pager) {
 	// if clientPage or everyPage < 0
 	// return all data
 	if gt.clientPage == 0 {
-		gt.clientPage = cons.ClientPage
+		gt.clientPage = depCons.ClientPage
 	}
 	if gt.everyPage == 0 {
-		gt.everyPage = cons.EveryPage
+		gt.everyPage = depCons.EveryPage
 	}
 	db.res = db.DB.Raw(gt.sqlNt, gt.Args...).Scan(&pager)
 	if db.res.Error != nil || pager.TotalNum == 0 {
@@ -323,7 +323,7 @@ func (db *DB) CreateMore(table string, model any, data any) {
 func (db *DB) InitColumns(param *Params) {
 
 	var (
-		name   = conf.Get[string](cons2.ConfDBName)
+		name   = conf.Get[string](cons.ConfDBName)
 		tables = []string{param.Table}
 	)
 

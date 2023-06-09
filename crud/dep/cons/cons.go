@@ -11,8 +11,7 @@ const (
 	GtOrder               = "order"
 	GtKey                 = "key"
 	GtMock                = "mock"
-	// GT tag
-	GT           = "gt"
+
 	GtField      = "field"
 	GtValid      = "valid"
 	GtTrans      = "trans"
