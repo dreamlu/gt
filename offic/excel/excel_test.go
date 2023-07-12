@@ -34,10 +34,11 @@ type User struct {
 	Gender int    `json:"gender"`
 }
 
-func (User) ExcelHandle(users []*User) {
+func (User) ExcelHandle(users []*User) error {
 	for _, user := range users {
 		user.Gender = 1
 	}
+	return nil
 }
 
 func TestImport(t *testing.T) {

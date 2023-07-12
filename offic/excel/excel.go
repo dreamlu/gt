@@ -22,7 +22,7 @@ type Excel[T comparable] struct {
 }
 
 type Handle[T comparable] interface {
-	ExcelHandle([]*T)
+	ExcelHandle([]*T) error
 }
 
 func NewExcel[T comparable]() *Excel[T] {
@@ -116,7 +116,10 @@ func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (err error, dat
 	// after import
 	var data T
 	if reflect.IsImplements(data, new(Handle[T])) {
-		reflect.Call(data, "ExcelHandle", datas)
+		err = reflect.Call(data, "ExcelHandle", datas)
+		if err != nil {
+			return
+		}
 	}
 
 	return
