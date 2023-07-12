@@ -28,3 +28,8 @@ func Remove[T comparable](s []T, sep ...T) (res []T) {
 	}
 	return
 }
+
+func RemoveIndex[T comparable](s []T, i *int) {
+	s = append(s[:*i], s[*i+1:]...)
+	*i--
+}
