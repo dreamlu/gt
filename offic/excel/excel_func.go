@@ -4,6 +4,7 @@ import (
 	"github.com/dreamlu/gt/src/cons/excel"
 	"github.com/dreamlu/gt/src/tag"
 	"github.com/dreamlu/gt/src/type/amap"
+	"github.com/dreamlu/gt/src/type/time"
 	"strconv"
 )
 
@@ -38,6 +39,10 @@ func string2any(typ, cell string) any {
 		value, _ = strconv.ParseUint(cell, 10, 64)
 	case "float64":
 		value, _ = strconv.ParseFloat(cell, 64)
+	case "CDate":
+		value = time.ParseCDate(cell)
+	case "CTime":
+		value = time.ParseCTime(cell)
 	default:
 		value = cell
 	}

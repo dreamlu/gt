@@ -2,22 +2,26 @@ package excel
 
 import (
 	"bytes"
+	"github.com/dreamlu/gt/src/type/time"
 	"os"
 	"strconv"
 	"testing"
 )
 
+type User struct {
+	ID     int        `json:"id" gt:"excel:id"`
+	Name   string     `json:"name" gt:"excel:名称"`
+	Gender int        `json:"gender"`
+	Date   time.CDate `json:"date" gt:"excel:日期"`
+}
+
 func TestExport(t *testing.T) {
-	type User struct {
-		ID     int    `json:"id" gt:"excel:id"`
-		Name   string `json:"name" gt:"excel:名称"`
-		Gender int    `json:"gender"`
-	}
 	var arr []*User
 	for i := 0; i < 10; i++ {
 		arr = append(arr, &User{
 			ID:   i,
 			Name: "测试" + strconv.Itoa(i),
+			Date: time.CDateNow(),
 		})
 	}
 	e, err := Export[User](arr)
@@ -28,10 +32,11 @@ func TestExport(t *testing.T) {
 	t.Log(e.SaveAs("test.xlsx"))
 }
 
-type User struct {
-	ID     int64  `json:"id" gt:"excel:id"`
-	Name   string `json:"name" gt:"excel:名称"`
-	Gender int    `json:"gender"`
+func (User) Namet(users []*User) error {
+	for _, user := range users {
+		user.Gender = 1
+	}
+	return nil
 }
 
 func (User) ExcelHandle(users []*User) error {
