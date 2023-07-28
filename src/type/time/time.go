@@ -13,11 +13,12 @@ const (
 	Layout     = "2006-01-02 15:04:05"     // mysql: datetime
 	LayoutN    = "2006-01-02 15:04:05.000" // mysql: datetime(3)
 	LayoutDate = "2006-01-02"              // mysql: date
+	LayoutYM   = "2006-01"                 // mysql: date
 	LayoutS    = "15:04:05"                // mysql: time
 )
 
 // CTime china time/date
-// 时间格式化2006-01-02 15:04:05
+// format Layout
 type CTime time.Time
 
 func (t CTime) MarshalJSON() ([]byte, error) {
@@ -78,7 +79,7 @@ func (t CTime) Time() time.Time {
 	return time.Time(t)
 }
 
-// CDate 时间格式化2006-01-02
+// CDate format LayoutDate
 type CDate time.Time
 
 func (t CDate) MarshalJSON() ([]byte, error) {
@@ -135,7 +136,7 @@ func (t CDate) Time() time.Time {
 	return time.Time(t)
 }
 
-// CNTime 时间格式化2006-01-02 15:04:05.000
+// CNTime format LayoutN
 type CNTime time.Time
 
 func (t CNTime) MarshalJSON() ([]byte, error) {
@@ -192,7 +193,7 @@ func (t CNTime) Time() time.Time {
 	return time.Time(t)
 }
 
-// CSTime 时间格式化15:04:05
+// CSTime format LayoutS
 type CSTime time.Time
 
 func (t CSTime) MarshalJSON() ([]byte, error) {
@@ -242,5 +243,62 @@ func (t CSTime) IsZero() bool {
 }
 
 func (t CSTime) Time() time.Time {
+	return time.Time(t)
+}
+
+// CYM format LayoutYM
+type CYM time.Time
+
+func (t CYM) MarshalJSON() ([]byte, error) {
+	return marshalJSON[CYM](t)
+}
+
+func (t *CYM) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	if s == "" {
+		return nil
+	}
+	ti, err := parse(LayoutYM, s)
+	if err != nil {
+		return err
+	}
+	*t = CYM(ti)
+	return nil
+}
+
+func (t CYM) Value() (driver.Value, error) {
+	var zeroTime time.Time
+	var ti = time.Time(t)
+	if ti.UnixNano() == zeroTime.UnixNano() {
+		return nil, nil
+	}
+	return ti, nil
+}
+
+func (t *CYM) Scan(v any) error {
+	value, ok := v.(time.Time)
+	if ok {
+		*t = CYM(value)
+		return nil
+	}
+	return fmt.Errorf("can not convert %v to CYM", v)
+}
+
+func (CYM) GormDataType() string {
+	return "date"
+}
+
+func (t CYM) String() string {
+	if t.IsZero() {
+		return ""
+	}
+	return time.Time(t).Format(LayoutYM)
+}
+
+func (t CYM) IsZero() bool {
+	return time.Time(t).IsZero()
+}
+
+func (t CYM) Time() time.Time {
 	return time.Time(t)
 }

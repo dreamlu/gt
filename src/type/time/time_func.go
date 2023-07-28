@@ -52,7 +52,7 @@ func parse(layout, value string) (t time.Time, err error) {
 }
 
 type ct interface {
-	CTime | CDate | CNTime | CSTime
+	CTime | CDate | CNTime | CSTime | CYM
 }
 
 func marshalJSON[T ct](t T) ([]byte, error) {

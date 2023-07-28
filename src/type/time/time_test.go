@@ -34,6 +34,13 @@ func TestWebTime(t *testing.T) {
 	}
 }
 
+func sayhelloName(w http.ResponseWriter, r *http.Request) {
+	//fmt.Fprintf(w,  CTime(time.Now())) // 这个写入到 w 的是输出到客户端的
+	b, err := json.Marshal(CTime(time.Now()))
+	log.Print(err)
+	w.Write(b)
+}
+
 func TestCSTime(t *testing.T) {
 	ti := time.Now()
 	t.Log(ti)
@@ -49,9 +56,17 @@ func TestCSTime(t *testing.T) {
 	t.Log(tt)
 }
 
-func sayhelloName(w http.ResponseWriter, r *http.Request) {
-	//fmt.Fprintf(w,  CTime(time.Now())) // 这个写入到 w 的是输出到客户端的
-	b, err := json.Marshal(CTime(time.Now()))
-	log.Print(err)
-	w.Write(b)
+func TestCYM(t *testing.T) {
+	ti := time.Now()
+	t.Log(ti)
+	te := CYM(time.Now())
+	t.Log(te)
+	t.Log(te.String())
+	teb, _ := te.MarshalJSON()
+	t.Log(string(teb))
+	var tt CYM
+	t.Log(tt.MarshalJSON())
+	t.Log(tt.String())
+	_ = tt.UnmarshalJSON(teb)
+	t.Log(tt)
 }
