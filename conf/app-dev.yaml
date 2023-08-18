@@ -2,10 +2,12 @@ app:
   # database
   # mysql
   db:
+    driver: mysql
     log: true
-    host: tcp(127.0.0.1:3306)
+    host: 127.0.0.1
     user: root
-    password:
+    password: lucheng
+    port: 3306
   # mongodb
   mongo:
     host: 127.0.0.1:27017

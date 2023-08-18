@@ -3,6 +3,11 @@
 package cons
 
 const (
+	Mysql    = "mysql"
+	Postgres = "postgres"
+)
+
+const (
 	GtSubSQL              = "sub_sql"
 	GtClientPage          = "clientPage"
 	GtClientPageUnderLine = "client_page"

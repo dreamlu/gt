@@ -21,7 +21,7 @@ func defaultLog() *log.Log {
 	return log.GetLog()
 }
 
-func newMysqlLog(config Config) gormLog.Interface {
+func newDBLog(config Config) gormLog.Interface {
 	var (
 		infoStr      = "%s\n[info] "
 		warnStr      = "%s\n[warn] "

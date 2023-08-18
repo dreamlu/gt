@@ -13,8 +13,8 @@ import (
 	"strings"
 )
 
-// Mysql implement Crud
-type Mysql struct {
+// CrudGo implement Crud
+type CrudGo struct {
 	// DB  tool
 	dbTool *DB
 	// error
@@ -38,7 +38,7 @@ type Mysql struct {
 	isCount bool
 }
 
-func (c *Mysql) Init(param *Params) {
+func (c *CrudGo) Init(param *Params) {
 
 	c.dbTool = dbTool
 	c.param = param
@@ -46,12 +46,12 @@ func (c *Mysql) Init(param *Params) {
 	return
 }
 
-func (c *Mysql) DB() *DB {
+func (c *CrudGo) DB() *DB {
 	c.common()
 	return c.dbTool
 }
 
-func (c *Mysql) Params(params ...Param) Crud {
+func (c *CrudGo) Params(params ...Param) Crud {
 
 	for _, p := range params {
 		p(c.param)
@@ -60,14 +60,14 @@ func (c *Mysql) Params(params ...Param) Crud {
 	return c
 }
 
-func (c *Mysql) Count() Crud {
+func (c *CrudGo) Count() Crud {
 	c.common()
 	clone := c.clone()
 	clone.isCount = true
 	return clone
 }
 
-func (c *Mysql) Find(p cmap.CMap) Crud {
+func (c *CrudGo) Find(p cmap.CMap) Crud {
 	c.common()
 	clone := c.clone()
 	clone.pager = clone.dbTool.Find(&GT{
@@ -78,7 +78,7 @@ func (c *Mysql) Find(p cmap.CMap) Crud {
 	return clone
 }
 
-func (c *Mysql) FindM(params cmap.CMap) Crud {
+func (c *CrudGo) FindM(params cmap.CMap) Crud {
 	c.common()
 	clone := c.clone()
 	clone.pager = clone.dbTool.FindM(&GT{
@@ -89,7 +89,7 @@ func (c *Mysql) FindM(params cmap.CMap) Crud {
 	return clone
 }
 
-func (c *Mysql) Delete(conds ...any) Crud {
+func (c *CrudGo) Delete(conds ...any) Crud {
 	c.common()
 
 	clone := c.clone()
@@ -99,7 +99,7 @@ func (c *Mysql) Delete(conds ...any) Crud {
 	return clone
 }
 
-func (c *Mysql) Update() Crud {
+func (c *CrudGo) Update() Crud {
 	c.common()
 	clone := c.clone()
 	if c.param.valid {
@@ -116,7 +116,7 @@ func (c *Mysql) Update() Crud {
 	return clone
 }
 
-func (c *Mysql) Create() Crud {
+func (c *CrudGo) Create() Crud {
 	c.common()
 	clone := c.clone()
 	if c.param.valid {
@@ -129,7 +129,7 @@ func (c *Mysql) Create() Crud {
 	return clone
 }
 
-func (c *Mysql) Select(q any, args ...any) Crud {
+func (c *CrudGo) Select(q any, args ...any) Crud {
 
 	clone := c
 	if c.selectSQL == "" {
@@ -152,20 +152,20 @@ func (c *Mysql) Select(q any, args ...any) Crud {
 	return clone
 }
 
-func (c *Mysql) From(query string) Crud {
+func (c *CrudGo) From(query string) Crud {
 
 	c.from = query
 	c.selectSQL += query + " "
 	return c
 }
 
-func (c *Mysql) Group(query string) Crud {
+func (c *CrudGo) Group(query string) Crud {
 
 	c.group = query
 	return c
 }
 
-func (c *Mysql) FindS(params cmap.CMap) Crud {
+func (c *CrudGo) FindS(params cmap.CMap) Crud {
 	c.common()
 
 	if c.argsNt == nil {
@@ -183,7 +183,7 @@ func (c *Mysql) FindS(params cmap.CMap) Crud {
 	return c
 }
 
-func (c *Mysql) Scan() Crud {
+func (c *CrudGo) Scan() Crud {
 	c.common()
 	c.Select(c.group)
 	c.dbTool.get(&GT{
@@ -194,13 +194,13 @@ func (c *Mysql) Scan() Crud {
 	return c
 }
 
-func (c *Mysql) Exec() Crud {
+func (c *CrudGo) Exec() Crud {
 	c.common()
 	c.dbTool.exec(c.selectSQL, c.args...)
 	return c
 }
 
-func (c *Mysql) Error() error {
+func (c *CrudGo) Error() error {
 
 	if c.err != nil {
 		return c.err
@@ -211,7 +211,7 @@ func (c *Mysql) Error() error {
 	return c.err
 }
 
-func (c *Mysql) RowsAffected() int64 {
+func (c *CrudGo) RowsAffected() int64 {
 
 	if c.dbTool.res == nil {
 		return 0
@@ -219,12 +219,12 @@ func (c *Mysql) RowsAffected() int64 {
 	return c.dbTool.res.RowsAffected
 }
 
-func (c *Mysql) Pager() result.Pager {
+func (c *CrudGo) Pager() result.Pager {
 
 	return c.pager
 }
 
-func (c *Mysql) Begin() Crud {
+func (c *CrudGo) Begin() Crud {
 	clone := c.clone()
 	clone.isTrans = true
 	clone.dbTool.DB = clone.dbTool.Begin()
@@ -236,7 +236,7 @@ func (c *Mysql) Begin() Crud {
 	return clone
 }
 
-func (c *Mysql) Commit() Crud {
+func (c *CrudGo) Commit() Crud {
 	if c.dbTool.res == nil || c.dbTool.res.Error != nil {
 		c.dbTool.Rollback()
 	}
@@ -245,22 +245,22 @@ func (c *Mysql) Commit() Crud {
 	return c
 }
 
-func (c *Mysql) Rollback() Crud {
+func (c *CrudGo) Rollback() Crud {
 	c.dbTool.Rollback()
 	return c
 }
 
-func (c *Mysql) SavePoint(name string) Crud {
+func (c *CrudGo) SavePoint(name string) Crud {
 	c.dbTool.SavePoint(name)
 	return c
 }
 
-func (c *Mysql) RollbackTo(name string) Crud {
+func (c *CrudGo) RollbackTo(name string) Crud {
 	c.dbTool.RollbackTo(name)
 	return c
 }
 
-func (c *Mysql) clone() (dbCrud *Mysql) {
+func (c *CrudGo) clone() (dbCrud *CrudGo) {
 
 	// default table
 	if c.param.Table == "" &&
@@ -268,7 +268,7 @@ func (c *Mysql) clone() (dbCrud *Mysql) {
 		c.param.Table = tag.ModelTable(c.param.Model)
 	}
 
-	dbCrud = &Mysql{
+	dbCrud = &CrudGo{
 		dbTool:    c.dbTool,
 		param:     c.param,
 		selectSQL: c.selectSQL,
@@ -288,13 +288,13 @@ func (c *Mysql) clone() (dbCrud *Mysql) {
 	return
 }
 
-func (c *Mysql) common() {
+func (c *CrudGo) common() {
 	if c.dbTool.log {
 		c.line()
 	}
 }
 
-func (c *Mysql) valid(data any) error {
+func (c *CrudGo) valid(data any) error {
 
 	ves := valid.Valid(data)
 	if len(ves) > 0 {
@@ -307,7 +307,7 @@ func (c *Mysql) valid(data any) error {
 	return nil
 }
 
-func (c *Mysql) line() {
+func (c *CrudGo) line() {
 	_, fullFile, line, ok := runtime.Caller(3) // 3 skip
 	file := fullFile
 	if file != "" {

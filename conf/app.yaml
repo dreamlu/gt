@@ -4,8 +4,9 @@ app:
   devMode: dev
   port: 9000
   # database
-  # mysql
+  # db
   db:
+#    driver: mysql # mysql/postgres
     maxIdleConn: 20
     maxOpenConn: 100
     # database name

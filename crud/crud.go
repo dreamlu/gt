@@ -87,7 +87,7 @@ type Param func(*Params)
 func NewCrud(params ...Param) (crud Crud) {
 
 	db()
-	crud = new(Mysql)
+	crud = new(CrudGo)
 	crud.Init(newParam(params...))
 	return
 }
@@ -96,7 +96,7 @@ func NewCrud(params ...Param) (crud Crud) {
 func NewCusCrud(db *gorm.DB, log bool, params ...Param) (crud Crud) {
 
 	cusdb(db, log)
-	crud = new(Mysql)
+	crud = new(CrudGo)
 	crud.Init(newParam(params...))
 	return
 }

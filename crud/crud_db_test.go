@@ -52,7 +52,7 @@ type Order struct {
 	UserID     int64       `json:"user_id"` // user id
 	UserInfoID uint64      `json:"user_info_id"`
 	ServiceID  int64       `json:"service_id"` // service table id
-	CreateTime time.CTime  `gorm:"type:datetime;autoCreateTime" json:"create_time"`
+	CreateTime time.CTime  `gorm:"autoCreateTime" json:"create_time"`
 	StartTime  time.CSTime `json:"start_time"`
 	EndTime    time.CSTime `json:"end_time"`
 	DeleteTime time.CTime  `json:"delete_time" gt:"soft_del"`

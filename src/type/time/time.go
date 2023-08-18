@@ -3,6 +3,8 @@ package time
 import (
 	"database/sql/driver"
 	"fmt"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 	"strings"
 	"time"
 )
@@ -10,11 +12,11 @@ import (
 const (
 	Day        = 24 * time.Minute
 	Week       = 7 * Day
-	Layout     = "2006-01-02 15:04:05"     // mysql: datetime
-	LayoutN    = "2006-01-02 15:04:05.000" // mysql: datetime(3)
-	LayoutDate = "2006-01-02"              // mysql: date
-	LayoutYM   = "2006-01"                 // mysql: date
-	LayoutS    = "15:04:05"                // mysql: time
+	Layout     = "2006-01-02 15:04:05"     // datetime
+	LayoutN    = "2006-01-02 15:04:05.000" // datetime(3)
+	LayoutDate = "2006-01-02"              // date
+	LayoutYM   = "2006-01"                 // date
+	LayoutS    = "15:04:05"                // time
 )
 
 // CTime china time/date
@@ -62,6 +64,15 @@ func (t *CTime) Scan(v any) error {
 
 func (CTime) GormDataType() string {
 	return "datetime"
+}
+
+func (CTime) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+	switch db.Dialector.Name() {
+	case "postgres":
+		return "timestamp" // timestamptz UTC
+	default:
+		return "datetime" // timestamp UTC
+	}
 }
 
 func (t CTime) String() string {
@@ -226,9 +237,13 @@ func (t *CSTime) Scan(v any) error {
 	return fmt.Errorf("can not convert %v to CSTime", v)
 }
 
-// GormDataType gorm bug mysql time to CSTime
-func (t CSTime) GormDataType() string {
-	return "time;"
+func (CSTime) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+	switch db.Dialector.Name() {
+	case "postgres":
+		return "time"
+	default:
+		return "time;" // GormDataType gorm bug mysql time to CSTime
+	}
 }
 
 func (t CSTime) String() string {

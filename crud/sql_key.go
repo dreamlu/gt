@@ -230,16 +230,16 @@ func ParseTable(table string) string {
 	if table == "" {
 		return table
 	}
-	if table[0] == '`' {
+	if table[0] == cons.Backticks {
 		return table
 	}
 	if strings.Contains(table, ".") {
 		ts := strings.Split(table, ".")
-		table = fmt.Sprintf("`%s`.`%s`", ts[0], ts[1])
+		table = fmt.Sprintf(cons.BackticksS+"."+cons.BackticksS, ts[0], ts[1])
 		return table
 	}
 
-	return fmt.Sprintf("`%s`", table)
+	return fmt.Sprintf(cons.BackticksS, table)
 }
 
 // TableOnly only table name
