@@ -96,5 +96,5 @@ func parseGormTag(tagValue string) string {
 			return ts[1]
 		}
 	}
-	return tagValue
+	return ""
 }

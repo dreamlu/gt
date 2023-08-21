@@ -58,12 +58,12 @@ func ParseGtFieldTag(field reflect.StructField) (tag, tagTable string) {
 
 // ParseGormFieldTag gorm:"column:field"
 func ParseGormFieldTag(field reflect.StructField) string {
-	return tag.ParseGormFieldTag(field).Top()
+	return tag.ParseGormFieldTag(field, tag.IsGormTagIgnore).Top()
 }
 
 // ParseJsonFieldTag get json field tag
 func ParseJsonFieldTag(field reflect.StructField) string {
-	return tag.ParseJsonFieldTag(field).Top()
+	return tag.ParseJsonFieldTag(field, tag.IsJsonTagIgnore).Top()
 }
 
 func ParseDefaultFieldTag(field reflect.StructField) string {

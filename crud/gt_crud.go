@@ -24,7 +24,7 @@ func (db *DB) Find(gt *GT) (pager result.Pager) {
 			return
 		}
 	}
-	db.get(gt)
+	db.getLimit(gt)
 	return
 }
 
@@ -45,7 +45,7 @@ func (db *DB) FindM(gt *GT) (pager result.Pager) {
 			return
 		}
 	}
-	db.get(gt)
+	db.getLimit(gt)
 	return
 }
 
@@ -62,7 +62,7 @@ func (db *DB) FindS(gt *GT) (pager result.Pager) {
 			return
 		}
 	}
-	db.get(gt)
+	db.getLimit(gt)
 	return
 }
 
@@ -93,16 +93,19 @@ func (db *DB) count(gt *GT) (pager result.Pager) {
 	}
 	pager.ClientPage = gt.clientPage
 	pager.EveryPage = gt.everyPage
-	// sqlNt += limit
-	if gt.clientPage > 0 && gt.everyPage > 0 {
-		gt.sql += fmt.Sprintf("limit %d, %d", (gt.clientPage-1)*gt.everyPage, gt.everyPage)
-	}
 	return
 }
 
 // get data
-func (db *DB) get(gt *GT) {
+func (db *DB) getLimit(gt *GT) {
+	if gt.clientPage > 0 && gt.everyPage > 0 {
+		gt.sql += fmt.Sprintf("limit %d offset %d", gt.everyPage, (gt.clientPage-1)*gt.everyPage)
+	}
+	db.get(gt)
+}
 
+// get data
+func (db *DB) get(gt *GT) {
 	db.res = db.DB.Raw(gt.sql, gt.Args...).Scan(gt.Data)
 }
 
@@ -116,7 +119,7 @@ func (db *DB) Delete(gt *GT, conds ...any) {
 		db.exec(fmt.Sprintf("update %s set %s = now() where id in (?)", gt.tableT, gt.parses.GetS(gt.Table)), conds...)
 		return
 	}
-	db.res = db.DB.Delete(gt.Data, conds)
+	db.res = db.DB.Delete(gt.Data, conds...)
 }
 
 func (db *DB) Update(gt *GT) {
@@ -180,7 +183,7 @@ func (db *DB) InitColumns(param *Params) {
 			continue
 		}
 		var columns []string
-		param.Data = &columns
+		//param.Data = &columns
 		tb := TableOnly(v)
 		db.get(&GT{
 			Params: &Params{Data: &columns},

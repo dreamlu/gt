@@ -8,14 +8,10 @@ const (
 )
 
 const (
-	GtSubSQL              = "sub_sql"
-	GtClientPage          = "clientPage"
-	GtClientPageUnderLine = "client_page"
-	GtEveryPage           = "everyPage"
-	GtEveryPageUnderLine  = "every_page"
-	GtOrder               = "order"
-	GtKey                 = "key"
-	GtMock                = "mock"
+	GtSubSQL = "sub_sql"
+	GtOrder  = "order"
+	GtKey    = "key"
+	GtMock   = "mock"
 
 	GtField      = "field"
 	GtValid      = "valid"

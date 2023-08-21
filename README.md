@@ -8,18 +8,18 @@ It will help you...
 
 #### pkg
 
-| pkg          | 作用          |
-|--------------|:------------|
-| conf         | yaml配置      |
-| crud         | 丰富的crud     |
-| log          | 日志库         |
-| mock         | 模拟数据        |
-| mongo        | nosql       |
-| mq           | 消息队列        |
-| office/excel | excel通用导入导出 |
-| redis        | 缓存          |
-| snowflake    | 雪花算法唯一id    |
-| [src](#src)  | 官方库扩展       |
+| pkg          | 作用                             |
+|--------------|:-------------------------------|
+| conf         | yaml配置                         |
+| crud         | 丰富的多表crud<br/>(mysql/postgres) |
+| log          | 日志库                            |
+| mock         | 模拟数据                           |
+| mongo        | nosql                          |
+| mq           | 消息队列                           |
+| office/excel | excel通用导入导出                    |
+| redis        | 缓存                             |
+| snowflake    | 雪花算法唯一id                       |
+| [src](#src)  | 官方库扩展                          |
 
 #### src
 

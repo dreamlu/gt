@@ -66,7 +66,7 @@ func (gt *GT) parse() *GT {
 
 func (gt *GT) common() {
 	for table, softDelField := range gt.parses.Sd {
-		gt.sqlSoft += fmt.Sprintf(depCons.SoftDel, table, softDelField)
+		gt.sqlSoft += fmt.Sprintf(depCons.SoftDel, ParseTable(table), softDelField)
 	}
 	if gt.sqlSoft != "" {
 		gt.sqlSoft = gt.sqlSoft[:len(gt.sqlSoft)-5]

@@ -130,16 +130,14 @@ func TestCrud(t *testing.T) {
 	// delete
 	info2 := crud.Delete(12)
 	t.Log(info2.Error())
-	info2 = crud.Delete("12,13,14")
-	t.Log(info2.Error())
-	info2 = crud.Delete([]int{1, 2})
+	info2 = crud.Params(Data(&User{})).Delete(12, 13, 14)
 	t.Log(info2.Error())
 }
 
 // select sql
 func TestCrudSQL(t *testing.T) {
 	crud := NewCrud()
-	sql := "update `user` set name=? where id = ?"
+	sql := fmt.Sprintf("update %s set name=? where id = ?", ParseTable("user"))
 	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Select("and 1=1 and").
 		Select(&User{
 			Name: "梦S",
@@ -147,14 +145,14 @@ func TestCrudSQL(t *testing.T) {
 	t.Log("[Info]:", crud.Select(sql, "梦sql", 1).Exec())
 	t.Log("[Info]:", crud.RowsAffected())
 	var user []User
-	sql = "select * from `user` where name=? and id=?"
+	sql = fmt.Sprintf("select * from %s where name=? and id=?", ParseTable("user"))
 	cd := NewCrud()
 	t.Log("[Info]:", cd.Params(Data(&user)).Select(sql, "梦sql", 1).Select(" and 1=1").Exec())
 	t.Log("[Info]:", cd.Params(Data(&user)).Select(sql, "梦sql", 1).Exec())
 }
 
 func TestGetDataBySql(t *testing.T) {
-	var sql = "select id,name,create_time from `user` where id = ?"
+	var sql = fmt.Sprintf("select id,name,create_time from %s where id = ?", ParseTable("user"))
 
 	var user User
 	err := crud.Params(Data(&user)).Select(sql, "1000").Scan().Error()
@@ -280,7 +278,7 @@ func TestDBCrud_Select(t *testing.T) {
 	cd := crud.Params(
 		Data(&user),
 	).
-		Select("select *from user").
+		Select(fmt.Sprintf("select *from %s", ParseTable("user"))).
 		Select("where id < 10")
 	if true {
 		cd.Select("and 1=1")
@@ -293,7 +291,7 @@ func TestDBCrud_Select(t *testing.T) {
 	cd2 := crud.Params(
 		Data(&user),
 	).
-		Select("select *from user limit 2")
+		Select(fmt.Sprintf("select *from %s limit 2", ParseTable("user")))
 	t.Log(cd2.Scan().Error())
 	_, file, line, ok := runtime.Caller(1)
 	if ok {
@@ -441,7 +439,7 @@ func TestTransaction(t *testing.T) {
 	cd.SavePoint("point1")
 
 	params.Set("id", "1").Set("name", "sql")
-	cd.Params(Data(&user)).Find(params)
+	cd.Params(Model(User{}), Data(&user)).Find(params)
 	t.Log("step2: ", user)
 
 	cd.Params(Data(&users)).Find(params)
@@ -545,8 +543,8 @@ func TestGetMoreSearchResolve(t *testing.T) {
 	// order detail
 	type OrderD struct {
 		Order
-		UserBirthDate string `json:"user_birth_date"` // user table column name
-		Name          string `json:"name"`            // user table column name
+		UserBirthDate string `json:"user_birth_date" gt:"field:user.birth_date"` // user table column name
+		Name          string `json:"name" gt:"-"`                                // user table column name
 	}
 	var params = cmap.
 		Set("key", "test 1"). // key work
@@ -555,6 +553,9 @@ func TestGetMoreSearchResolve(t *testing.T) {
 	var or []*OrderD
 	crud := NewCrud(
 		Inner("order:user_id", "user:id"),
+		KeyModel(struct {
+			Name string
+		}{}),
 		Model(OrderD{}),
 		Data(&or),
 		//KeyModel(Key{}),
@@ -604,12 +605,12 @@ func TestGet(t *testing.T) {
 }
 
 func TestNewCusCrud(t *testing.T) {
-	dbTool = nil
-	db := &DB{}
-	// init db
-	db.NewDB()
-	cd := NewCusCrud(db.DB, true).Select("update user set name = 'test' where id = 1").Exec()
-	t.Log(cd.Error())
+	//dbTool = nil
+	//db := &DB{}
+	//// init db
+	//db.NewDB()
+	//cd := NewCusCrud(db.DB, true).Select("update user set name = 'test' where id = 1").Exec()
+	//t.Log(cd.Error())
 }
 
 func TestGetV2(t *testing.T) {

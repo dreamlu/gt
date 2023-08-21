@@ -66,9 +66,13 @@ func GetKeySQL(key string, model any, alias string) (sqlKey string, argsKey []an
 	buf.WriteString("(")
 	for _, t := range tags {
 		buf.WriteString(alias)
-		buf.WriteString(".`")
+		buf.WriteString(".")
+		buf.WriteByte(cons.Backticks)
 		buf.WriteString(t)
-		buf.WriteString("` like binary ? or ")
+		buf.WriteByte(cons.Backticks)
+		buf.WriteString(" ")
+		buf.WriteString(cons.LikeKey)
+		buf.WriteString(" ? or ")
 		argsKey = append(argsKey, v)
 	}
 	buf = bytes.NewBuffer(buf.Bytes()[:buf.Len()-4])
@@ -195,11 +199,16 @@ func otherTableTagSQL(tag string, argsKey *[]any, buf *bytes.Buffer, tables ...s
 
 // write tag sql
 func writeTagString(buf *bytes.Buffer, tb, tag string) {
-	buf.WriteString("`")
+	buf.WriteByte(cons.Backticks)
 	buf.WriteString(tb)
-	buf.WriteString("`.`")
+	buf.WriteByte(cons.Backticks)
+	buf.WriteString(".")
+	buf.WriteByte(cons.Backticks)
 	buf.WriteString(tag)
-	buf.WriteString("` like binary ? or ")
+	buf.WriteByte(cons.Backticks)
+	buf.WriteString(" ")
+	buf.WriteString(cons.LikeKey)
+	buf.WriteString(" ? or ")
 }
 
 // StructWhereSQL struct to where sql
