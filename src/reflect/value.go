@@ -23,8 +23,8 @@ func TrueField(data any, field string) any {
 
 // ToSlice arr must array data
 // array struct data to []interface
-func ToSlice(arr any) []any {
-	v := TrueValueOf(arr)
+func ToSlice(slice any) []any {
+	v := TrueValueOf(slice)
 	if v.Kind() != reflect.Slice {
 		return nil
 	}

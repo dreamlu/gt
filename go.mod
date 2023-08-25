@@ -4,7 +4,6 @@ go 1.20
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0
-	github.com/bxcodec/faker/v3 v3.8.0
 	github.com/dreamlu/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/go-redis/redis/v8 v8.11.0
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
@@ -15,7 +14,7 @@ require (
 	github.com/spf13/viper v1.15.0
 	github.com/xuri/excelize/v2 v2.7.1
 	go.mongodb.org/mongo-driver v1.6.0
-	golang.org/x/text v0.9.0
+	golang.org/x/text v0.12.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.3.2
 	gorm.io/driver/postgres v1.5.2

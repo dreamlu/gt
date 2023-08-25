@@ -87,7 +87,7 @@ func Valid(data any) ValidError {
 	var typ reflect.Type
 	typ, data = mr.TrueTypeofValue(data)
 
-	if typ.Kind() == reflect.Slice {
+	if mr.IsSlice(typ) {
 		if errs := validSlice(data, Valid); len(errs) > 0 {
 			return errs
 		}

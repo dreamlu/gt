@@ -50,3 +50,10 @@ func IsStruct(typ Kind) bool {
 	}
 	return false
 }
+
+func IsSlice(typ Kind) bool {
+	if typ.Kind() == reflect.Slice {
+		return true
+	}
+	return false
+}

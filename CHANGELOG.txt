@@ -1,4 +1,1 @@
-add office/excel
-fix util equal
-optimize tag parse
-support mysql/postgres more crud
+better mock code implementation to replace faker

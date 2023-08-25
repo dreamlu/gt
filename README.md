@@ -13,7 +13,6 @@ It will help you...
 | conf         | yaml配置                         |
 | crud         | 丰富的多表crud<br/>(mysql/postgres) |
 | log          | 日志库                            |
-| mock         | 模拟数据                           |
 | mongo        | nosql                          |
 | mq           | 消息队列                           |
 | office/excel | excel通用导入导出                    |
@@ -29,6 +28,7 @@ It will help you...
 | ghttp   | http简化易用处理    |
 | gos     | os扩展          |
 | gsync   | 携程池与实时进程      |
+| mock    | 模拟数据          |
 | reflect | 反射扩展          |
 | tag     | struct tag反射包 |
 | type    | 常用自定义类型       |
