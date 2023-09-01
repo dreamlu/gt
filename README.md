@@ -1,8 +1,8 @@
-### [gt](https://github.com/dreamlu/gt)
+### [GT](https://github.com/dreamlu/gt)
 
 everything is a tool 一切皆工具
 
-### Are you developing crud code slowly?
+#### Are you inefficient in developing code?
 
 It will help you...
 
@@ -34,3 +34,13 @@ It will help you...
 | type    | 常用自定义类型       |
 | util    | util工具        |
 | valid   | 自定义字段验证       |
+
+#### Special thanks
+
+![JetBrains](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)
+
+Thanks for [non-commercial open source development](https://jb.gg/OpenSourceSupport) authorization by JetBrains
+
+#### License
+
+GT is under the MIT license. See the [LICENSE](/LICENSE) file for details.

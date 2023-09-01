@@ -92,7 +92,7 @@ func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (err error, dat
 	}
 
 	var (
-		title = tmap.NewTMap[int]()
+		title = tmap.NewTMap[string, int]()
 		max   = len(rows[0])
 	)
 	for k, colCell := range rows[0] {

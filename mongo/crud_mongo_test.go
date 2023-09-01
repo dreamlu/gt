@@ -98,7 +98,7 @@ func TestMongo_GetBySearch(t *testing.T) {
 		//Table("client"),
 		Data(&client),
 	)
-	cd.FindSearch(tmap.NewTMap[any]().
+	cd.FindSearch(tmap.NewTMap[string, any]().
 		//Set("clientPage", "1").
 		//Set("everyPage", "3").
 		Set("order", "id desc").
@@ -140,7 +140,7 @@ func TestMongo_GoRoutine(t *testing.T) {
 			defer g.Done()
 			var client []*Client
 			cd.Params(Data(&client))
-			cd.FindSearch(tmap.NewTMap[any]().
+			cd.FindSearch(tmap.NewTMap[string, any]().
 				Set("order", "id desc"),
 			)
 			t.Log(len(client))

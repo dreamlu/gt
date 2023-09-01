@@ -50,7 +50,7 @@ func ContainsTransparent(img image.Image) bool {
 	return false
 }
 
-// ImageType jpeg,png
+// ImageType jpeg,png,gif
 func ImageType(buffer []byte) string {
 	contentType := ContentType(buffer)
 	switch contentType {
@@ -61,6 +61,6 @@ func ImageType(buffer []byte) string {
 	case "image/gif":
 		return GIF
 	default:
-		return contentType
+		return ""
 	}
 }

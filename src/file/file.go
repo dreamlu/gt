@@ -16,7 +16,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -143,7 +142,7 @@ func (f *File) IsImg() bool {
 		data, _ := os.ReadFile(f.Path)
 		f.ContentType = ImageType(data)
 	}
-	if strings.Contains(f.ContentType, PNG) || strings.Contains(f.ContentType, JPEG) {
+	if f.ContentType != "" {
 		return true
 	}
 	return false

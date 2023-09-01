@@ -27,7 +27,7 @@ func (m *Mongo) CursorScan(cur *mongo.Cursor, data any) {
 	}
 }
 
-func (m *Mongo) GetByDataSearch(params tmap.TMap[any]) (cur *mongo.Cursor, err error) {
+func (m *Mongo) GetByDataSearch(params tmap.TMap[string, any]) (cur *mongo.Cursor, err error) {
 	var (
 		//clientPage, everyPage int64
 		filter = bson.M{}

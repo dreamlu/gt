@@ -1,5 +1,5 @@
 package tmap
 
-func Set[T TI](key string, value T) TMap[T] {
-	return NewTMap[T]().Set(key, value)
+func Set[K comparable, V TI](key K, value V) TMap[K, V] {
+	return NewTMap[K, V]().Set(key, value)
 }

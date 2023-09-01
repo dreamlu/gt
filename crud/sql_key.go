@@ -216,7 +216,7 @@ func writeTagString(buf *bytes.Buffer, tb, tag string) {
 func StructWhereSQL(st any) (sql string, args []any) {
 	var (
 		buf bytes.Buffer
-		m   = tmap.ToTMap[any](st)
+		m   = tmap.ToTMap[string, any](st)
 	)
 
 	for k, v := range m {

@@ -51,7 +51,7 @@ func (m *Mongo) Params(params ...Param) Crud {
 
 // FindSearch
 // pager info
-func (m *Mongo) FindSearch(params tmap.TMap[any]) Crud {
+func (m *Mongo) FindSearch(params tmap.TMap[string, any]) Crud {
 	clone := m.clone()
 
 	cur, err := m.GetByDataSearch(params)

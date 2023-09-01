@@ -20,9 +20,9 @@ type Crud interface {
 
 	// FindSearch get url params
 	// like form data
-	FindSearch(tmap.TMap[any]) Crud // search single table
-	Find(cmap.CMap) Crud            // get data no search
-	FindID(any) Crud                // by id
+	FindSearch(tmap.TMap[string, any]) Crud // search single table
+	Find(cmap.CMap) Crud                    // get data no search
+	FindID(any) Crud                        // by id
 
 	// Delete delete by id/ids
 	Delete(any) Crud // delete
