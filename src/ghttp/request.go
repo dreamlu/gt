@@ -2,6 +2,7 @@ package ghttp
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"github.com/dreamlu/gt/src/file/fs"
 	"github.com/dreamlu/gt/src/type/cmap"
@@ -171,6 +172,14 @@ func (m *Request) Exec() *Response {
 	req.Header = m.header
 	for _, cookie := range m.cookies {
 		req.AddCookie(cookie)
+	}
+
+	// skip verify ssl https
+	tc := &tls.Config{
+		InsecureSkipVerify: true,
+	}
+	m.Client.Transport = &http.Transport{
+		TLSClientConfig: tc,
 	}
 
 	resp, err := m.Client.Do(req)
