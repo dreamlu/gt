@@ -71,8 +71,15 @@ func (m *Request) SetHeader(key, value string) *Request {
 	return m
 }
 
-func (m *Request) SetHeaders(header http.Header) *Request {
-	m.header = header
+func (m *Request) SetHeaders(headers any) *Request {
+	switch headers.(type) {
+	case http.Header:
+		m.header = headers.(http.Header)
+	case cmap.CMap:
+		for k, v := range headers.(cmap.CMap) {
+			m.SetHeader(k, v[0])
+		}
+	}
 	return m
 }
 
@@ -82,6 +89,9 @@ func (m *Request) SetBody(body io.Reader) *Request {
 }
 
 func (m *Request) SetJsonBody(v any) *Request {
+	if v == nil {
+		v = cmap.NewCMap()
+	}
 	bs, _ := json.Marshal(v)
 	m.body = bytes.NewReader(bs)
 	return m

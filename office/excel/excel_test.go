@@ -58,3 +58,25 @@ func TestImport(t *testing.T) {
 		t.Log(user)
 	}
 }
+
+func TestExportZip(t *testing.T) {
+	var arr []*User
+	for i := 0; i < 10; i++ {
+		arr = append(arr, &User{
+			ID:   i,
+			Name: "测试" + strconv.Itoa(i),
+			Date: time.CDateNow(),
+		})
+	}
+	e1, _ := Export[User](arr)
+	e1.FileName = "e1.xlsx"
+	e2, _ := Export[User](arr)
+	e2.FileName = "e2.xlsx"
+
+	// 1.bytes file stream
+	var bf = bytes.NewBuffer(nil)
+	t.Log(ExportZip[User](bf, []*Excel[User]{e1, e2}))
+
+	f, _ := os.Create("test.zip")
+	t.Log(ExportZip[User](f, []*Excel[User]{e1, e2}))
+}

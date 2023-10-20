@@ -2,3 +2,7 @@ better mock code implementation to replace faker
 TMap[string,T] to TMap[K,V]
 optimize src/file
 skip verify ssl https
+optimze request SetHeaders
+rename offic to office
+excel A1-AZ expand A1-ZZ
+excel add ExportZip

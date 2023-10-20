@@ -13,6 +13,7 @@ import (
 
 type Excel[T comparable] struct {
 	*excelize.File
+	FileName     string
 	Data         any
 	Headers      []string
 	HeaderMapper amap.AMap
@@ -40,19 +41,15 @@ func NewExcel[T comparable]() *Excel[T] {
 
 func (f *Excel[T]) Export(data any) (err error) {
 
-	var (
-		ch  = 'A'
-		pre = ""
-	)
+	ch, preCh, pre := f.sheetCellCharInit()
 	f.File = excelize.NewFile()
 
 	for _, header := range f.Headers {
-		err = f.SetCellValue(f.sheet, string(ch)+"1", header)
+		err = f.SetCellValue(f.sheet, pre+string(ch)+"1", header)
 		if err != nil {
 			return
 		}
-		ch++
-		pre = string(ch)
+		f.sheetCellCharChange(&ch, &preCh, &pre)
 	}
 
 	arr := reflect.ToSlice(data)
@@ -60,8 +57,7 @@ func (f *Excel[T]) Export(data any) (err error) {
 
 	for i, value := range arr {
 		num := strconv.Itoa(i + 2)
-		ch = 'A'
-		pre = ""
+		ch, preCh, pre = f.sheetCellCharInit()
 		for _, col := range f.Headers {
 			var v any
 			v = reflect.Field(value, f.HeaderMapper[col])
@@ -69,12 +65,27 @@ func (f *Excel[T]) Export(data any) (err error) {
 			if err != nil {
 				return
 			}
-			ch++
-			if ch > 'Z' {
-				ch = 'A'
-				pre = string(ch)
-			}
+
+			f.sheetCellCharChange(&ch, &preCh, &pre)
 		}
+	}
+	return
+}
+
+func (f *Excel[T]) sheetCellCharInit() (ch, preCh int32, pre string) {
+	return 'A', 'A', ""
+}
+
+func (f *Excel[T]) sheetCellCharChange(ch, preCh *int32, pre *string) {
+	*ch++
+	if *ch > 'Z' {
+		*ch = 'A'
+		if *pre != "" {
+			*preCh++
+			*pre = string(*preCh)
+			return
+		}
+		*pre = string(*preCh)
 	}
 	return
 }

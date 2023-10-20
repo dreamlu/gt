@@ -10,6 +10,12 @@ func Set(data any, field string, value any) {
 	TrueValueOf(data).FieldByName(field).Set(TrueValueOf(value))
 }
 
+// SetByIndex data field index value
+// type and field must same
+func SetByIndex(data any, index int, value any) {
+	TrueValueOf(data).Field(index).Set(TrueValueOf(value))
+}
+
 // Field reflect value via field name
 // field must exist
 func Field(data any, field string) any {
