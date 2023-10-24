@@ -56,6 +56,11 @@ func TestSet(t *testing.T) {
 	i = &ot
 	Set(i, "ID", int(4))
 	t.Log(ot)
+
+	oi := Order{} //new(Order)
+	i = &oi
+	SetByIndex(i, 0, int(4))
+	t.Log(oi)
 }
 
 func TestCall(t *testing.T) {

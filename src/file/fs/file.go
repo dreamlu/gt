@@ -10,6 +10,7 @@ import (
 )
 
 // File implement file system
+// only support file
 type File struct {
 	name    string
 	content *bytes.Buffer
@@ -65,7 +66,7 @@ func (f *File) Close() error {
 	return nil
 }
 
-// 实现 fs.FileInfo
+// impl fs.FileInfo
 
 func (f *File) Name() string {
 	return f.name
@@ -79,7 +80,6 @@ func (f *File) Size() int64 {
 	return int64(f.content.Len())
 }
 
-// Mode 权限: 读+写
 func (f *File) Mode() fs.FileMode {
 	return 0666
 }
@@ -88,7 +88,6 @@ func (f *File) ModTime() time.Time {
 	return f.modTime
 }
 
-// IsDir 目前未实现目录功能
 func (f *File) IsDir() bool {
 	return false
 }
