@@ -11,7 +11,7 @@ import (
 // eg: func (User) ExcelHandle(users []*User) {}
 func Import[T comparable](r io.Reader, opts ...excelize.Options) (datas []*T, err error) {
 	e := NewExcel[T]()
-	err, datas = e.Import(r)
+	err, datas = e.Import(r, opts...)
 	return
 }
 
