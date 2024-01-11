@@ -90,7 +90,7 @@ func (f *Excel[T]) sheetCellCharChange(ch, preCh *int32, pre *string) {
 	return
 }
 
-func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (err error, datas []*T) {
+func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (datas []*T, err error) {
 
 	f.File, err = excelize.OpenReader(r, opts...)
 	if err != nil {
@@ -99,7 +99,7 @@ func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (err error, dat
 	defer f.Close()
 	rows, err := f.GetRows(f.sheet)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	var (

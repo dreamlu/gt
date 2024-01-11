@@ -10,9 +10,9 @@ import (
 
 type User struct {
 	ID     int        `json:"id" gt:"excel:id"`
-	Name   string     `json:"name" gt:"excel:名称"`
+	Name   string     `json:"name" gt:"excel:名称;valid:required,len=2-5;trans:用户名"`
 	Gender int        `json:"gender"`
-	Date   time.CDate `json:"date" gt:"excel:日期"`
+	Date   time.CDate `json:"date" gt:"excel:日期;valid:required"`
 }
 
 func TestExport(t *testing.T) {
@@ -56,6 +56,7 @@ func TestImport(t *testing.T) {
 	}
 	for _, user := range datas {
 		t.Log(user)
+		//t.Log(valid.Valid(user))
 	}
 }
 
