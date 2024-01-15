@@ -20,7 +20,10 @@ type Excel[T comparable] struct {
 	ExcelMapper  map[tag.GtField]string
 	sheet        string
 	index        int
+	dict         tmap.TMap[string, dict]
 }
+
+type dict func(string, string) any
 
 type Handle[T comparable] interface {
 	ExcelHandle([]*T) error
@@ -36,6 +39,7 @@ func NewExcel[T comparable]() *Excel[T] {
 		ExcelMapper:  e,
 		Headers:      h,
 		sheet:        excel.Sheet,
+		dict:         tmap.NewTMap[string, dict](),
 	}
 }
 
@@ -90,6 +94,13 @@ func (f *Excel[T]) sheetCellCharChange(ch, preCh *int32, pre *string) {
 	return
 }
 
+// ========== import ===========
+
+func (f *Excel[T]) AddDict(key string, value dict) *Excel[T] {
+	f.dict.Set(key, value)
+	return f
+}
+
 func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (datas []*T, err error) {
 
 	f.File, err = excelize.OpenReader(r, opts...)
@@ -118,6 +129,10 @@ func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (datas []*T, er
 		}
 		var data T
 		for k, v := range f.ExcelMapper {
+			if fc := f.dict.Get(v); fc != nil {
+				reflect.Set(&data, k.Field, fc(v, row[title.Get(v)]))
+				continue
+			}
 			value := string2any(k.Type, row[title.Get(v)])
 			reflect.Set(&data, k.Field, value)
 		}
