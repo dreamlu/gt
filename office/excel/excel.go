@@ -23,7 +23,7 @@ type Excel[T comparable] struct {
 	dict         tmap.TMap[string, dict]
 }
 
-type dict func(string, string) any
+type dict func(string, string) (any, error)
 
 type Handle[T comparable] interface {
 	ExcelHandle([]*T) error
@@ -130,7 +130,12 @@ func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (datas []*T, er
 		var data T
 		for k, v := range f.ExcelMapper {
 			if fc := f.dict.Get(v); fc != nil {
-				reflect.Set(&data, k.Field, fc(v, row[title.Get(v)]))
+				var value any
+				value, err = fc(v, row[title.Get(v)])
+				if err != nil {
+					return
+				}
+				reflect.Set(&data, k.Field, value)
 				continue
 			}
 			value := string2any(k.Type, row[title.Get(v)])
