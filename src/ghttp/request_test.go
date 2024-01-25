@@ -46,3 +46,14 @@ func TestUpload(t *testing.T) {
 	res := r.Exec()
 	t.Log(res.String())
 }
+
+func TestStatus(t *testing.T) {
+	r := NewRequest(POST, "403 url")
+	res := r.Exec()
+	if err := res.Error(); err != nil {
+		t.Log(err)
+		t.Log(res.String())
+		return
+	}
+	t.Log(res.String())
+}

@@ -5,11 +5,15 @@ import (
 	"net/http"
 )
 
-//Response Http请求返回内容
+// Response Http请求返回内容
 type Response struct {
 	*http.Response
 	data  []byte
 	error error
+}
+
+func (m *Response) StatusCode() int {
+	return m.Response.StatusCode
 }
 
 func (m *Response) Error() error {

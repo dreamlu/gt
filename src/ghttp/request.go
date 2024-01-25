@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"github.com/dreamlu/gt/src/file/fs"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const (
@@ -54,6 +56,11 @@ func NewRequest(method, urlString string) *Request {
 	r.Client = &http.Client{}
 	r.SetContentType(ContentTypeJSON)
 	return r
+}
+
+func (m *Request) SetTimeout(timeout time.Duration) *Request {
+	m.Client.Timeout = timeout
+	return m
 }
 
 func (m *Request) SetContentType(contentType string) *Request {
@@ -140,10 +147,12 @@ func (m *Request) AddCookie(cookie *http.Cookie) *Request {
 }
 
 func (m *Request) Exec() *Response {
-	var req *http.Request
-	var err error
-	var body io.Reader
-	var rawQuery string
+	var (
+		req      *http.Request
+		err      error
+		body     io.Reader
+		rawQuery string
+	)
 
 	// url params
 	if len(m.urlValues) > 0 {
@@ -201,5 +210,11 @@ func (m *Request) Exec() *Response {
 	}
 
 	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return &Response{resp, data, err}
+	}
+	if resp.StatusCode >= http.StatusBadRequest {
+		err = errors.New("http status: " + resp.Status)
+	}
 	return &Response{resp, data, err}
 }
