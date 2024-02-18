@@ -35,8 +35,13 @@ func TestValidator(t *testing.T) {
 			ID:   6,
 			Name: "梦",
 		},
+		{
+			ID:   7,
+			Name: "梦",
+		},
 	}
 	t.Log(Valid(tests))
+	t.Log(ValidSlice(tests))
 
 	var tests2 = []*Test{
 		{

@@ -2,16 +2,13 @@ package valid
 
 import (
 	"encoding/json"
-	"github.com/dreamlu/gt/crud/dep/cons"
-	tag2 "github.com/dreamlu/gt/crud/dep/tag"
+	crudTag "github.com/dreamlu/gt/crud/dep/tag"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/tag"
 	"github.com/dreamlu/gt/src/type/amap"
 	"github.com/dreamlu/gt/src/type/cmap"
-	"log"
 	"net/url"
 	"reflect"
-	"strings"
 )
 
 type Validator struct {
@@ -27,36 +24,24 @@ type vRule struct {
 	// required bool
 }
 
+type ValidSliceError struct {
+	ValidError
+	line int
+}
+
 // valid type
 type (
 	ValidError map[string]error
 	ValidRule  map[string]*vRule
 )
 
-type Rule struct {
-	// key
-	Key string
-	// 翻译后的字段名
-	// default Key
-	Trans string
-	// valid
-	Valid string
-}
-
 func (v *ValidRule) String() string {
-	s, err := json.Marshal(v)
-	if err != nil {
-		log.Println("valid struct:[", err, "]:error")
-		return ""
-	}
+	s, _ := json.Marshal(v)
 	return string(s)
 }
 
 func (v *ValidRule) Unmarshal(str string) {
-	err := json.Unmarshal([]byte(str), v)
-	if err != nil {
-		log.Println("valid string to struct err:", err)
-	}
+	_ = json.Unmarshal([]byte(str), v)
 }
 
 func (v *ValidRule) parse(value any) {
@@ -69,8 +54,8 @@ func (v *ValidRule) parse(value any) {
 		// rule
 
 		field := typ.Field(i)
-		rule.Valid = tag2.ParseGtValidV(field)
-		rule.Trans = tag2.ParseGtTransV(field)
+		rule.Valid = crudTag.ParseGtValidV(field)
+		rule.Trans = crudTag.ParseGtTransV(field)
 		if rule.Valid == "" {
 			continue
 		}
@@ -89,7 +74,7 @@ func Valid(data any) ValidError {
 
 	if mr.IsSlice(typ) {
 		if errs := validSlice(data, Valid); len(errs) > 0 {
-			return errs
+			return errs[0].ValidError
 		}
 		return nil
 	}
@@ -97,18 +82,24 @@ func Valid(data any) ValidError {
 	return valid(data, typ)
 }
 
-func validSlice(v any, vf func(data any) ValidError) ValidError {
+func ValidSlice(data any) (sliceErrs []ValidSliceError) {
+	return validSlice(data, Valid)
+}
+
+func validSlice(v any, vf func(data any) ValidError) (sliceErrs []ValidSliceError) {
 	var (
-		sls  = mr.ToSlice(v)
-		errs ValidError
+		sls = mr.ToSlice(v)
 	)
-	for _, s := range sls {
-		errs = vf(s)
+	for i, s := range sls {
+		errs := vf(s)
 		if len(errs) > 0 {
-			return errs
+			sliceErrs = append(sliceErrs, ValidSliceError{
+				ValidError: errs,
+				line:       i + 1,
+			})
 		}
 	}
-	return nil
+	return
 }
 
 // ValidModel form/single json data
@@ -143,9 +134,7 @@ func valid(value any, typ reflect.Type) ValidError {
 
 // Check rule
 func (v *Validator) Check() (errs ValidError) {
-
 	errs = make(ValidError)
-	// d is value
 	switch d := v.data.(type) {
 	// request form
 	// there is some duplicated: url.Values
@@ -171,7 +160,7 @@ func (v *Validator) Check() (errs ValidError) {
 			)
 
 			for i := 0; i < typ.NumField(); i++ {
-				if tag2.ParseJsonFieldTag(typ.Field(i)) == k {
+				if crudTag.ParseJsonFieldTag(typ.Field(i)) == k {
 					val = mr.Field(d, typ.Field(i).Name)
 					break
 				}
@@ -181,31 +170,5 @@ func (v *Validator) Check() (errs ValidError) {
 			}
 		}
 	}
-
-	return errs
-}
-
-// Check rule common rule Check
-func (n *Rule) Check(data any) (err error) {
-	// required
-	if !strings.Contains(n.Valid, RuleRequired) && data == "" {
-		return
-	}
-
-	//  split rule
-	rules := strings.Split(n.Valid, cons.GtComma)
-	if n.Trans == "" {
-		n.Trans = n.Key
-	}
-	for _, v := range rules {
-		param := strings.Split(v, "=")
-		rule := ""
-		if length(param) > 1 {
-			rule = param[1]
-		}
-		if err = n.rule(param[0], rule, data); err != nil {
-			return err
-		}
-	}
-	return nil
+	return
 }
