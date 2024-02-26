@@ -42,6 +42,12 @@ func (v TMap[K, V]) Del(key K) TMap[K, V] {
 	return v
 }
 
+// IsExist is existed
+func (v TMap[K, V]) IsExist(key K) bool {
+	_, b := v[key]
+	return b
+}
+
 // Marshal TMap to v
 func (v TMap[K, V]) Marshal(value V) error {
 	b, err := json.Marshal(v)

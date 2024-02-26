@@ -138,6 +138,9 @@ func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (datas []*T, er
 				reflect.Set(&data, k.Field, value)
 				continue
 			}
+			if !title.IsExist(v) {
+				continue
+			}
 			value := string2any(k.Type, row[title.Get(v)])
 			reflect.Set(&data, k.Field, value)
 		}
