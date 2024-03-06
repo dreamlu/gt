@@ -9,19 +9,21 @@ import (
 )
 
 type User struct {
-	ID     int        `json:"id" gt:"excel:id"`
-	Name   string     `json:"name" gt:"excel:名称;valid:required,len=2-5;trans:用户名"`
-	Gender int        `json:"gender"`
-	Date   time.CDate `json:"date" gt:"excel:日期;valid:required"`
+	ID     *int        `json:"id" gt:"excel:id"`
+	Name   string      `json:"name" gt:"excel:名称;valid:required,len=2-5;trans:用户名"`
+	Gender int         `json:"gender"`
+	Date   *time.CDate `json:"date" gt:"excel:日期;valid:required"`
 }
 
 func TestExport(t *testing.T) {
 	var arr []*User
+	var now = time.CDateNow()
 	for i := 0; i < 10; i++ {
+		i := i
 		arr = append(arr, &User{
-			ID:   i,
+			ID:   &i,
 			Name: "测试" + strconv.Itoa(i),
-			Date: time.CDateNow(),
+			Date: &now,
 		})
 	}
 	e, err := Export[User](arr)
@@ -62,11 +64,13 @@ func TestImport(t *testing.T) {
 
 func TestExportZip(t *testing.T) {
 	var arr []*User
+	var now = time.CDateNow()
 	for i := 0; i < 10; i++ {
+		i := i
 		arr = append(arr, &User{
-			ID:   i,
+			ID:   &i,
 			Name: "测试" + strconv.Itoa(i),
-			Date: time.CDateNow(),
+			Date: &now,
 		})
 	}
 	e1, _ := Export[User](arr)

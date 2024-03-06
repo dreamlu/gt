@@ -6,6 +6,7 @@ import (
 	"github.com/dreamlu/gt/src/type/amap"
 	"github.com/dreamlu/gt/src/type/time"
 	"strconv"
+	"strings"
 )
 
 func getMapper(model any) ([]string, amap.AMap, map[tag.GtField]string) {
@@ -30,6 +31,7 @@ func getMapper(model any) ([]string, amap.AMap, map[tag.GtField]string) {
 
 func string2any(typ, cell string) any {
 	var value any
+	typ = strings.TrimPrefix(typ, "*") // reflect.Ptr
 	switch typ {
 	case "int":
 		value, _ = strconv.Atoi(cell)
@@ -39,9 +41,9 @@ func string2any(typ, cell string) any {
 		value, _ = strconv.ParseUint(cell, 10, 64)
 	case "float64":
 		value, _ = strconv.ParseFloat(cell, 64)
-	case "CDate":
+	case "CDate", "time.CDate":
 		value = time.ParseCDate(cell)
-	case "CTime":
+	case "CTime", "time.CTime":
 		value = time.ParseCTime(cell)
 	default:
 		value = cell

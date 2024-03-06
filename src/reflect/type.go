@@ -51,6 +51,13 @@ func IsStruct(typ Kind) bool {
 	return false
 }
 
+func IsPtr(typ Kind) bool {
+	if typ.Kind() == reflect.Ptr {
+		return true
+	}
+	return false
+}
+
 func IsSlice(typ Kind) bool {
 	if typ.Kind() == reflect.Slice {
 		return true

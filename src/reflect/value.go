@@ -5,9 +5,28 @@ import (
 )
 
 // Set data field value
-// type and field must same
+// field type must the same as value
+// can set basic or ptr value
 func Set(data any, field string, value any) {
-	TrueValueOf(data).FieldByName(field).Set(TrueValueOf(value))
+	var (
+		v  = TrueValueOf(data)
+		fd = v.FieldByName(field)
+	)
+	if IsPtr(fd) { // include ptr value or nil
+		fd.Set(reflect.New(fd.Type().Elem()))
+		fd.Elem().Set(TrueValueOf(value)) // like *a = b
+		// or use following code
+		//vv := reflect.ValueOf(value)
+		//if !IsPtr(vv) {
+		//	// perfect! nice!
+		//	// like: *a = b
+		//	fd.Elem().Set(reflect.ValueOf(value))
+		//	return
+		//}
+		//fd.Set(vv)
+		return
+	}
+	v.FieldByName(field).Set(TrueValueOf(value))
 }
 
 // SetByIndex data field index value

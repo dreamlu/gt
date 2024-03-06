@@ -6,10 +6,10 @@ import (
 
 // order
 type Order struct {
-	ID         int   `json:"id"`
-	UserID     int64 `json:"user_id"`     // user id
-	ServiceID  int64 `json:"service_id"`  // service table id
-	CreateTime int64 `json:"create_time"` // createtime
+	ID         int    `json:"id"`
+	UserID     *int64 `json:"user_id"`     // user id
+	ServiceID  int64  `json:"service_id"`  // service table id
+	CreateTime int64  `json:"create_time"` // createtime
 }
 
 func TestReflect(t *testing.T) {
@@ -61,6 +61,15 @@ func TestSet(t *testing.T) {
 	i = &oi
 	SetByIndex(i, 0, int(4))
 	t.Log(oi)
+
+	op := Order{} //new(Order)
+	i = &op
+	var userId = int64(4)
+	//op.UserID = &userId
+	Set(i, "UserID", userId)
+	t.Log(op, *op.UserID)
+	Set(i, "UserID", &userId)
+	t.Log(op, *op.UserID)
 }
 
 func TestCall(t *testing.T) {

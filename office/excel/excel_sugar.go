@@ -10,14 +10,12 @@ import (
 // if you want to handle imported data, please implement Handle interface
 // eg: func (User) ExcelHandle(users []*User) {}
 func Import[T comparable](r io.Reader, opts ...excelize.Options) (datas []*T, err error) {
-	datas, err = NewExcel[T]().Import(r, opts...)
-	return
+	return NewExcel[T]().Import(r, opts...)
 }
 
 // Export excel data
 func Export[T comparable](data any) (e *Excel[T], err error) {
-	err = NewExcel[T]().Export(data)
-	return
+	return NewExcel[T]().Export(data)
 }
 
 // ExportZip export excel data to zip

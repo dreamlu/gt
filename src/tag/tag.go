@@ -83,7 +83,7 @@ func GetFieldTag(field reflect.StructField, tagName string, fs ...func(reflect.S
 		}
 	}
 	if b {
-		oneTag[GtField{Field: field.Name, Type: field.Type.Name()}] = tag.Get(tagName)
+		oneTag[GtField{Field: field.Name, Type: field.Type.String()}] = tag.Get(tagName) // field.Type.Name() can not get not basic type, eg:*int
 	}
 	return oneTag
 }

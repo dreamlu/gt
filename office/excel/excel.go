@@ -43,7 +43,7 @@ func NewExcel[T comparable]() *Excel[T] {
 	}
 }
 
-func (f *Excel[T]) Export(data any) (err error) {
+func (f *Excel[T]) Export(data any) (e *Excel[T], err error) {
 
 	ch, preCh, pre := f.sheetCellCharInit()
 	f.File = excelize.NewFile()
@@ -64,7 +64,7 @@ func (f *Excel[T]) Export(data any) (err error) {
 		ch, preCh, pre = f.sheetCellCharInit()
 		for _, col := range f.Headers {
 			var v any
-			v = reflect.Field(value, f.HeaderMapper[col])
+			v = reflect.TrueField(value, f.HeaderMapper[col])
 			err = f.SetCellValue(f.sheet, pre+string(ch)+num, v)
 			if err != nil {
 				return
@@ -73,6 +73,7 @@ func (f *Excel[T]) Export(data any) (err error) {
 			f.sheetCellCharChange(&ch, &preCh, &pre)
 		}
 	}
+	e = f
 	return
 }
 
