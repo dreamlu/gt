@@ -21,3 +21,12 @@ func ContainField[T comparable](dst []T, src any, fieldName string) bool {
 	}
 	return false
 }
+
+func ContainDiffField[T comparable](dst []T, src any, dstField, srcField string) bool {
+	for _, d := range dst {
+		if reflect.Field(d, dstField) == reflect.Field(src, srcField) {
+			return true
+		}
+	}
+	return false
+}

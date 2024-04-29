@@ -40,9 +40,13 @@ func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (datas []*T, er
 		}
 		var data T
 		for k, v := range f.ExcelMapper {
+			var cell = row[title.Get(v)]
+			if cell == "" {
+				continue // zero value
+			}
 			if fc := f.dict.Get(v); fc != nil {
 				var value any
-				value, err = fc(v, row[title.Get(v)])
+				value, err = fc(v, cell)
 				if err != nil {
 					return
 				}
@@ -52,8 +56,7 @@ func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (datas []*T, er
 			if !title.IsExist(v) {
 				continue
 			}
-			value := string2any(k.Type, row[title.Get(v)])
-			reflect.Set(&data, k.Field, value)
+			reflect.Set(&data, k.Field, string2any(k.Type, cell))
 		}
 		datas = append(datas, &data)
 	}
