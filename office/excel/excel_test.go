@@ -31,19 +31,12 @@ func TestExport(t *testing.T) {
 		t.Log(err)
 		return
 	}
-	t.Log(e.SaveAs("test.xlsx"))
-}
-
-func (User) Namet(users []*User) error {
-	for _, user := range users {
-		user.Gender = 1
-	}
-	return nil
+	t.Log(e.SaveAs("test1.xlsx"))
 }
 
 func (User) ExcelHandle(users []*User) error {
 	for _, user := range users {
-		user.Gender = 1
+		user.Gender = 2
 	}
 	return nil
 }
@@ -84,4 +77,13 @@ func TestExportZip(t *testing.T) {
 
 	f, _ := os.Create("test.zip")
 	t.Log(ExportZip[User](f, []*Excel[User]{e1, e2}))
+}
+
+func TestExcel_ValidTitle(t *testing.T) {
+	srcBytes, _ := os.ReadFile("test.xlsx")
+	dstBytes, _ := os.ReadFile("dst.xlsx")
+	src, _ := NewExcel[User]().Read(bytes.NewReader(srcBytes))
+	dst, _ := NewExcel[User]().Read(bytes.NewReader(dstBytes))
+	t.Log(src.ValidTitle(dst))
+	//t.Log(src.Import())
 }

@@ -26,7 +26,7 @@ type vRule struct {
 
 type ValidSliceError struct {
 	ValidError
-	line int
+	Line int
 }
 
 // valid type
@@ -95,7 +95,7 @@ func validSlice(v any, vf func(data any) ValidError) (sliceErrs []ValidSliceErro
 		if len(errs) > 0 {
 			sliceErrs = append(sliceErrs, ValidSliceError{
 				ValidError: errs,
-				line:       i + 1,
+				Line:       i,
 			})
 		}
 	}

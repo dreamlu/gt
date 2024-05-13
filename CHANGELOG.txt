@@ -7,3 +7,5 @@ excel import optimize
 excel export fix
 add ContainDiffField
 fix excel zero value
+add excel ValidTitle
+optimize valid ValidSliceError

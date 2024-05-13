@@ -10,8 +10,8 @@ import (
 
 type Excel[T comparable] struct {
 	*excelize.File
+	rows         [][]string
 	FileName     string
-	Data         any
 	Headers      []string
 	HeaderMapper amap.AMap
 	ExcelMapper  map[tag.GtField]string
@@ -27,11 +27,9 @@ type Handle[T comparable] interface {
 }
 
 func NewExcel[T comparable]() *Excel[T] {
-	f := excelize.NewFile()
 	var model T
 	h, m, e := getMapper(model)
 	return &Excel[T]{
-		File:         f,
 		HeaderMapper: m,
 		ExcelMapper:  e,
 		Headers:      h,

@@ -9,8 +9,12 @@ import (
 // support type: string, int, int64, uint, float64
 // if you want to handle imported data, please implement Handle interface
 // eg: func (User) ExcelHandle(users []*User) {}
-func Import[T comparable](r io.Reader, opts ...excelize.Options) (datas []*T, err error) {
-	return NewExcel[T]().Import(r, opts...)
+func Import[T comparable](r io.Reader, opts ...excelize.Options) (e []*T, err error) {
+	excel, err := NewExcel[T]().Read(r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return excel.Import()
 }
 
 // Export excel data

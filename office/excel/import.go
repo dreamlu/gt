@@ -7,34 +7,33 @@ import (
 	"io"
 )
 
-func (f *Excel[T]) AddDict(key string, value dict) *Excel[T] {
-	f.dict.Set(key, value)
-	return f
-}
-
-func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (datas []*T, err error) {
-
+func (f *Excel[T]) Read(r io.Reader, opts ...excelize.Options) (*Excel[T], error) {
+	var err error
 	f.File, err = excelize.OpenReader(r, opts...)
-	if err != nil {
-		return
-	}
-	defer f.Close()
-	rows, err := f.GetRows(f.sheet)
 	if err != nil {
 		return nil, err
 	}
+	f.rows, err = f.GetRows(f.sheet)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return f, nil
+}
 
+func (f *Excel[T]) Import() (datas []*T, err error) {
 	var (
-		title = tmap.NewTMap[string, int]()
-		max   = len(rows[0])
+		titles = f.rows[0]
+		title  = tmap.NewTMap[string, int]()
+		max    = len(titles)
 	)
-	for k, colCell := range rows[0] {
+	for k, colCell := range titles {
 		title.Set(colCell, k)
 	}
 
-	for i := 1; i < len(rows); i++ {
+	for i := 1; i < len(f.rows); i++ {
 
-		row := rows[i]
+		row := f.rows[i]
 		for len(row) < max {
 			row = append(row, "")
 		}
@@ -71,4 +70,9 @@ func (f *Excel[T]) Import(r io.Reader, opts ...excelize.Options) (datas []*T, er
 	}
 
 	return
+}
+
+func (f *Excel[T]) AddDict(key string, value dict) *Excel[T] {
+	f.dict.Set(key, value)
+	return f
 }
