@@ -5,8 +5,9 @@ import (
 	"net/http"
 )
 
-// Response Http请求返回内容
 type Response struct {
+	requestMsg  []byte
+	responseMsg []byte
 	*http.Response
 	data  []byte
 	error error
@@ -41,4 +42,12 @@ func (m *Response) Unmarshal(v any) error {
 		return m.error
 	}
 	return json.Unmarshal(m.data, v)
+}
+
+func (m *Response) RequestMsg() string {
+	return string(m.requestMsg)
+}
+
+func (m *Response) ResponseMsg() string {
+	return string(m.responseMsg)
 }

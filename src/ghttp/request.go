@@ -10,6 +10,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/http/httputil"
 	"strings"
 	"time"
 )
@@ -146,14 +147,59 @@ func (m *Request) AddCookie(cookie *http.Cookie) *Request {
 	return m
 }
 
-func (m *Request) Exec() *Response {
+func (m *Request) Exec() (res *Response) {
 	var (
 		req      *http.Request
-		err      error
 		body     io.Reader
 		rawQuery string
 	)
+	res = &Response{}
 
+	body, rawQuery, res.error = m.getParam()
+	if res.error != nil {
+		return
+	}
+
+	req, res.error = http.NewRequest(m.method, m.url, body)
+	if res.error != nil {
+		return
+	}
+	if len(rawQuery) > 0 {
+		req.URL.RawQuery = rawQuery
+	}
+	req.Header = m.header
+	for _, cookie := range m.cookies {
+		req.AddCookie(cookie)
+	}
+
+	m.Client.Transport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+
+	res.requestMsg, res.error = httputil.DumpRequest(req, true)
+	if res.error != nil {
+		return
+	}
+
+	res.Response, res.error = m.Client.Do(req)
+	if res.Response != nil {
+		defer res.Response.Body.Close()
+	}
+	res.responseMsg, res.error = httputil.DumpResponse(res.Response, true)
+	if res.error != nil {
+		return
+	}
+
+	resp := res.Response
+	res.data, res.error = io.ReadAll(resp.Body)
+	if res.error != nil {
+		return
+	}
+	if resp.StatusCode >= http.StatusBadRequest {
+		res.error = errors.New("http status: " + resp.Status)
+	}
+	return
+}
+
+func (m *Request) getParam() (body io.Reader, rawQuery string, err error) {
 	// url params
 	if len(m.urlValues) > 0 {
 		rawQuery = m.urlValues.Encode()
@@ -174,47 +220,11 @@ func (m *Request) Exec() *Response {
 			_, _ = io.Copy(f, m.f)
 			err = writer.Close()
 			if err != nil {
-				return &Response{nil, nil, err}
+				return
 			}
 			m.SetContentType(writer.FormDataContentType())
 		}
 		body = bs
 	}
-
-	req, err = http.NewRequest(m.method, m.url, body)
-	if err != nil {
-		return &Response{nil, nil, err}
-	}
-	if len(rawQuery) > 0 {
-		req.URL.RawQuery = rawQuery
-	}
-	req.Header = m.header
-	for _, cookie := range m.cookies {
-		req.AddCookie(cookie)
-	}
-
-	// skip verify ssl https
-	tc := &tls.Config{
-		InsecureSkipVerify: true,
-	}
-	m.Client.Transport = &http.Transport{
-		TLSClientConfig: tc,
-	}
-
-	resp, err := m.Client.Do(req)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
-	if err != nil {
-		return &Response{resp, nil, err}
-	}
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return &Response{resp, data, err}
-	}
-	if resp.StatusCode >= http.StatusBadRequest {
-		err = errors.New("http status: " + resp.Status)
-	}
-	return &Response{resp, data, err}
+	return
 }

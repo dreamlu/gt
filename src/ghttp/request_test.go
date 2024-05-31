@@ -27,6 +27,8 @@ func TestPostJSON(t *testing.T) {
 	r.SetJsonBody(Search{Q: "gt"})
 	res := r.Exec()
 	t.Log(res.String())
+	t.Log(res.RequestMsg())
+	t.Log(res.ResponseMsg())
 }
 
 func TestPostForm(t *testing.T) {
