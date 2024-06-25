@@ -3,6 +3,7 @@
 package conf
 
 import (
+	"fmt"
 	"github.com/dreamlu/gt/src/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/util"
@@ -27,7 +28,7 @@ func (c *Yaml) loadYaml(path string) {
 	v.SetConfigType(cons.Yaml)
 	err := v.ReadInConfig()
 	if err != nil {
-		panic("can not read " + path + " config")
+		panic(fmt.Sprintf("can not read %s config, error: %v", path, err))
 	}
 	c.Viper = v
 	c.path = path
