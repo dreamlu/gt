@@ -74,5 +74,7 @@ func TestSet(t *testing.T) {
 
 func TestCall(t *testing.T) {
 	or := Order{}
-	Call(or, "NoMethod")
+	t.Log(Call(or, "NoMethod"))
+	t.Log(IsZero(or))
+	t.Log(IsNil(&or))
 }

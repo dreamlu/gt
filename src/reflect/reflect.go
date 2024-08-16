@@ -16,3 +16,10 @@ func NewArray(v any) any {
 func IsZero(v any) bool {
 	return reflect.DeepEqual(v, reflect.Zero(reflect.TypeOf(v)).Interface())
 }
+
+func IsNil(v any) bool {
+	if v == nil {
+		return true
+	}
+	return reflect.ValueOf(v).IsNil()
+}
