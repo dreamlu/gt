@@ -13,4 +13,6 @@ var (
 	ConfFile            = "app.filepath"
 	ConfTaskNum         = "app.daemon.task_num"
 	ConfLogLevel        = "app.log.level"
+	ConfLogDirector     = "app.log.director"
+	ConfLogMaxAge       = "app.log.max-age"
 )

@@ -16,3 +16,10 @@ app:
     name: gt
   # upload filepath
   filepath: static/file/
+  log:
+    # log director
+    director: log
+    # log max day
+    max-age: 0
+    #　log in console/file/all
+    log-in: all

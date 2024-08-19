@@ -32,7 +32,7 @@ func (r *Parses) String() string {
 func (r *Parses) Marshal(v string) {
 	err := json.Unmarshal([]byte(v), r)
 	if err != nil {
-		log.Info("Parses Marshal error ", err)
+		log.Error("[Parses Marshal error]:", err)
 		return
 	}
 	return
@@ -69,7 +69,7 @@ func parseTag(r *Parses, typ reflect.Type, tables ...string) {
 		b                      bool
 	)
 	if !mr.IsStruct(typ) {
-		log.Info("Parses model Not Struct")
+		log.Error("[Parses model Not Struct]")
 		return
 	}
 	for i := 0; i < typ.NumField(); i++ {
@@ -129,7 +129,7 @@ func parseV(r *Parses, v any) {
 		typ = mr.TrueValueOf(v)
 	)
 	if !mr.IsStruct(typ) {
-		log.Info("Parses model Not Struct")
+		log.Error("[Parses model Not Struct]")
 		return
 	}
 	for i := 0; i < typ.NumField(); i++ {

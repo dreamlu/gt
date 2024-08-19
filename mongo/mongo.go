@@ -40,8 +40,8 @@ func newMongoDB() *mongo.Database {
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
 	if err != nil {
-		log.Error("[mongodb连接错误]:", err)
-		log.Error("[mongodb开始尝试重连中]: try it every 5s...")
+		log.Error("[mongodb connect error]:", err)
+		log.Error("[mongodb try connect again]: try it every 5s...")
 		// try to reconnect
 		for {
 			// go is so fast
@@ -50,10 +50,10 @@ func newMongoDB() *mongo.Database {
 			client, err = mongo.Connect(ctx, options.Client().ApplyURI(url))
 			//defer DB.Close()
 			if err != nil {
-				log.Error("[mongodb连接错误]:", err)
+				log.Error("[mongodb connect error]:", err)
 				continue
 			}
-			log.Info("[mongodb重连成功]")
+			log.Info("[mongodb connect success]")
 			break
 		}
 	}

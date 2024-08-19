@@ -19,7 +19,7 @@ type Parse struct {
 func (p *Parse) Marshal(v string) {
 	err := json.Unmarshal([]byte(v), p)
 	if err != nil {
-		log.Info("Parse Marshal error ", err)
+		log.Error("[Parse Marshal error]:", err)
 		return
 	}
 	return
