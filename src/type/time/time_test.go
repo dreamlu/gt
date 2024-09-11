@@ -23,6 +23,15 @@ func TestTime(t *testing.T) {
 	t.Log(err, tt)
 	err = tt.UnmarshalJSON([]byte(`"2023-04-03T08:59:32.254Z"`))
 	t.Log(err, tt)
+
+	var h Hello
+	err = json.Unmarshal([]byte(`{"msg":"hello","time":"2022-07-28 10"}`), &h)
+	t.Log(err, h)
+}
+
+type Hello struct {
+	Msg  string `json:"msg"`
+	Time CTime  `json:"time"`
 }
 
 // test time Marshal
@@ -36,7 +45,10 @@ func TestWebTime(t *testing.T) {
 
 func sayhelloName(w http.ResponseWriter, r *http.Request) {
 	//fmt.Fprintf(w,  CTime(time.Now())) // 这个写入到 w 的是输出到客户端的
-	b, err := json.Marshal(CTime(time.Now()))
+	b, err := json.Marshal(Hello{
+		Msg:  "hello",
+		Time: CTimeNow(),
+	})
 	log.Print(err)
 	w.Write(b)
 }

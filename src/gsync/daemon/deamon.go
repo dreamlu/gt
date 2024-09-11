@@ -87,7 +87,6 @@ func (d *Daemon) taskQueue() {
 			task := d.tasks[k]
 			if task.Time != nil {
 				if time2.Time(*task.Time).After(time2.Now()) {
-					//fmt.Println("time early")
 					continue
 				} else {
 					d.Task <- task
@@ -98,7 +97,6 @@ func (d *Daemon) taskQueue() {
 			}
 			d.Task <- task
 		}
-		//fmt.Println("==split line===")
 	}
 }
 
@@ -110,7 +108,6 @@ func (d *Daemon) task() {
 		//i := i
 		go func() {
 			for {
-				//fmt.Println("goroutine", i)
 				task := <-d.Task
 				task.daemonFunc()
 			}

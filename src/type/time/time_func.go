@@ -1,47 +1,20 @@
 package time
 
 import (
+	"database/sql/driver"
 	"fmt"
-	"strconv"
+	"strings"
 	"time"
 )
 
-// ParseCTime string to CTime
-func ParseCTime(value string) CTime {
-	ti, err := time.ParseInLocation(Layout, value, time.Local)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return CTime(ti)
-}
-
-// ParseCDate string to CDate
-func ParseCDate(value string) CDate {
-	ti, err := time.ParseInLocation(LayoutDate, value, time.Local)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return CDate(ti)
-}
-
-// ParseCSTime string to CSTime
-func ParseCSTime(value string) CSTime {
-	ti, err := time.ParseInLocation(LayoutS, value, time.Local)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return CSTime(ti)
-}
-
-func CTimeNow() CTime {
-	return CTime(time.Now())
-}
-
-func CDateNow() CDate {
-	return CDate(time.Now())
-}
-
 func parse(layout, value string) (t time.Time, err error) {
+	ll := len(layout)
+	lv := len(value)
+	if ll < lv {
+		value = value[:ll]
+	} else if ll > lv {
+		value = fmt.Sprintf(`%s%s`, value, LayoutZero[lv:ll])
+	}
 	t, err = time.ParseInLocation(layout, value, time.Local)
 	if err != nil {
 		value = fmt.Sprintf(`"%s"`, value)
@@ -59,30 +32,42 @@ func marshalJSON[T ct](t T) ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, t)), nil
 }
 
-// SubDate 日期差计算
-// 年月日计算
-func SubDate(date1, date2 time.Time) string {
-	var y, m, d int
-	y = date1.Year() - date2.Year()
-	if date1.Month() < date2.Month() {
-		y--
-		m = 12 - int(date2.Month()) + int(date1.Month())
-	} else {
-		m = int(date1.Month()) - int(date2.Month())
+func unmarshalJSON[T ct](layout string, b []byte) (t T, err error) {
+	s := strings.Trim(string(b), `"`)
+	if s == "" {
+		return
 	}
-	// 天数模糊计算
-	if date1.Day() < date2.Day() {
-		m--
-		//闰年,29天
-		day := []int{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+	ti, err := parse(layout, s)
+	if err != nil {
+		return t, err
+	}
+	t = T(ti)
+	return
+}
 
-		if date2.Year()%4 == 0 && date2.Year()%100 != 0 || date2.Year()%400 == 0 {
-			d = day[date2.Month()-1] + 1 - date2.Day() + date1.Day()
-		} else {
-			d = day[date2.Month()-1] - date2.Day() + date1.Day()
-		}
-	} else {
-		d = date1.Day() - date2.Day()
+func value[T ct](t T) (driver.Value, error) {
+	var zeroTime time.Time
+	var ti = time.Time(t)
+	if ti.UnixNano() == zeroTime.UnixNano() {
+		return nil, nil
 	}
-	return strconv.Itoa(y) + "年" + strconv.Itoa(m) + "月" + strconv.Itoa(d) + "日"
+	return ti, nil
+}
+
+func scan[T ct](layout string, v any) (T, error) {
+	var c T
+	switch v.(type) {
+	case []byte:
+		value, err := parse(layout, string(v.([]byte)))
+		if err != nil {
+			return c, err
+		}
+		return T(value), nil
+	case time.Time:
+		value, ok := v.(time.Time)
+		if !ok {
+			return T(value), nil
+		}
+	}
+	return c, fmt.Errorf("can not scan [%v] format [%s]", v, layout)
 }

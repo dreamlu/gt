@@ -36,7 +36,6 @@ func IsFile(path string) bool {
 func Mkdir(dir string) error {
 	if !Exists(dir) {
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil { //os.ModePerm
-			fmt.Println("MakeDir failed:", err)
 			return err
 		}
 	}

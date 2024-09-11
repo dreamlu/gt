@@ -2,10 +2,8 @@ package time
 
 import (
 	"database/sql/driver"
-	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"strings"
 	"time"
 )
 
@@ -17,6 +15,7 @@ const (
 	LayoutDate = "2006-01-02"              // date
 	LayoutYM   = "2006-01"                 // date
 	LayoutS    = "15:04:05"                // time
+	LayoutZero = "0000-00-00 00:00:00.000000000"
 )
 
 // CTime china time/date
@@ -27,39 +26,19 @@ func (t CTime) MarshalJSON() ([]byte, error) {
 	return marshalJSON[CTime](t)
 }
 
-func (t *CTime) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), `"`)
-	if s == "" {
-		return nil
-	}
-	if len(s) <= 10 {
-		s = fmt.Sprintf("%s 00:00:00", s)
-	}
-	ti, err := parse(Layout, s)
-	if err != nil {
-		return err
-	}
-	*t = CTime(ti)
+func (t *CTime) UnmarshalJSON(b []byte) (err error) {
+	*t, err = unmarshalJSON[CTime](Layout, b)
 	return nil
 }
 
 // Value insert problem https://github.com/go-gorm/gorm/issues/1611#issuecomment-329654638
 func (t CTime) Value() (driver.Value, error) {
-	var zeroTime time.Time
-	var ti = time.Time(t)
-	if ti.UnixNano() == zeroTime.UnixNano() {
-		return nil, nil
-	}
-	return ti, nil
+	return value[CTime](t)
 }
 
-func (t *CTime) Scan(v any) error {
-	value, ok := v.(time.Time)
-	if ok {
-		*t = CTime(value)
-		return nil
-	}
-	return fmt.Errorf("can not convert %v to CTime", v)
+func (t *CTime) Scan(v any) (err error) {
+	*t, err = scan[CTime](Layout, v)
+	return
 }
 
 func (CTime) GormDataType() string {
@@ -97,35 +76,18 @@ func (t CDate) MarshalJSON() ([]byte, error) {
 	return marshalJSON[CDate](t)
 }
 
-func (t *CDate) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), `"`)
-	if s == "" {
-		return nil
-	}
-	ti, err := parse(LayoutDate, s)
-	if err != nil {
-		return err
-	}
-	*t = CDate(ti)
+func (t *CDate) UnmarshalJSON(b []byte) (err error) {
+	*t, err = unmarshalJSON[CDate](LayoutDate, b)
 	return nil
 }
 
 func (t CDate) Value() (driver.Value, error) {
-	var zeroTime time.Time
-	var ti = time.Time(t)
-	if ti.UnixNano() == zeroTime.UnixNano() {
-		return nil, nil
-	}
-	return ti, nil
+	return value[CDate](t)
 }
 
-func (t *CDate) Scan(v any) error {
-	value, ok := v.(time.Time)
-	if ok {
-		*t = CDate(value)
-		return nil
-	}
-	return fmt.Errorf("can not convert %v to CDate", v)
+func (t *CDate) Scan(v any) (err error) {
+	*t, err = scan[CDate](LayoutDate, v)
+	return
 }
 
 func (CDate) GormDataType() string {
@@ -154,35 +116,18 @@ func (t CNTime) MarshalJSON() ([]byte, error) {
 	return marshalJSON[CNTime](t)
 }
 
-func (t *CNTime) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), `"`)
-	if s == "" {
-		return nil
-	}
-	ti, err := parse(LayoutN, s)
-	if err != nil {
-		return err
-	}
-	*t = CNTime(ti)
+func (t *CNTime) UnmarshalJSON(b []byte) (err error) {
+	*t, err = unmarshalJSON[CNTime](LayoutN, b)
 	return nil
 }
 
 func (t CNTime) Value() (driver.Value, error) {
-	var zeroTime time.Time
-	var ti = time.Time(t)
-	if ti.UnixNano() == zeroTime.UnixNano() {
-		return nil, nil
-	}
-	return ti, nil
+	return value[CNTime](t)
 }
 
-func (t *CNTime) Scan(v any) error {
-	value, ok := v.(time.Time)
-	if ok {
-		*t = CNTime(value)
-		return nil
-	}
-	return fmt.Errorf("can not convert %v to CNTime", v)
+func (t *CNTime) Scan(v any) (err error) {
+	*t, err = scan[CNTime](LayoutN, v)
+	return
 }
 
 func (CNTime) GormDataType() string {
@@ -211,16 +156,8 @@ func (t CSTime) MarshalJSON() ([]byte, error) {
 	return marshalJSON[CSTime](t)
 }
 
-func (t *CSTime) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), `"`)
-	if s == "" {
-		return nil
-	}
-	ti, err := parse(LayoutS, s)
-	if err != nil {
-		return err
-	}
-	*t = CSTime(ti)
+func (t *CSTime) UnmarshalJSON(b []byte) (err error) {
+	*t, err = unmarshalJSON[CSTime](LayoutS, b)
 	return nil
 }
 
@@ -228,13 +165,9 @@ func (t CSTime) Value() (driver.Value, error) {
 	return t.String(), nil
 }
 
-func (t *CSTime) Scan(v any) error {
-	value, ok := v.(time.Time)
-	if ok {
-		*t = CSTime(value)
-		return nil
-	}
-	return fmt.Errorf("can not convert %v to CSTime", v)
+func (t *CSTime) Scan(v any) (err error) {
+	*t, err = scan[CSTime](LayoutS, v)
+	return
 }
 
 func (CSTime) GormDBDataType(db *gorm.DB, field *schema.Field) string {
@@ -268,35 +201,18 @@ func (t CYM) MarshalJSON() ([]byte, error) {
 	return marshalJSON[CYM](t)
 }
 
-func (t *CYM) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), `"`)
-	if s == "" {
-		return nil
-	}
-	ti, err := parse(LayoutYM, s)
-	if err != nil {
-		return err
-	}
-	*t = CYM(ti)
+func (t *CYM) UnmarshalJSON(b []byte) (err error) {
+	*t, err = unmarshalJSON[CYM](LayoutYM, b)
 	return nil
 }
 
 func (t CYM) Value() (driver.Value, error) {
-	var zeroTime time.Time
-	var ti = time.Time(t)
-	if ti.UnixNano() == zeroTime.UnixNano() {
-		return nil, nil
-	}
-	return ti, nil
+	return value[CYM](t)
 }
 
-func (t *CYM) Scan(v any) error {
-	value, ok := v.(time.Time)
-	if ok {
-		*t = CYM(value)
-		return nil
-	}
-	return fmt.Errorf("can not convert %v to CYM", v)
+func (t *CYM) Scan(v any) (err error) {
+	*t, err = scan[CYM](LayoutYM, v)
+	return
 }
 
 func (CYM) GormDataType() string {
