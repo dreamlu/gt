@@ -28,14 +28,15 @@ type DB struct {
 
 // db params
 type dba struct {
-	Driver      string `yaml:"driver"`
-	User        string `yaml:"user"`
-	Password    string `yaml:"password"`
-	Host        string `yaml:"host"`
-	Port        string `yaml:"port"`
-	Name        string `yaml:"name"`
-	MaxIdleConn int    `yaml:"maxIdleConn"`
-	MaxOpenConn int    `yaml:"maxOpenConn"`
+	Driver          string `yaml:"driver"`
+	User            string `yaml:"user"`
+	Password        string `yaml:"password"`
+	Host            string `yaml:"host"`
+	Port            string `yaml:"port"`
+	Name            string `yaml:"name"`
+	MaxIdleConn     int    `yaml:"maxIdleConn"`
+	MaxOpenConn     int    `yaml:"maxOpenConn"`
+	CreateBatchSize int    `yaml:"createBatchSize"`
 	// db log mode
 	Log bool `yaml:"log"`
 }
@@ -83,6 +84,7 @@ func (db *DB) open(dbS *dba) *gorm.DB {
 		Logger:                                   logInfo(dbS),
 		SkipDefaultTransaction:                   true,
 		DisableForeignKeyConstraintWhenMigrating: true,
+		CreateBatchSize:                          dbS.CreateBatchSize,
 	}
 	crudCons.Init(dbS.Driver)
 	dial := dialector(dbS)
