@@ -3,6 +3,7 @@ package time
 import (
 	"database/sql/driver"
 	"fmt"
+	"gorm.io/gorm"
 	"strings"
 	"time"
 )
@@ -15,7 +16,7 @@ func parse(layout, value string) (t time.Time, err error) {
 	} else if ll > lv {
 		value = fmt.Sprintf(`%s%s`, value, LayoutZero[lv:ll])
 	}
-	t, err = time.ParseInLocation(layout, value, time.Local)
+	t, err = time.Parse(layout, value)
 	if err != nil {
 		value = fmt.Sprintf(`"%s"`, value)
 		err = t.UnmarshalJSON([]byte(value))
@@ -70,4 +71,13 @@ func scan[T ct](layout string, v any) (T, error) {
 		}
 	}
 	return c, fmt.Errorf("can not scan [%v] format [%s]", v, layout)
+}
+
+func gormType(db *gorm.DB) string {
+	switch db.Dialector.Name() {
+	case "postgres":
+		return "timestamp" // timestamptz UTC
+	default:
+		return "datetime" // timestamp UTC
+	}
 }

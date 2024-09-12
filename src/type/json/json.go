@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 type CJSON []byte
@@ -16,14 +17,19 @@ func (j CJSON) Value() (driver.Value, error) {
 	return string(j), nil
 }
 
-func (j *CJSON) Scan(value any) error {
-	if value == nil {
+func (j *CJSON) Scan(v any) error {
+	if v == nil {
 		*j = nil
 		return nil
 	}
-	s, ok := value.([]byte)
-	if !ok {
-		return errors.New("不合法的JSON数据")
+	var s []byte
+	switch v.(type) {
+	case string:
+		s = []byte(v.(string))
+	case []byte:
+		s = v.([]byte)
+	default:
+		return fmt.Errorf("[not json data error]:%s", v)
 	}
 	*j = append((*j)[0:0], s...)
 	return nil

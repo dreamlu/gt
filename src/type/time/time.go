@@ -46,12 +46,7 @@ func (CTime) GormDataType() string {
 }
 
 func (CTime) GormDBDataType(db *gorm.DB, field *schema.Field) string {
-	switch db.Dialector.Name() {
-	case "postgres":
-		return "timestamp" // timestamptz UTC
-	default:
-		return "datetime" // timestamp UTC
-	}
+	return gormType(db)
 }
 
 func (t CTime) String() string {
@@ -171,12 +166,7 @@ func (t *CSTime) Scan(v any) (err error) {
 }
 
 func (CSTime) GormDBDataType(db *gorm.DB, field *schema.Field) string {
-	switch db.Dialector.Name() {
-	case "postgres":
-		return "time"
-	default:
-		return "time;" // GormDataType gorm bug mysql time to CSTime
-	}
+	return gormType(db)
 }
 
 func (t CSTime) String() string {
