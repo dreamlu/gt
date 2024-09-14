@@ -2,8 +2,8 @@ package mq
 
 import (
 	"github.com/dreamlu/gt/conf"
-	"github.com/dreamlu/gt/log"
 	"github.com/dreamlu/gt/src/cons"
+	"log"
 	"testing"
 	"time"
 )
@@ -39,6 +39,6 @@ func TestNsg(t *testing.T) {
 
 func B(message *Message) error {
 
-	log.Info(string(message.Body))
+	log.Println(string(message.Body))
 	return nil
 }

@@ -20,6 +20,6 @@ app:
     # log director
     director: log
     # log max day
-    max-age: 0
+    max-age: 7
     #　log in console/file/all
     log-in: all

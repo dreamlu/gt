@@ -1,27 +1,41 @@
 package log
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
-var l *Log
+var (
+	onceLog sync.Once
+	l       *Log
+)
 
 // gt tool log, only use by gt
-func init() {
-	l = NewLog()
-}
+//func init() {
+//	l = NewLog()
+//}
 
-// GetLog get once log
+// GetLog get once log, only as log
+// maybe use InitProfile to init some param
 func GetLog() *Log {
+	onceLog.Do(func() {
+		l = NewLog()
+	})
 	return l
 }
 
 func Error(args ...any) {
-	l.Error(fmt.Sprintf("%+v\n", args))
+	GetLog().Error(fmt.Sprintf("%+v", args))
 }
 
 func Info(args ...any) {
-	l.Info(args...)
+	GetLog().Info(args...)
 }
 
 func Warn(args ...any) {
-	l.Warn(args...)
+	GetLog().Warn(args...)
+}
+
+func Debug(args ...any) {
+	GetLog().Debug(args...)
 }

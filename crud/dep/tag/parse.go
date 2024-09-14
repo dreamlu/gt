@@ -3,7 +3,6 @@ package tag
 import (
 	"encoding/json"
 	"github.com/dreamlu/gt/crud/dep/cons"
-	"github.com/dreamlu/gt/log"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/tag"
 	"github.com/dreamlu/gt/src/type/amap"
@@ -17,11 +16,7 @@ type Parse struct {
 }
 
 func (p *Parse) Marshal(v string) {
-	err := json.Unmarshal([]byte(v), p)
-	if err != nil {
-		log.Error("[Parse Marshal error]:", err)
-		return
-	}
+	_ = json.Unmarshal([]byte(v), p)
 	return
 }
 

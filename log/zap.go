@@ -2,8 +2,6 @@ package log
 
 import (
 	"fmt"
-	"github.com/dreamlu/gt/conf"
-	"github.com/dreamlu/gt/src/cons"
 	. "github.com/dreamlu/gt/src/type/time"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -35,7 +33,7 @@ func (z *_zap) GetEncoderConfig() zapcore.EncoderConfig {
 }
 
 func (z *_zap) GetEncoderCore(l zapcore.Level, level zap.LevelEnablerFunc) zapcore.Core {
-	writer, err := FileRotatelogs.GetWriteSyncer(l.String()) // 使用file-rotatelogs进行日志分割
+	writer, err := FileRotatelogs.GetWriteSyncer(l.String())
 	if err != nil {
 		fmt.Printf("Get Write Syncer Failed err:%v", err.Error())
 		return nil
@@ -50,7 +48,7 @@ func (z *_zap) CustomTimeEncoder(t time.Time, encoder zapcore.PrimitiveArrayEnco
 
 func (z *_zap) GetZapCores() []zapcore.Core {
 	cores := make([]zapcore.Core, 0, 7)
-	for level := z.ZapLevel(conf.Get[string](cons.ConfLogLevel)); level <= zapcore.FatalLevel; level++ {
+	for level := z.ZapLevel(confLogLevel); level <= zapcore.FatalLevel; level++ {
 		cores = append(cores, z.GetEncoderCore(level, z.GetLevelPriority(level)))
 	}
 	return cores

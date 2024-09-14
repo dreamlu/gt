@@ -15,4 +15,5 @@ var (
 	ConfLogLevel        = "app.log.level"
 	ConfLogDirector     = "app.log.director"
 	ConfLogMaxAge       = "app.log.max-age"
+	ConfLogLogIn        = "app.log.log-in"
 )

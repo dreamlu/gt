@@ -9,3 +9,11 @@ const (
 	InFile     = "file"
 	InAll      = "all"
 )
+
+// default log config
+var (
+	confLogLevel    = DebugLevel
+	confLogDirector = "log"
+	confLogMaxAge   = 7
+	logIn           = InConsole
+)
