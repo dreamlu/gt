@@ -180,6 +180,9 @@ func (m *Request) Exec() (res *Response) {
 	}
 
 	res.Response, res.error = m.Client.Do(req)
+	if res.error != nil {
+		return
+	}
 	if res.Response != nil {
 		defer res.Response.Body.Close()
 	}
