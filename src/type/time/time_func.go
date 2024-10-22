@@ -66,7 +66,7 @@ func scan[T ct](layout string, v any) (T, error) {
 		return T(value), nil
 	case time.Time:
 		value, ok := v.(time.Time)
-		if !ok {
+		if ok {
 			return T(value), nil
 		}
 	}
