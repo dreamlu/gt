@@ -12,7 +12,7 @@ func (f *Excel[T]) Export(data any) (e *Excel[T], err error) {
 	f.File = excelize.NewFile()
 
 	for _, header := range f.Headers {
-		err = f.SetCellValue(f.sheet, pre+string(ch)+"1", header)
+		err = f.SetCellValue(f.sheets[0], pre+string(ch)+"1", header)
 		if err != nil {
 			return
 		}
@@ -28,7 +28,7 @@ func (f *Excel[T]) Export(data any) (e *Excel[T], err error) {
 		for _, col := range f.Headers {
 			var v any
 			v = reflect.TrueField(value, f.HeaderMapper[col])
-			err = f.SetCellValue(f.sheet, pre+string(ch)+num, v)
+			err = f.SetCellValue(f.sheets[0], pre+string(ch)+num, v)
 			if err != nil {
 				return
 			}

@@ -13,7 +13,14 @@ func (f *Excel[T]) Read(r io.Reader, opts ...excelize.Options) (*Excel[T], error
 	if err != nil {
 		return nil, err
 	}
-	f.rows, err = f.GetRows(f.sheet)
+	for i, sheet := range f.sheets {
+		var rows [][]string
+		rows, err = f.GetRows(sheet)
+		f.rows[sheet] = rows
+		if i == 0 {
+			f.Titles = append(f.Titles, rows[0]...)
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -22,18 +29,29 @@ func (f *Excel[T]) Read(r io.Reader, opts ...excelize.Options) (*Excel[T], error
 }
 
 func (f *Excel[T]) Import() (datas []*T, err error) {
+	for _, sheet := range f.sheets {
+		var ds []*T
+		ds, err = f.importSheet(sheet)
+		if err != nil {
+			return
+		}
+		datas = append(datas, ds...)
+	}
+	return
+}
+
+func (f *Excel[T]) importSheet(sheet string) (datas []*T, err error) {
 	var (
-		titles = f.rows[0]
-		title  = tmap.NewTMap[string, int]()
-		max    = len(titles)
+		title = tmap.NewTMap[string, int]()
+		max   = len(f.Titles)
 	)
-	for k, colCell := range titles {
+	for k, colCell := range f.Titles {
 		title.Set(colCell, k)
 	}
 
-	for i := 1; i < len(f.rows); i++ {
+	for i := 1; i < len(f.rows[sheet]); i++ {
 
-		row := f.rows[i]
+		row := f.rows[sheet][i]
 		for len(row) < max {
 			row = append(row, "")
 		}

@@ -10,12 +10,13 @@ import (
 
 type Excel[T comparable] struct {
 	*excelize.File
-	rows         [][]string
+	rows         map[string][][]string
+	Titles       []string
 	FileName     string
 	Headers      []string
 	HeaderMapper amap.AMap
 	ExcelMapper  map[tag.GtField]string
-	sheet        string
+	sheets       []string
 	index        int
 	dict         tmap.TMap[string, dict]
 }
@@ -33,12 +34,13 @@ func NewExcel[T comparable]() *Excel[T] {
 		HeaderMapper: m,
 		ExcelMapper:  e,
 		Headers:      h,
-		sheet:        excel.Sheet,
+		sheets:       []string{excel.Sheet},
 		dict:         tmap.NewTMap[string, dict](),
+		rows:         make(map[string][][]string),
 	}
 }
 
-func (f *Excel[T]) SetSheet(sheet string) *Excel[T] {
-	f.sheet = sheet
+func (f *Excel[T]) SetSheet(sheet ...string) *Excel[T] {
+	f.sheets = sheet
 	return f
 }

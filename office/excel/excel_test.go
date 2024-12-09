@@ -87,3 +87,21 @@ func TestExcel_ValidTitle(t *testing.T) {
 	t.Log(src.ValidTitle(dst))
 	//t.Log(src.Import())
 }
+
+func TestImportSheet(t *testing.T) {
+	bs, _ := os.ReadFile("test.xlsx")
+	r := bytes.NewReader(bs)
+	excel, err := NewExcel[User]().SetSheet("Sheet1", "Sheet2").Read(r)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	datas, err := excel.Import()
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for _, user := range datas {
+		t.Log(*user)
+	}
+}
