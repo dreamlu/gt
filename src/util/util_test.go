@@ -9,6 +9,11 @@ type Contain struct {
 	Name string
 }
 
+type Contain2 struct {
+	ID    int64
+	Name2 string
+}
+
 func TestContainField(t *testing.T) {
 	var cs = []Contain{{
 		ID:   1,
@@ -21,12 +26,18 @@ func TestContainField(t *testing.T) {
 		ID:   1,
 		Name: "name1",
 	}
+	var c3 = []Contain2{{
+		ID:    1,
+		Name2: "name1",
+	}}
 	var c2 = c1
 	c2.Name = "name2"
 	t.Log(Contains(cs, c1))
 	t.Log(ContainField(cs, c1, "ID"))
 	t.Log(Contains(cs, c2))
 	t.Log(ContainField(cs, c2, "Name"))
+	t.Log(ContainsDiffField[Contain, Contain2](cs, c3, "Name", "Name2"))
+	t.Log(ContainsField(cs, cs, "Name"))
 }
 
 func TestFloat64(t *testing.T) {

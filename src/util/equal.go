@@ -6,6 +6,17 @@ import (
 	"github.com/dreamlu/gt/src/reflect"
 )
 
+func Equals[T comparable](s []T, sep ...T) bool {
+	for _, v := range s {
+		for _, se := range sep {
+			if Equal(v, se) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func EqualJson(src, dst any) bool {
 	srcBs, err := json.Marshal(src)
 	if err != nil {

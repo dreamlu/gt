@@ -33,6 +33,10 @@ func marshalJSON[T ct](t T) ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, t)), nil
 }
 
+func unmarshalParam[T ct](layout string, s string) (t T, err error) {
+	return unmarshalJSON[T](layout, []byte(s))
+}
+
 func unmarshalJSON[T ct](layout string, b []byte) (t T, err error) {
 	s := strings.Trim(string(b), `"`)
 	if s == "" {

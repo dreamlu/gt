@@ -28,7 +28,12 @@ func (t CTime) MarshalJSON() ([]byte, error) {
 
 func (t *CTime) UnmarshalJSON(b []byte) (err error) {
 	*t, err = unmarshalJSON[CTime](Layout, b)
-	return nil
+	return
+}
+
+func (t *CTime) UnmarshalParam(param string) (err error) {
+	*t, err = unmarshalParam[CTime](Layout, param)
+	return
 }
 
 // Value insert problem https://github.com/go-gorm/gorm/issues/1611#issuecomment-329654638
@@ -73,7 +78,12 @@ func (t CDate) MarshalJSON() ([]byte, error) {
 
 func (t *CDate) UnmarshalJSON(b []byte) (err error) {
 	*t, err = unmarshalJSON[CDate](LayoutDate, b)
-	return nil
+	return
+}
+
+func (t *CDate) UnmarshalParam(param string) (err error) {
+	*t, err = unmarshalParam[CDate](LayoutDate, param)
+	return
 }
 
 func (t CDate) Value() (driver.Value, error) {
@@ -113,7 +123,12 @@ func (t CNTime) MarshalJSON() ([]byte, error) {
 
 func (t *CNTime) UnmarshalJSON(b []byte) (err error) {
 	*t, err = unmarshalJSON[CNTime](LayoutN, b)
-	return nil
+	return
+}
+
+func (t *CNTime) UnmarshalParam(param string) (err error) {
+	*t, err = unmarshalParam[CNTime](LayoutN, param)
+	return
 }
 
 func (t CNTime) Value() (driver.Value, error) {
@@ -153,7 +168,12 @@ func (t CSTime) MarshalJSON() ([]byte, error) {
 
 func (t *CSTime) UnmarshalJSON(b []byte) (err error) {
 	*t, err = unmarshalJSON[CSTime](LayoutS, b)
-	return nil
+	return
+}
+
+func (t *CSTime) UnmarshalParam(param string) (err error) {
+	*t, err = unmarshalParam[CSTime](LayoutS, param)
+	return
 }
 
 func (t CSTime) Value() (driver.Value, error) {
@@ -193,7 +213,12 @@ func (t CYM) MarshalJSON() ([]byte, error) {
 
 func (t *CYM) UnmarshalJSON(b []byte) (err error) {
 	*t, err = unmarshalJSON[CYM](LayoutYM, b)
-	return nil
+	return
+}
+
+func (t *CYM) UnmarshalParam(param string) (err error) {
+	*t, err = unmarshalParam[CYM](LayoutYM, param)
+	return
 }
 
 func (t CYM) Value() (driver.Value, error) {
