@@ -12,3 +12,7 @@ func TestExists(t *testing.T) {
 	t.Log(f.Readdirnames(0))
 	t.Log(filepath.Abs(""))
 }
+
+func TestMkFile(t *testing.T) {
+	t.Log(MkFile("./tmp/test.txt"))
+}

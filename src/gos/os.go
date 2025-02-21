@@ -35,11 +35,21 @@ func IsFile(path string) bool {
 // Mkdir create dir if not exist
 func Mkdir(dir string) error {
 	if !Exists(dir) {
-		if err := os.MkdirAll(dir, os.ModePerm); err != nil { //os.ModePerm
+		if err := os.MkdirAll(dir, 0666); err != nil { //os.ModePerm
 			return err
 		}
 	}
 	return nil
+}
+
+// MkFile create file if not exist
+func MkFile(file string) (*os.File, error) {
+	if !Exists(file) {
+		if err := Mkdir(filepath.Dir(file)); err != nil {
+			return nil, err
+		}
+	}
+	return os.Create(file)
 }
 
 // CopyFile use io.Copy copy file
