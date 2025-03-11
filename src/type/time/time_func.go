@@ -16,7 +16,7 @@ func parse(layout, value string) (t time.Time, err error) {
 	} else if ll > lv {
 		value = fmt.Sprintf(`%s%s`, value, LayoutZero[lv:ll])
 	}
-	t, err = time.Parse(layout, value)
+	t, err = time.ParseInLocation(layout, value, time.Local)
 	if err != nil {
 		value = fmt.Sprintf(`"%s"`, value)
 		err = t.UnmarshalJSON([]byte(value))
