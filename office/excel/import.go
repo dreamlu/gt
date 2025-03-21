@@ -8,10 +8,26 @@ import (
 )
 
 func (f *Excel[T]) Read(r io.Reader, opts ...excelize.Options) (*Excel[T], error) {
+	return f.read(r, false, opts...)
+}
+
+func (f *Excel[T]) ReadAll(r io.Reader, opts ...excelize.Options) (*Excel[T], error) {
+	return f.read(r, true, opts...)
+}
+
+func (f *Excel[T]) read(r io.Reader, allSheets bool, opts ...excelize.Options) (*Excel[T], error) {
 	var err error
 	f.File, err = excelize.OpenReader(r, opts...)
 	if err != nil {
 		return nil, err
+	}
+	defer f.Close()
+
+	sheetList := f.GetSheetList()
+	if allSheets {
+		f.sheets = sheetList
+	} else {
+		f.sheets = append(f.sheets, sheetList[0])
 	}
 	for i, sheet := range f.sheets {
 		var rows [][]string
@@ -20,12 +36,16 @@ func (f *Excel[T]) Read(r io.Reader, opts ...excelize.Options) (*Excel[T], error
 		if i == 0 {
 			f.Titles = append(f.Titles, rows[0]...)
 		}
+		if err != nil {
+			return nil, err
+		}
 	}
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
 	return f, nil
+}
+
+func (f *Excel[T]) open(r io.Reader, opts ...excelize.Options) (err error) {
+	f.File, err = excelize.OpenReader(r, opts...)
+	return
 }
 
 func (f *Excel[T]) Import() (datas []*T, err error) {

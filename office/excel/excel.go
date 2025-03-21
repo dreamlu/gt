@@ -1,7 +1,6 @@
 package excel
 
 import (
-	"github.com/dreamlu/gt/src/cons/excel"
 	"github.com/dreamlu/gt/src/tag"
 	"github.com/dreamlu/gt/src/type/amap"
 	"github.com/dreamlu/gt/src/type/tmap"
@@ -34,7 +33,6 @@ func NewExcel[T comparable]() *Excel[T] {
 		HeaderMapper: m,
 		ExcelMapper:  e,
 		Headers:      h,
-		sheets:       []string{excel.Sheet},
 		dict:         tmap.NewTMap[string, dict](),
 		rows:         make(map[string][][]string),
 	}

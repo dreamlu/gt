@@ -17,6 +17,15 @@ func Import[T comparable](r io.Reader, opts ...excelize.Options) (e []*T, err er
 	return excel.Import()
 }
 
+// ImportAll excel all sheet data
+func ImportAll[T comparable](r io.Reader, opts ...excelize.Options) (e []*T, err error) {
+	excel, err := NewExcel[T]().ReadAll(r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return excel.Import()
+}
+
 // Export excel data
 func Export[T comparable](data any) (e *Excel[T], err error) {
 	return NewExcel[T]().Export(data)

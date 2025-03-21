@@ -53,6 +53,17 @@ func TestImport(t *testing.T) {
 		t.Log(user)
 		//t.Log(valid.Valid(user))
 	}
+	bs, _ = os.ReadFile("test.xlsx")
+	r = bytes.NewReader(bs)
+	dataAll, err := ImportAll[User](r)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+	for _, user := range dataAll {
+		t.Log(user)
+		//t.Log(valid.Valid(user))
+	}
 }
 
 func TestExportZip(t *testing.T) {
