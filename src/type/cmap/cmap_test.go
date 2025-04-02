@@ -25,14 +25,17 @@ func TestStructToMap(t *testing.T) {
 	type Name struct {
 		Name string `json:"name" gorm:"column:tb_name" gt:"field:name2"`
 		A    int
-		B    int
+		B    *int
+		C    *int
 		D    int
-		C    int
 	}
 
+	var i = 3
 	cm := StructToCMap(&Name{
 		Name: "test",
 		A:    1,
+		B:    nil,
+		C:    &i,
 	})
 	t.Log(cm)
 	t.Log(cm.Encode())

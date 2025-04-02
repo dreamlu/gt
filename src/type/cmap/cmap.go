@@ -96,10 +96,11 @@ func (v CMap) Drop(key, value string) CMap {
 
 // Struct CMap to struct data
 // value like
-// type Te struct {
-//		Name string `json:"name"` // must string type
-//		ID   string `json:"id"` // must string type
-//	}
+//
+//	type Te struct {
+//			Name string `json:"name"` // must string type
+//			ID   string `json:"id"` // must string type
+//		}
 func (v CMap) Struct(value any) error {
 	var m = map[string]any{}
 	for k, v := range v {
@@ -123,13 +124,21 @@ func StructToCMap(v any) (values CMap) {
 	iVal := el
 	typ := iVal.Type()
 	for i := 0; i < iVal.NumField(); i++ {
+		colVal := iVal.Field(i)
+		if colVal.Kind() == reflect.Ptr {
+			if colVal.IsNil() {
+				continue
+			}
+			colVal = colVal.Elem()
+			colVal = mr.TrueValue(colVal)
+		}
 		fi := typ.Field(i)
 		name, _, _, _ := tag.ParseTag(fi)
 		// add support slice
-		if iVal.Field(i).Kind() == reflect.Slice {
+		if colVal.Kind() == reflect.Slice {
 			var buf bytes.Buffer
 			buf.WriteString("[")
-			iValArr := iVal.Field(i)
+			iValArr := colVal
 			for j := 0; j < iValArr.Len(); j++ {
 				buf.WriteString(fmt.Sprint(`"`, iValArr.Index(j), `",`))
 			}
@@ -140,12 +149,12 @@ func StructToCMap(v any) (values CMap) {
 			}
 			continue
 		}
-		values.Set(name, fmt.Sprint(iVal.Field(i)))
+		values.Set(name, fmt.Sprint(colVal))
 	}
 	return
 }
 
-// Encode encodes the values into ``URL encoded'' form
+// Encode encodes the values into “URL encoded” form
 // ("bar=baz&foo=quux") sorted by key.
 func (v CMap) Encode() string {
 	return url.Values(v).Encode()

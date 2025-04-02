@@ -37,6 +37,14 @@ func (m *Response) MustString() string {
 	return string(m.data)
 }
 
+func (m *Response) Json() (json.RawMessage, error) {
+	return m.data, m.error
+}
+
+func (m *Response) MustJson() json.RawMessage {
+	return m.data
+}
+
 func (m *Response) Unmarshal(v any) error {
 	if m.error != nil {
 		return m.error
