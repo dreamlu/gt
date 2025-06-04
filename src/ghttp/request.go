@@ -55,12 +55,20 @@ func NewRequest(method, urlString string) *Request {
 	r.forms = cmap.NewCMap()
 	r.header = http.Header{}
 	r.Client = &http.Client{}
+	var transport = http.DefaultTransport.(*http.Transport)
+	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	r.Client.Transport = transport
 	r.SetContentType(ContentTypeJSON)
 	return r
 }
 
 func (m *Request) SetTimeout(timeout time.Duration) *Request {
 	m.Client.Timeout = timeout
+	return m
+}
+
+func (m *Request) SetClient(client *http.Client) *Request {
+	m.Client = client
 	return m
 }
 
@@ -171,8 +179,6 @@ func (m *Request) Exec() (res *Response) {
 	for _, cookie := range m.cookies {
 		req.AddCookie(cookie)
 	}
-
-	m.Client.Transport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 
 	res.requestMsg, res.error = httputil.DumpRequest(req, true)
 	if res.error != nil {
