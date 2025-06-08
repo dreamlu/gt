@@ -1,3 +1,4 @@
 SetUrlValues ignore nil; return MustJson
 fix ghttp Proxy
 add ghttp SetClient
+fix Remove

@@ -19,11 +19,9 @@ func RemoveDuplicate[T comparable](s []T) []T {
 }
 
 func Remove[T comparable](s []T, sep ...T) (res []T) {
-	for _, se := range sep {
-		for _, v := range s {
-			if !Equal(v, se) {
-				res = append(res, v)
-			}
+	for _, v := range s {
+		if !Equals(sep, v) {
+			res = append(res, v)
 		}
 	}
 	return

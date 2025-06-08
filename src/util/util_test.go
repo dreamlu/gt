@@ -57,6 +57,7 @@ func TestRemove(t *testing.T) {
 	ss := []string{"a", "b", "c", "a", "b"}
 	t.Log(RemoveDuplicate(ss))
 	t.Log(Remove(ss, "b"))
+	t.Log(Remove(ss, "b", "c"))
 	type S struct {
 		A string
 		B string
@@ -89,4 +90,9 @@ func TestHumpToLine(t *testing.T) {
 	t.Log(LineToHump("a_b_test"))
 	t.Log(HumpToLine("ID"))
 	t.Log(HumpToLine("AbC"))
+}
+
+func TestEqual(t *testing.T) {
+	t.Log(Equal(Contain{}, Contain2{}))
+	t.Log(EqualJson(Contain{}, Contain2{}))
 }
