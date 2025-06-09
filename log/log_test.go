@@ -33,6 +33,7 @@ func TestErrorLine(t *testing.T) {
 	t.Log(err3)
 	//s := fmt.Sprintf("%+v\n", err3)
 	Error(err3)
+	Errorf("%+v", err3)
 	//GetLog().Error(err3)
 }
 
@@ -41,4 +42,5 @@ func TestPrint(t *testing.T) {
 	Info("...")
 	Warn("...")
 	Error("...", "...")
+	Errorf("[%s]", "...")
 }

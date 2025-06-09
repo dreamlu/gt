@@ -3,3 +3,4 @@ fix ghttp Proxy
 add ghttp SetClient
 fix Remove
 fix log
+optimize log

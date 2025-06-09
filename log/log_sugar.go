@@ -43,3 +43,19 @@ func Warn(args ...any) {
 func Debug(args ...any) {
 	GetLog().Debug(args...)
 }
+
+func Errorf(format string, args ...any) {
+	GetLog().Error(fmt.Sprintf(format, args...))
+}
+
+func Infof(format string, args ...any) {
+	GetLog().Info(fmt.Sprintf(format, args...))
+}
+
+func Warnf(format string, args ...any) {
+	GetLog().Warn(fmt.Sprintf(format, args...))
+}
+
+func Debugf(format string, args ...any) {
+	GetLog().Debug(fmt.Sprintf(format, args...))
+}
