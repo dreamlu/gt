@@ -40,4 +40,5 @@ func TestPrint(t *testing.T) {
 	Debug("...")
 	Info("...")
 	Warn("...")
+	Error("...", "...")
 }

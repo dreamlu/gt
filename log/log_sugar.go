@@ -25,7 +25,11 @@ func GetLog() *Log {
 }
 
 func Error(args ...any) {
-	GetLog().Error(fmt.Sprintf("%+v", args...))
+	var ss []any
+	for _, arg := range args {
+		ss = append(ss, fmt.Sprintf("%+v", arg))
+	}
+	GetLog().Error(ss...)
 }
 
 func Info(args ...any) {
