@@ -28,7 +28,7 @@ app:
 #    Warn  = "warn"
 #    Error = "error"
 #    )
-    level: info
+    level: debug
   nsq:
     producer_addr: 127.0.0.1:4150
     consumer_addr: 127.0.0.1:4150

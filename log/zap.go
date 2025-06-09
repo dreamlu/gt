@@ -47,8 +47,8 @@ func (z *_zap) CustomTimeEncoder(t time.Time, encoder zapcore.PrimitiveArrayEnco
 }
 
 func (z *_zap) GetZapCores() []zapcore.Core {
-	cores := make([]zapcore.Core, 0, 7)
-	for level := z.ZapLevel(confLogLevel); level <= zapcore.FatalLevel; level++ {
+	cores := make([]zapcore.Core, 0, 4)
+	for level := z.ZapLevel(confLogLevel); level <= zapcore.ErrorLevel; level++ {
 		cores = append(cores, z.GetEncoderCore(level, z.GetLevelPriority(level)))
 	}
 	return cores
@@ -58,23 +58,23 @@ func (z *_zap) GetLevelPriority(level zapcore.Level) zap.LevelEnablerFunc {
 	switch level {
 	case zapcore.DebugLevel:
 		return func(level zapcore.Level) bool {
-			return level == zap.DebugLevel
+			return level == zapcore.DebugLevel
 		}
 	case zapcore.InfoLevel:
 		return func(level zapcore.Level) bool {
-			return level == zap.InfoLevel
+			return level == zapcore.InfoLevel
 		}
 	case zapcore.WarnLevel:
 		return func(level zapcore.Level) bool {
-			return level == zap.WarnLevel
+			return level == zapcore.WarnLevel
 		}
 	case zapcore.ErrorLevel:
 		return func(level zapcore.Level) bool {
-			return level == zap.ErrorLevel
+			return level == zapcore.ErrorLevel
 		}
 	default:
 		return func(level zapcore.Level) bool {
-			return level == zap.DebugLevel
+			return level == zapcore.DebugLevel
 		}
 	}
 }
@@ -88,7 +88,7 @@ func (z *_zap) ZapLevel(level string) zapcore.Level {
 	case WarnLevel:
 		return zapcore.WarnLevel
 	case ErrorLevel:
-		return zapcore.WarnLevel
+		return zapcore.ErrorLevel
 	default:
 		return zapcore.DebugLevel
 	}

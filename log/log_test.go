@@ -35,3 +35,9 @@ func TestErrorLine(t *testing.T) {
 	Error(err3)
 	//GetLog().Error(err3)
 }
+
+func TestPrint(t *testing.T) {
+	Debug("...")
+	Info("...")
+	Warn("...")
+}
