@@ -96,3 +96,30 @@ func TestEqual(t *testing.T) {
 	t.Log(Equal(Contain{}, Contain2{}))
 	t.Log(EqualJson(Contain{}, Contain2{}))
 }
+
+func TestContainsFieldValue(t *testing.T) {
+	type S struct {
+		A string
+		B float64
+		C int
+	}
+	s := []*S{
+		{
+			A: "a",
+			B: 2.0,
+			C: 1,
+		},
+		{
+			A: "c",
+			B: 3.4,
+			C: 2,
+		},
+	}
+	t.Log(ContainsFieldValue(s, "A", "a"))
+	t.Log(ContainsFieldValue(s, "A", "b"))
+	t.Log(ContainsFieldValue(s, "B", 2))
+	t.Log(ContainsFieldValue(s, "B", 2.0))
+	t.Log(ContainsFieldValue(s, "C", 3))
+	t.Log(ContainsFieldValue(s, "C", 1))
+	t.Log(ContainsFieldValue(s, "C", "1"))
+}

@@ -24,6 +24,17 @@ func ContainsField[T comparable](s []T, sep []T, field string) bool {
 	return false
 }
 
+func ContainsFieldValue[T comparable](s []T, field string, values ...any) bool {
+	for _, v := range s {
+		for _, value := range values {
+			if reflect.Field(v, field) == value {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func ContainsDiffField[T1 comparable, T2 comparable](s []T1, sep []T2, sField, sepField string) bool {
 	for _, v := range s {
 		for _, se := range sep {

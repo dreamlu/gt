@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/dreamlu/gt/src/file/fs"
 	"github.com/dreamlu/gt/src/type/cmap"
 	"io"
@@ -113,8 +114,8 @@ func (m *Request) SetJsonBody(v any) *Request {
 	return m
 }
 
-func (m *Request) SetUrlValue(key, value string) *Request {
-	m.urlValues.Set(key, value)
+func (m *Request) SetUrlValue(key string, value any) *Request {
+	m.urlValues.Set(key, fmt.Sprintf("%v", value))
 	return m
 }
 

@@ -4,3 +4,5 @@ add ghttp SetClient
 fix Remove
 fix log
 optimize log
+add ContainsFieldValue
+optimize SetUrlValue
