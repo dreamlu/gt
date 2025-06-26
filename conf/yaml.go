@@ -9,7 +9,6 @@ import (
 	"github.com/dreamlu/gt/src/util"
 	"github.com/spf13/viper"
 	_ "github.com/spf13/viper/remote"
-	"gopkg.in/yaml.v3"
 	"reflect"
 	"strings"
 )
@@ -63,53 +62,94 @@ func (c *Yaml) Unmarshal(v any) {
 }
 
 func (c *Yaml) UnmarshalKey(key string, v any) {
-	if mp := c.Get(key); mp != nil {
-		c.yamlUnmarshal(mp.(map[string]any), v)
+	raw := c.Get(key)
+	if raw != nil {
+		c.yamlUnmarshal(raw, v)
 	}
 }
 
-func (c *Yaml) yamlUnmarshal(viper map[string]any, v any) {
-	var (
-		typ = mr.TrueTypeof(v)
-		val = mr.TrueValueOf(v)
-	)
-	c.yamlViper(viper, typ, val)
-	bs, err := yaml.Marshal(viper)
-	if err != nil {
-		panic(err)
-	}
-	err = yaml.Unmarshal(bs, v)
-	if err != nil {
-		panic(err)
+func (c *Yaml) yamlUnmarshal(viper any, v any) {
+	out := mr.TrueValueOf(v)
+	switch data := viper.(type) {
+	case map[string]any:
+		c.yamlViper(data, out.Type(), out)
+	case []any:
+		sliceElemType := out.Type().Elem()
+		slice := reflect.MakeSlice(out.Type(), len(data), len(data))
+
+		for i, item := range data {
+			var target reflect.Value
+			if sliceElemType.Kind() == reflect.Ptr {
+				target = reflect.New(sliceElemType.Elem()) // *T
+				c.yamlViper(item.(map[string]any), sliceElemType.Elem(), target.Elem())
+				slice.Index(i).Set(target)
+			} else {
+				target = reflect.New(sliceElemType).Elem() // T
+				c.yamlViper(item.(map[string]any), sliceElemType, target)
+				slice.Index(i).Set(target)
+			}
+		}
+		out.Set(slice)
+	default:
+		panic("not supported yaml struct type")
 	}
 }
 
-func (c *Yaml) yamlViper(viper map[string]any, typ reflect.Type, v reflect.Value) {
-	var (
-		tn = typ.NumField()
-	)
-	for i := 0; i < tn; i++ {
+func (c *Yaml) yamlViper(viper map[string]any, typ reflect.Type, val reflect.Value) {
+	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		val := v.Field(i)
-		if field.Anonymous {
-			c.yamlViper(viper, field.Type, val)
+		fieldVal := val.Field(i)
+
+		if !fieldVal.CanSet() {
 			continue
 		}
-		tv := field.Tag.Get(cons.Yaml)
-		key := tv
-		if tv == "" {
-			tv = strings.ToLower(field.Name)
+
+		if field.Anonymous {
+			c.yamlViper(viper, field.Type, fieldVal)
+			continue
+		}
+
+		tag := field.Tag.Get(cons.Yaml)
+		var key string
+		if tag != "" && tag != "-" {
+			key = tag
+		} else {
 			key = util.HumpToLine(field.Name)
 		}
-		tv = strings.ToLower(tv)
-		if vs := viper[tv]; vs != nil {
-			switch field.Type.Kind() {
-			case reflect.Struct:
-				c.yamlViper(vs.(map[string]any), field.Type, val)
-			default:
-				delete(viper, tv)
-				viper[key] = vs
+
+		rawVal, ok := viper[strings.ToLower(key)]
+		if !ok {
+			continue
+		}
+
+		switch field.Type.Kind() {
+		case reflect.Struct:
+			if m, ok := rawVal.(map[string]any); ok {
+				c.yamlViper(m, field.Type, fieldVal)
 			}
+		case reflect.Ptr:
+			if m, ok := rawVal.(map[string]any); ok {
+				ptr := reflect.New(field.Type.Elem())
+				c.yamlViper(m, field.Type.Elem(), ptr.Elem())
+				fieldVal.Set(ptr)
+			}
+		case reflect.Slice:
+			if arr, ok := rawVal.([]any); ok {
+				elemType := field.Type.Elem()
+				slice := reflect.MakeSlice(field.Type, len(arr), len(arr))
+				for j, item := range arr {
+					elem := reflect.New(elemType).Elem()
+					if m, ok := item.(map[string]any); ok {
+						c.yamlViper(m, elemType, elem)
+					} else {
+						elem.Set(reflect.ValueOf(item).Convert(elemType))
+					}
+					slice.Index(j).Set(elem)
+				}
+				fieldVal.Set(slice)
+			}
+		default:
+			fieldVal.Set(reflect.ValueOf(rawVal).Convert(field.Type))
 		}
 	}
 }

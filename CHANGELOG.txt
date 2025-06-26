@@ -6,3 +6,4 @@ fix log
 optimize log
 add ContainsFieldValue
 optimize SetUrlValue
+add conf array support
