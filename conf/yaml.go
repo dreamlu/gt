@@ -64,22 +64,47 @@ func (c *Yaml) Unmarshal(v any) {
 
 func (c *Yaml) UnmarshalKey(key string, v any) {
 	if mp := c.Get(key); mp != nil {
-		c.yamlUnmarshal(mp.(map[string]any), v)
+		c.yamlUnmarshal(mp, v)
 	}
 }
 
-func (c *Yaml) yamlUnmarshal(viper map[string]any, v any) {
-	var (
-		typ = mr.TrueTypeof(v)
-		val = mr.TrueValueOf(v)
-	)
-	c.yamlViper(viper, typ, val)
-	bs, err := yaml.Marshal(viper)
+func (c *Yaml) yamlUnmarshal(raw any, v any) {
+	typ := mr.TrueTypeof(v)
+	val := mr.TrueValueOf(v)
+
+	switch val.Kind() {
+	case reflect.Slice:
+		// 结构体切片或指针切片
+		if arr, ok := raw.([]any); ok {
+			elemType := typ.Elem()
+			slice := reflect.MakeSlice(typ, len(arr), len(arr))
+			for i, item := range arr {
+				if itemMap, ok := item.(map[string]any); ok {
+					if elemType.Kind() == reflect.Ptr {
+						ptr := reflect.New(elemType.Elem())
+						c.yamlViper(itemMap, elemType.Elem(), ptr.Elem())
+						slice.Index(i).Set(ptr)
+					} else {
+						elem := reflect.New(elemType).Elem()
+						c.yamlViper(itemMap, elemType, elem)
+						slice.Index(i).Set(elem)
+					}
+				}
+			}
+			val.Set(slice)
+		}
+	default:
+		if m, ok := raw.(map[string]any); ok {
+			c.yamlViper(m, typ, val)
+		}
+	}
+
+	// 最终用 yaml 来赋值（支持 yaml tag）
+	bs, err := yaml.Marshal(raw)
 	if err != nil {
 		panic(err)
 	}
-	err = yaml.Unmarshal(bs, v)
-	if err != nil {
+	if err := yaml.Unmarshal(bs, v); err != nil {
 		panic(err)
 	}
 }
@@ -103,13 +128,23 @@ func (c *Yaml) yamlViper(viper map[string]any, typ reflect.Type, v reflect.Value
 		}
 		tv = strings.ToLower(tv)
 		if vs := viper[tv]; vs != nil {
-			switch field.Type.Kind() {
-			case reflect.Struct:
-				c.yamlViper(vs.(map[string]any), field.Type, val)
+			switch data := vs.(type) {
+			case map[string]any:
+				if field.Type.Kind() == reflect.Struct {
+					c.yamlViper(data, field.Type, val)
+					return
+				}
+				delete(viper, tv)
+				viper[key] = vs
+			case []map[string]any:
+				for _, d := range data {
+					c.yamlViper(d, field.Type, val)
+				}
 			default:
 				delete(viper, tv)
 				viper[key] = vs
 			}
+
 		}
 	}
 }
