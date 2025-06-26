@@ -82,3 +82,19 @@ func TestRemoteConfig(t *testing.T) {
 		time.Sleep(3 * time.Second)
 	}
 }
+
+func TestArray(t *testing.T) {
+	type A struct {
+		B int    `yaml:"b"`
+		C string `yaml:"c"`
+		D []struct {
+			B int    `yaml:"b"`
+			C string `yaml:"c"`
+		}
+		E []string
+		F [][]string
+	}
+	var as []A
+	UnmarshalField("app.a", &as)
+	t.Log(as)
+}
