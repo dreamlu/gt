@@ -98,24 +98,6 @@ func TestArray(t *testing.T) {
 	UnmarshalField("app.a", &as)
 	t.Log(as)
 
-	type Config struct {
-		PrivateKey      string             `yaml:"private_key"`       // 加密存储的私钥字符串
-		MinProfitUSD    float64            `yaml:"min_profit_usd"`    // 执行套利的最小利润阈值SOL
-		MaxFee          float64            `yaml:"max_fee"`           // 优先级费用SOL
-		MaxDailyTrades  int                `yaml:"max_daily_trades"`  // 每日允许的最大交易次数
-		IntervalSeconds int                `yaml:"interval_seconds"`  // 套利机会检查的时间间隔
-		MonitorPairs    [][]string         `yaml:"monitor_pairs"`     // 需要监控的交易对列表
-		RPCTimeout      int                `yaml:"rpc_timeout"`       // Solana RPC请求的超时时间
-		HTTPTimeout     int                `yaml:"http_timeout"`      // HTTP请求的超时时间
-		SlippageBps     int                `yaml:"slippage_bps"`      // 交易滑点设置(基点)
-		MaxTradeUSDMap  map[string]float64 `yaml:"max_trade_usd_map"` // usd -> 最大交易金额映射
-		Tip             float64            `yaml:"tip"`               // 小费usd
-		JupiterAddr     string             `yaml:"jupiter_addr"`      // jupiterAddr
-		JitoAddr        string             `yaml:"jito_addr"`         // jitoAddr
-		RpcAddr         string             `yaml:"rpc_addr"`          // Solana RPC地址
-		WsAddr          string             `yaml:"ws_addr"`           // Solana WS地址
-	}
-	Cfg := &Config{}
-	UnmarshalField("app.solana", Cfg)
-	t.Log(Cfg)
+	a := GetSlice[string]("app.a.e")
+	t.Log(a)
 }

@@ -25,12 +25,23 @@ func EmptyConfigger() *Config {
 }
 
 type value interface {
-	int64 | int | string | bool | float64
+	int8 | int32 | int64 | int | uint8 | uint16 | uint32 | uint64 | string | bool | float32 | float64
 }
 
 func Get[T value](name string) (t T) {
 	if v := Configger().Get(name); v != nil {
 		return v.(T)
+	}
+	return
+}
+
+func GetSlice[T value](name string) (t []T) {
+	if v := Configger().Get(name); v != nil {
+		slice := v.([]any)
+		for _, s := range slice {
+			t = append(t, s.(T))
+		}
+		return t
 	}
 	return
 }

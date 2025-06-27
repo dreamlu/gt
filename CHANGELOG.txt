@@ -7,3 +7,4 @@ optimize log
 add ContainsFieldValue
 optimize SetUrlValue
 add conf array support
+add conf GetSlice
