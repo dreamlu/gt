@@ -25,7 +25,7 @@ func (z *_zap) GetEncoderConfig() zapcore.EncoderConfig {
 		CallerKey:      "caller",
 		StacktraceKey:  "stacktrace",
 		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    zapcore.LowercaseColorLevelEncoder,
+		EncodeLevel:    customColorLevelEncoder,
 		EncodeTime:     z.CustomTimeEncoder,
 		EncodeDuration: zapcore.SecondsDurationEncoder,
 		EncodeCaller:   zapcore.FullCallerEncoder,
@@ -51,11 +51,16 @@ func (z *_zap) GetZapCores() []zapcore.Core {
 	for level := z.ZapLevel(confLogLevel); level <= zapcore.ErrorLevel; level++ {
 		cores = append(cores, z.GetEncoderCore(level, z.GetLevelPriority(level)))
 	}
+	cores = append(cores, z.GetEncoderCore(SuccessZapLevel, z.GetLevelPriority(SuccessZapLevel)))
 	return cores
 }
 
 func (z *_zap) GetLevelPriority(level zapcore.Level) zap.LevelEnablerFunc {
 	switch level {
+	case SuccessZapLevel:
+		return func(level zapcore.Level) bool {
+			return level == SuccessZapLevel
+		}
 	case zapcore.DebugLevel:
 		return func(level zapcore.Level) bool {
 			return level == zapcore.DebugLevel
@@ -81,6 +86,8 @@ func (z *_zap) GetLevelPriority(level zapcore.Level) zap.LevelEnablerFunc {
 
 func (z *_zap) ZapLevel(level string) zapcore.Level {
 	switch level {
+	case SuccessLevel:
+		return SuccessZapLevel
 	case DebugLevel:
 		return zapcore.DebugLevel
 	case InfoLevel:
@@ -91,5 +98,18 @@ func (z *_zap) ZapLevel(level string) zapcore.Level {
 		return zapcore.ErrorLevel
 	default:
 		return zapcore.DebugLevel
+	}
+}
+
+const (
+	SuccessZapLevel = zapcore.Level(-2)
+)
+
+func customColorLevelEncoder(level zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
+	switch level {
+	case SuccessZapLevel:
+		enc.AppendString("\033[92msuccess\033[0m")
+	default:
+		zapcore.LowercaseColorLevelEncoder(level, enc)
 	}
 }

@@ -32,6 +32,10 @@ func Error(args ...any) {
 	GetLog().Error(ss...)
 }
 
+func Success(args ...any) {
+	GetLog().Log(SuccessZapLevel, args...)
+}
+
 func Info(args ...any) {
 	GetLog().Info(args...)
 }
@@ -42,6 +46,10 @@ func Warn(args ...any) {
 
 func Debug(args ...any) {
 	GetLog().Debug(args...)
+}
+
+func Successf(format string, args ...any) {
+	GetLog().Log(SuccessZapLevel, fmt.Sprintf(format, args...))
 }
 
 func Errorf(format string, args ...any) {

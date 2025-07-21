@@ -38,9 +38,11 @@ func TestErrorLine(t *testing.T) {
 }
 
 func TestPrint(t *testing.T) {
+	Success("...")
 	Debug("...")
 	Info("...")
 	Warn("...")
 	Error("...", "...")
 	Errorf("[%s]", "...")
+	Successf("[%s]", "...")
 }
