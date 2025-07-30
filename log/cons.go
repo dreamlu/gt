@@ -6,7 +6,7 @@ const (
 	InfoLevel    = "info"
 	WarnLevel    = "warn"
 	ErrorLevel   = "error"
-	InConsole    = "console"
+	InTerminal   = "terminal"
 	InFile       = "file"
 	InAll        = "all"
 )
@@ -16,5 +16,5 @@ var (
 	confLogLevel    = DebugLevel
 	confLogDirector = "log"
 	confLogMaxAge   = 7
-	logIn           = InConsole
+	logIn           = InTerminal
 )

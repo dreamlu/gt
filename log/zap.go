@@ -5,6 +5,7 @@ import (
 	. "github.com/dreamlu/gt/src/type/time"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"os"
 	"time"
 )
 
@@ -12,34 +13,40 @@ var Zap = new(_zap)
 
 type _zap struct{}
 
-func (z *_zap) GetEncoder() zapcore.Encoder {
-	return zapcore.NewConsoleEncoder(z.GetEncoderConfig())
+func (z *_zap) GetEncoder(isConsole bool) zapcore.Encoder {
+	return zapcore.NewConsoleEncoder(z.GetEncoderConfig(isConsole))
 }
 
-func (z *_zap) GetEncoderConfig() zapcore.EncoderConfig {
-	return zapcore.EncoderConfig{
-		MessageKey:     "message",
-		LevelKey:       "level",
-		TimeKey:        "time",
-		NameKey:        "logger",
-		CallerKey:      "caller",
-		StacktraceKey:  "stacktrace",
-		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    customColorLevelEncoder,
+func (z *_zap) GetEncoderConfig(isConsole bool) zapcore.EncoderConfig {
+	encoderConfig := zapcore.EncoderConfig{
+		MessageKey:    "message",
+		LevelKey:      "level",
+		TimeKey:       "time",
+		NameKey:       "logger",
+		CallerKey:     "caller",
+		StacktraceKey: "stacktrace",
+		LineEnding:    zapcore.DefaultLineEnding,
+		//EncodeLevel:    customColorLevelEncoder,
 		EncodeTime:     z.CustomTimeEncoder,
 		EncodeDuration: zapcore.SecondsDurationEncoder,
 		EncodeCaller:   zapcore.FullCallerEncoder,
 	}
+	if isConsole {
+		encoderConfig.EncodeLevel = customColorLevelEncoder
+	} else {
+		encoderConfig.EncodeLevel = zapcore.LowercaseLevelEncoder // 纯文本
+	}
+	return encoderConfig
 }
 
-func (z *_zap) GetEncoderCore(l zapcore.Level, level zap.LevelEnablerFunc) zapcore.Core {
+func (z *_zap) GetEncoderCore(l zapcore.Level, level zap.LevelEnablerFunc, isConsole bool) zapcore.Core {
 	writer, err := FileRotatelogs.GetWriteSyncer(l.String())
 	if err != nil {
 		fmt.Printf("Get Write Syncer Failed err:%v", err.Error())
 		return nil
 	}
 
-	return zapcore.NewCore(z.GetEncoder(), writer, level)
+	return zapcore.NewCore(z.GetEncoder(isConsole), writer, level)
 }
 
 func (z *_zap) CustomTimeEncoder(t time.Time, encoder zapcore.PrimitiveArrayEncoder) {
@@ -47,11 +54,59 @@ func (z *_zap) CustomTimeEncoder(t time.Time, encoder zapcore.PrimitiveArrayEnco
 }
 
 func (z *_zap) GetZapCores() []zapcore.Core {
-	cores := make([]zapcore.Core, 0, 4)
+	cores := make([]zapcore.Core, 0, 10)
+
 	for level := z.ZapLevel(confLogLevel); level <= zapcore.ErrorLevel; level++ {
-		cores = append(cores, z.GetEncoderCore(level, z.GetLevelPriority(level)))
+		levelEnabler := z.GetLevelPriority(level)
+
+		switch logIn {
+		case InTerminal:
+			// 只输出终端
+			consoleCore := zapcore.NewCore(z.GetEncoder(true), zapcore.AddSync(os.Stdout), levelEnabler)
+			cores = append(cores, consoleCore)
+		case InFile:
+			// 只输出文件
+			fileWriter, err := FileRotatelogs.GetWriteSyncer(level.String())
+			if err == nil {
+				fileCore := zapcore.NewCore(z.GetEncoder(false), fileWriter, levelEnabler)
+				cores = append(cores, fileCore)
+			}
+		case InAll:
+			// 终端 + 文件
+			consoleCore := zapcore.NewCore(z.GetEncoder(true), zapcore.AddSync(os.Stdout), levelEnabler)
+			cores = append(cores, consoleCore)
+
+			fileWriter, err := FileRotatelogs.GetWriteSyncer(level.String())
+			if err == nil {
+				fileCore := zapcore.NewCore(z.GetEncoder(false), fileWriter, levelEnabler)
+				cores = append(cores, fileCore)
+			}
+		}
 	}
-	cores = append(cores, z.GetEncoderCore(SuccessZapLevel, z.GetLevelPriority(SuccessZapLevel)))
+
+	// success level 同理处理
+	levelEnabler := z.GetLevelPriority(SuccessZapLevel)
+	switch logIn {
+	case InTerminal:
+		consoleCore := zapcore.NewCore(z.GetEncoder(true), zapcore.AddSync(os.Stdout), levelEnabler)
+		cores = append(cores, consoleCore)
+	case InFile:
+		fileWriter, err := FileRotatelogs.GetWriteSyncer(SuccessZapLevel.String())
+		if err == nil {
+			fileCore := zapcore.NewCore(z.GetEncoder(false), fileWriter, levelEnabler)
+			cores = append(cores, fileCore)
+		}
+	case InAll:
+		consoleCore := zapcore.NewCore(z.GetEncoder(true), zapcore.AddSync(os.Stdout), levelEnabler)
+		cores = append(cores, consoleCore)
+
+		fileWriter, err := FileRotatelogs.GetWriteSyncer(SuccessZapLevel.String())
+		if err == nil {
+			fileCore := zapcore.NewCore(z.GetEncoder(false), fileWriter, levelEnabler)
+			cores = append(cores, fileCore)
+		}
+	}
+
 	return cores
 }
 

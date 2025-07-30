@@ -3,7 +3,6 @@ package log
 import (
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"go.uber.org/zap/zapcore"
-	"os"
 	"path"
 	"time"
 )
@@ -13,16 +12,9 @@ var FileRotatelogs = new(fileRotatelogs)
 type fileRotatelogs struct{}
 
 func (r *fileRotatelogs) GetWriteSyncer(level string) (zapcore.WriteSyncer, error) {
-	switch logIn {
-	case InFile:
-		fileWriter, err := r.GetFileWriter(level)
-		return zapcore.AddSync(fileWriter), err
-	case InConsole:
-		return zapcore.AddSync(os.Stdout), nil
-	default:
-		fileWriter, err := r.GetFileWriter(level)
-		return zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(fileWriter)), err
-	}
+	// 这里只返回文件写入器，不返回 MultiWriteSyncer
+	fileWriter, err := r.GetFileWriter(level)
+	return zapcore.AddSync(fileWriter), err
 }
 
 func (r *fileRotatelogs) GetFileWriter(level string) (*rotatelogs.RotateLogs, error) {
