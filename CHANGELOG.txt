@@ -10,3 +10,4 @@ add conf array support
 add conf GetSlice
 add log success
 split log file/terminal color
+add cleanOldLogs for always restart program
