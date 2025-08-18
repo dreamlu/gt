@@ -40,7 +40,7 @@ func (z *_zap) GetEncoderConfig(isConsole bool) zapcore.EncoderConfig {
 }
 
 func (z *_zap) GetEncoderCore(l zapcore.Level, level zap.LevelEnablerFunc, isConsole bool) zapcore.Core {
-	writer, err := FileRotatelogs.GetWriteSyncer(l.String())
+	writer, err := FileRotatelogs.GetWriteSyncer(levelToString(l))
 	if err != nil {
 		fmt.Printf("Get Write Syncer Failed err:%v", err.Error())
 		return nil
@@ -66,7 +66,7 @@ func (z *_zap) GetZapCores() []zapcore.Core {
 			cores = append(cores, consoleCore)
 		case InFile:
 			// 只输出文件
-			fileWriter, err := FileRotatelogs.GetWriteSyncer(level.String())
+			fileWriter, err := FileRotatelogs.GetWriteSyncer(levelToString(level))
 			if err == nil {
 				fileCore := zapcore.NewCore(z.GetEncoder(false), fileWriter, levelEnabler)
 				cores = append(cores, fileCore)
@@ -76,7 +76,7 @@ func (z *_zap) GetZapCores() []zapcore.Core {
 			consoleCore := zapcore.NewCore(z.GetEncoder(true), zapcore.AddSync(os.Stdout), levelEnabler)
 			cores = append(cores, consoleCore)
 
-			fileWriter, err := FileRotatelogs.GetWriteSyncer(level.String())
+			fileWriter, err := FileRotatelogs.GetWriteSyncer(levelToString(level))
 			if err == nil {
 				fileCore := zapcore.NewCore(z.GetEncoder(false), fileWriter, levelEnabler)
 				cores = append(cores, fileCore)
@@ -91,7 +91,7 @@ func (z *_zap) GetZapCores() []zapcore.Core {
 		consoleCore := zapcore.NewCore(z.GetEncoder(true), zapcore.AddSync(os.Stdout), levelEnabler)
 		cores = append(cores, consoleCore)
 	case InFile:
-		fileWriter, err := FileRotatelogs.GetWriteSyncer(SuccessZapLevel.String())
+		fileWriter, err := FileRotatelogs.GetWriteSyncer(levelToString(SuccessZapLevel))
 		if err == nil {
 			fileCore := zapcore.NewCore(z.GetEncoder(false), fileWriter, levelEnabler)
 			cores = append(cores, fileCore)
@@ -100,7 +100,7 @@ func (z *_zap) GetZapCores() []zapcore.Core {
 		consoleCore := zapcore.NewCore(z.GetEncoder(true), zapcore.AddSync(os.Stdout), levelEnabler)
 		cores = append(cores, consoleCore)
 
-		fileWriter, err := FileRotatelogs.GetWriteSyncer(SuccessZapLevel.String())
+		fileWriter, err := FileRotatelogs.GetWriteSyncer(levelToString(SuccessZapLevel))
 		if err == nil {
 			fileCore := zapcore.NewCore(z.GetEncoder(false), fileWriter, levelEnabler)
 			cores = append(cores, fileCore)
@@ -159,6 +159,13 @@ func (z *_zap) ZapLevel(level string) zapcore.Level {
 const (
 	SuccessZapLevel = zapcore.Level(-2)
 )
+
+func levelToString(level zapcore.Level) string {
+	if level == SuccessZapLevel {
+		return "success"
+	}
+	return level.String()
+}
 
 func customColorLevelEncoder(level zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 	switch level {
