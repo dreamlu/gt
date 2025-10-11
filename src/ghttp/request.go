@@ -6,14 +6,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dreamlu/gt/src/file/fs"
-	"github.com/dreamlu/gt/src/type/cmap"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
 	"strings"
 	"time"
+
+	"github.com/dreamlu/gt/src/file/fs"
+	"github.com/dreamlu/gt/src/type/cmap"
 )
 
 const (
@@ -222,19 +223,21 @@ func (m *Request) getParam() (body io.Reader, rawQuery string, err error) {
 	if m.f.File != nil || len(m.forms) > 0 {
 		bs := &bytes.Buffer{}
 		writer := multipart.NewWriter(bs)
+
 		for key := range m.forms {
 			_ = writer.WriteField(key, m.forms.Get(key))
 		}
+
 		if m.f.File != nil {
 			f, _ := writer.CreateFormFile(m.f.field, m.f.Name())
 			_, _ = io.Copy(f, m.f)
-			err = writer.Close()
-			if err != nil {
-				return
-			}
-			m.SetContentType(writer.FormDataContentType())
 		}
+
+		_ = writer.Close()
+		m.SetContentType(writer.FormDataContentType())
+
 		body = bs
 	}
+
 	return
 }
