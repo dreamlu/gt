@@ -2,17 +2,34 @@ package conf
 
 import (
 	"bytes"
-	"github.com/dreamlu/gt/src/gos"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"github.com/dreamlu/gt/src/gos"
 )
+
+// default linux/mac os
+var sp = "/"
+
+func init() {
+	if runtime.GOOS == "windows" {
+		sp = "\\"
+	}
+}
 
 // rPath: relative path
 // aPath: absolute path
 // return config path
 func newPath(rPath string) string {
+	if workDir, err := os.Getwd(); err == nil {
+		wPath := workDir + sp + rPath
+		if gos.Exists(wPath) {
+			return wPath
+		}
+	}
+
 	aPath := ProjectPath() + rPath
 	if gos.Exists(aPath) {
 		return aPath
@@ -22,14 +39,7 @@ func newPath(rPath string) string {
 
 // ProjectPath return project path
 func ProjectPath() (path string) {
-	// default linux/mac os
-	var (
-		sp = "/"
-		ss []string
-	)
-	if runtime.GOOS == "windows" {
-		sp = "\\"
-	}
+	var ss []string
 
 	// GOMOD
 	// in go source code:
