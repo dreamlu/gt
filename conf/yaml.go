@@ -4,14 +4,16 @@ package conf
 
 import (
 	"fmt"
+	"io"
+	"reflect"
+	"strings"
+
 	"github.com/dreamlu/gt/src/cons"
 	mr "github.com/dreamlu/gt/src/reflect"
 	"github.com/dreamlu/gt/src/util"
 	"github.com/spf13/viper"
 	_ "github.com/spf13/viper/remote"
 	"gopkg.in/yaml.v3"
-	"reflect"
-	"strings"
 )
 
 type Yaml struct {
@@ -50,6 +52,16 @@ func (c *Yaml) loadRemoteYaml(provider, endpoint, path string) {
 	c.isRemote = true
 	c.provider = provider
 	c.endpoint = endpoint
+	c.path = path
+}
+
+func (c *Yaml) loadYamlFromReader(r io.Reader, path string) {
+	v := viper.New()
+	v.SetConfigType(cons.Yaml)
+	if err := v.ReadConfig(r); err != nil {
+		panic(fmt.Sprintf("can not read config from reader [%s], error: %v", path, err))
+	}
+	c.Viper = v
 	c.path = path
 }
 

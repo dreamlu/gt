@@ -2,6 +2,7 @@ package conf
 
 import (
 	"bytes"
+	"io/fs"
 	"os"
 	"os/exec"
 	"runtime"
@@ -23,6 +24,10 @@ func init() {
 // aPath: absolute path
 // return config path
 func newPath(rPath string) string {
+	if globalEmbedFS != nil {
+		return findInEmbedFS(rPath)
+	}
+
 	if workDir, err := os.Getwd(); err == nil {
 		wPath := workDir + sp + rPath
 		if gos.Exists(wPath) {
@@ -33,6 +38,29 @@ func newPath(rPath string) string {
 	aPath := ProjectPath() + rPath
 	if gos.Exists(aPath) {
 		return aPath
+	}
+	return rPath
+}
+
+func existsPath(path string) bool {
+	if globalEmbedFS != nil {
+		_, err := fs.Stat(*globalEmbedFS, path)
+		return err == nil
+	}
+	return gos.Exists(path)
+}
+
+func findInEmbedFS(rPath string) string {
+	p := rPath
+	for {
+		if _, err := fs.Stat(*globalEmbedFS, p); err == nil {
+			return p
+		}
+		idx := strings.Index(p, "/")
+		if idx < 0 {
+			break
+		}
+		p = p[idx+1:]
 	}
 	return rPath
 }
