@@ -44,10 +44,13 @@ func newPath(rPath string) string {
 
 func existsPath(path string) bool {
 	if globalEmbedFS != nil {
-		_, err := fs.Stat(*globalEmbedFS, path)
+		if _, err := fs.Stat(*globalEmbedFS, path); err == nil {
+			return true
+		}
+		_, err := fs.Stat(*globalEmbedFS, path+".enc")
 		return err == nil
 	}
-	return gos.Exists(path)
+	return gos.Exists(path) || gos.Exists(path+".enc")
 }
 
 func findInEmbedFS(rPath string) string {
